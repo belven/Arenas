@@ -1,0 +1,19 @@
+name: BelvensArenas
+main: belven.arena.ArenaManager
+version: 1
+depend: [SQLibrary]
+
+commands:   
+   ba:
+      description: Spawns mobs in an arena
+      usage: /ba
+      permission: BelvensArenas.bcarena
+      permission-message: You don't have BelvensArenas.bcarena
+permissions:
+    BelvensArenas.*:
+        description: Gives access to all of BelvensArenas commands
+        children:
+            BelvensArenas.ba: true
+    BelvensArenas.ba: 
+        description: Creates an arena
+        default: op
