@@ -36,4 +36,8 @@ Commands (short version in brackets) <Parameters>:
 
 /ba list (l) Lists all current in game arenas
 
-/ba listmobs ()
+/ba listmobs (lm) lists all mobs and the block they will spawn on within the selected arena
+
+/ba setwavetimer (swt) <Amount> Changes the dely between waves
+
+/ba setwaves (sw) <Amount> Changes the amount of waves in an arena
