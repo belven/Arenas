@@ -11,6 +11,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
@@ -21,6 +22,7 @@ import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
+import belven.arena.resources.functions;
 
 public class ArenaManager extends JavaPlugin
 {
@@ -94,6 +96,12 @@ public class ArenaManager extends JavaPlugin
                     || args[0].equalsIgnoreCase("sab"))
             {
                 MoveArenaBlock(player);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("portmobs")
+                    || args[0].equalsIgnoreCase("pm"))
+            {
+                TeleportArenaMobs(player);
                 return true;
             }
             else if (args[0].equalsIgnoreCase("remove")
@@ -174,14 +182,33 @@ public class ArenaManager extends JavaPlugin
                 SetWaves(player, args[1]);
                 return true;
             }
-            else
+            else if (args.length >= 4)
             {
                 ArenaBlockCreated(player, player.getLocation().getBlock(), args);
                 return true;
             }
+            else
+                return false;
         }
         else
             return false;
+    }
+
+    private void TeleportArenaMobs(Player player)
+    {
+        if (SelectedArenaBlocks.get(player.getName()) == null)
+        {
+            player.sendMessage("Please select an Arena using /ba select <ArenaName>");
+            return;
+        }
+        else
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            for (LivingEntity le : ab.ArenaEntities)
+            {
+                le.teleport(ab.arenaWarp.getLocation());
+            }
+        }
     }
 
     private void ClearArena(Player player)
@@ -376,7 +403,7 @@ public class ArenaManager extends JavaPlugin
 
     private void SetWaveTimer(Player currentPlayer, String newPeriod)
     {
-        int period = SecondsToTicks(Integer.valueOf(newPeriod));
+        int period = functions.SecondsToTicks(Integer.valueOf(newPeriod));
 
         if (SelectedArenaBlocks.get(currentPlayer.getName()) == null)
         {
@@ -466,18 +493,19 @@ public class ArenaManager extends JavaPlugin
     public void ArenaBlockCreated(Player currentPlayer, Block block,
             String[] args)
     {
-        block.setType(Material.LEVER);
+        block.setType(Material.REDSTONE_WIRE);
         block.setMetadata("ArenaBlock", new FixedMetadataValue(this,
                 "Something"));
 
         ArenaBlock newArenaBlock = new ArenaBlock(block, args[0],
                 Integer.valueOf(args[1]), MatToMob(args[0],
                         Material.getMaterial(args[2])), this,
-                SecondsToTicks(1), SecondsToTicks(Integer.valueOf(args[3])));
+                functions.SecondsToTicks(1), functions.SecondsToTicks(Integer
+                        .valueOf(args[3])));
 
         SelectedArenaBlocks.put(currentPlayer.getName(), newArenaBlock);
         currentArenaBlocks.add(newArenaBlock);
-        currentPlayer.sendMessage("Arena" + newArenaBlock.arenaName
+        currentPlayer.sendMessage("Arena " + newArenaBlock.arenaName
                 + " was created!!");
     }
 
@@ -638,11 +666,6 @@ public class ArenaManager extends JavaPlugin
                 + String.valueOf(l.getBlockY()) + ","
                 + String.valueOf(l.getBlockZ());
         return locationString;
-    }
-
-    public int SecondsToTicks(int seconds)
-    {
-        return (seconds * 20);
     }
 
 }

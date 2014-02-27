@@ -20,9 +20,10 @@ public class MobToMaterialCollecton
         this.MobToMaterials.add(mtm);
     }
 
-    public void Add(EntityType et, Material m)
+    public String Add(EntityType et, Material m)
     {
         this.MobToMaterials.add(new MobToMaterial(et, m));
+        return et.name() + " will now spawn on " + m.name();
     }
 
     public void Add(String et, String m)
