@@ -9,6 +9,7 @@ import org.bukkit.entity.LivingEntity;
 
 import belven.arena.ArenaManager;
 import belven.arena.BossMob;
+import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.timedevents.ArenaTimer;
 
@@ -19,6 +20,7 @@ public class ArenaBlock
     public Block arenaWarp;
     public Block arenaBlockStartLocation;
     public Location LocationToCheckForPlayers;
+    public EliteMobCollection emc = new EliteMobCollection(this);
     public int radius;
     public int eliteWave = 0;
     public int timerDelay;
@@ -61,7 +63,20 @@ public class ArenaBlock
     public void Deactivate()
     {
         isActive = false;
+        RemoveMobs();
         ArenaEntities.clear();
+    }
+
+    public void RemoveMobs()
+    {
+        for (LivingEntity le : ArenaEntities)
+        {
+            if (!le.isDead())
+            {
+                le.removeMetadata("ArenaMob", GetPlugin());
+                le.setHealth(0);
+            }
+        }
     }
 
     public ArenaManager GetPlugin()

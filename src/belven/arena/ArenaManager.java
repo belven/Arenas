@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -146,6 +147,18 @@ public class ArenaManager extends JavaPlugin
                 SetEliteWave(player, args[1]);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("setelitemob")
+                    || args[0].equalsIgnoreCase("sem"))
+            {
+                SetEliteMob(player, args[1]);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("removeelitemob")
+                    || args[0].equalsIgnoreCase("rem"))
+            {
+                RemoveEliteMob(player, args[1]);
+                return true;
+            }
             else if (args[0].equalsIgnoreCase("warp")
                     || args[0].equalsIgnoreCase("w"))
             {
@@ -194,6 +207,37 @@ public class ArenaManager extends JavaPlugin
             return false;
     }
 
+    private void SetEliteMob(Player player, String et)
+    {
+        if (SelectedArenaBlocks.get(player.getName()) == null)
+        {
+            player.sendMessage("Please select an Arena using /ba select <ArenaName>");
+            return;
+        }
+        else
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            player.sendMessage(ab.emc.Set(EntityType.valueOf(et),
+                    player.getInventory()));
+        }
+
+    }
+
+    private void RemoveEliteMob(Player player, String et)
+    {
+        if (SelectedArenaBlocks.get(player.getName()) == null)
+        {
+            player.sendMessage("Please select an Arena using /ba select <ArenaName>");
+            return;
+        }
+        else
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            player.sendMessage(ab.emc.Remove(EntityType.valueOf(et)));
+        }
+
+    }
+
     private void TeleportArenaMobs(Player player)
     {
         if (SelectedArenaBlocks.get(player.getName()) == null)
@@ -237,6 +281,14 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
             ab.bm.BossType = EntityType.valueOf(bossType);
+            PlayerInventory pi = player.getInventory();
+
+            ab.bm.gear.add(pi.getChestplate());
+            ab.bm.gear.add(pi.getHelmet());
+            ab.bm.gear.add(pi.getLeggings());
+            ab.bm.gear.add(pi.getBoots());
+
+            ab.bm.gear.add(player.getItemInHand());
             player.sendMessage("Arena " + ab.arenaName + " boss is now "
                     + bossType);
         }

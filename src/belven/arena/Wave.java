@@ -8,10 +8,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -58,6 +58,7 @@ public class Wave
         {
             int randomInt = randomGenerator.nextInt(spawnArea.size());
             Location spawnLocation = spawnArea.get(randomInt).getLocation();
+
             LivingEntity currentEntity = arenaBlock.bm.SpawnBoss(spawnLocation);
 
             new MessageTimer(arenaPlayers, "A " + arenaBlock.bm.BossType.name()
@@ -77,8 +78,6 @@ public class Wave
     {
         Block blockBelow = spawnLocation.getBlock().getRelative(BlockFace.DOWN);
         List<EntityType> et = new ArrayList<EntityType>();
-        ItemStack rangedWeapon = new ItemStack(Material.BOW);
-        ItemStack meleeWeapon = new ItemStack(Material.IRON_SWORD);
 
         for (MobToMaterial mtm : arenaBlock.MobToMat.MobToMaterials)
         {
@@ -96,21 +95,14 @@ public class Wave
 
         currentEntity.setCanPickupItems(true);
 
-        if (currentEntity.getType() == EntityType.SKELETON)
+        if (currentRunTimes == arenaBlock.eliteWave)
         {
-            if (currentRunTimes == arenaBlock.eliteWave)
-            {
-                rangedWeapon.addEnchantment(Enchantment.ARROW_DAMAGE, 1);
-            }
-            currentEntity.getEquipment().setItemInHand(
-                    new ItemStack(rangedWeapon));
+            EliteMob(currentEntity);
         }
-        else if (currentEntity.getType() == EntityType.ZOMBIE
-                && currentRunTimes == arenaBlock.eliteWave)
+        else if (currentEntity.getType() == EntityType.SKELETON)
         {
-            meleeWeapon.addEnchantment(Enchantment.DAMAGE_ALL, 1);
             currentEntity.getEquipment().setItemInHand(
-                    new ItemStack(meleeWeapon));
+                    new ItemStack(Material.BOW));
         }
 
         ScaleMobHealth(currentEntity);
@@ -120,6 +112,20 @@ public class Wave
                         arenaBlock.arenaName + " " + arenaBlock.playersString));
 
         arenaBlock.ArenaEntities.add(currentEntity);
+    }
+
+    public void EliteMob(LivingEntity currentEntity)
+    {
+        if (arenaBlock.emc.Contains(currentEntity.getType()))
+        {
+            List<ItemStack> gear = arenaBlock.emc.Get(currentEntity.getType()).gear;
+            EntityEquipment ee = currentEntity.getEquipment();
+            ee.setChestplate(gear.get(0));
+            ee.setHelmet(gear.get(1));
+            ee.setLeggings(gear.get(2));
+            ee.setBoots(gear.get(3));
+            ee.setItemInHand(gear.get(4));
+        }
     }
 
     public void ScaleMobHealth(LivingEntity currentEntity)

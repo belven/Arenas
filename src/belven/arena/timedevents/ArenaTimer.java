@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -25,7 +24,7 @@ public class ArenaTimer extends BukkitRunnable
     private int averageLevel;
     private int maxMobCounter;
     @SuppressWarnings("unused")
-    private Wave currentWave;
+    private Wave currentWave = null;
 
     public ArenaTimer(ArenaBlock arenaBlock)
     {
@@ -42,14 +41,14 @@ public class ArenaTimer extends BukkitRunnable
             new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
                     + " has ended!!").run();
             arenaBlock.isActive = false;
-            RemoveMobs();
+            arenaBlock.RemoveMobs();
             this.cancel();
         }
         else if (!arenaBlock.isActive)
         {
             new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
                     + " has ended!!").run();
-            //RemoveMobs();
+            // RemoveMobs();
             this.cancel();
         }
         else if (currentRunTimes >= arenaBlock.maxRunTimes)
@@ -65,7 +64,7 @@ public class ArenaTimer extends BukkitRunnable
 
             new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
                     + " has ended!!").run();
-            //RemoveMobs();
+            // RemoveMobs();
             arenaBlock.isActive = false;
             this.cancel();
         }
@@ -81,20 +80,9 @@ public class ArenaTimer extends BukkitRunnable
 
             new MessageTimer(arenaPlayers, arenaBlock.arenaName + " Wave: "
                     + String.valueOf(currentRunTimes)).run();
+            
             currentWave = new Wave(spawnArea, arenaPlayers, arenaBlock,
                     maxMobCounter, currentRunTimes, averageLevel);
-        }
-    }
-
-    private void RemoveMobs()
-    {
-        for (LivingEntity le : arenaBlock.ArenaEntities)
-        {
-            if (!le.isDead())
-            {
-                le.removeMetadata("ArenaMob", arenaBlock.GetPlugin());
-                le.setHealth(0);
-            }
         }
     }
 
