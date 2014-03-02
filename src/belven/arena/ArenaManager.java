@@ -1,5 +1,9 @@
 package belven.arena;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,18 +53,66 @@ public class ArenaManager extends JavaPlugin
         pm.registerEvents(arenaListener, this);
         pm.registerEvents(mobListener, this);
 
-        // try
-        // {
-        // sql = new MicrosoftSQL(Logger.getLogger("Minecraft"), "Something",
-        // "f0bh84aran.database.windows.net", 1433, "arenas",
-        // "belven", "Something123");
-        // }
-        // catch (SQLException e)
-        // {
-        // e.printStackTrace();
-        // }
-        //
-        // sql.open();
+        // Create a variable for the connection string.
+        String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=Something123;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+
+        // Declare the JDBC objects.
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try
+        {
+            // Establish the connection.
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver.class");
+            con = DriverManager.getConnection(connectionUrl);
+
+            // Create and execute an SQL statement that returns some data.
+            String SQL = "SELECT TOP 10 * FROM Arena";
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(SQL);
+
+            // Iterate through the data in the result set and display it.
+            while (rs.next())
+            {
+                getServer().getLogger().info("Sucessfull contection");
+                // System.out.println(rs.getString(2) + " " + rs.getString(3));
+            }
+        }
+
+        // Handle any errors that may have occurred.
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        finally
+        {
+            if (rs != null)
+                try
+                {
+                    rs.close();
+                }
+                catch (Exception e)
+                {
+                }
+            if (stmt != null)
+                try
+                {
+                    stmt.close();
+                }
+                catch (Exception e)
+                {
+                }
+            if (con != null)
+                try
+                {
+                    con.close();
+                }
+                catch (Exception e)
+                {
+                }
+        }
 
         RecreateArenas();
     }
@@ -97,6 +149,12 @@ public class ArenaManager extends JavaPlugin
                     || args[0].equalsIgnoreCase("sab"))
             {
                 MoveArenaBlock(player);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("setdeactivateblock")
+                    || args[0].equalsIgnoreCase("sdab"))
+            {
+                SetDeactivateBlock(player);
                 return true;
             }
             else if (args[0].equalsIgnoreCase("portmobs")
@@ -205,6 +263,22 @@ public class ArenaManager extends JavaPlugin
         }
         else
             return false;
+    }
+
+    private void SetDeactivateBlock(Player player)
+    {
+        if (SelectedArenaBlocks.get(player.getName()) == null)
+        {
+            player.sendMessage("Please select an Arena using /ba select <ArenaName>");
+            return;
+        }
+        else
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            ab.deactivateBlock = player.getLocation().getBlock();
+            player.sendMessage("Arena " + ab.arenaName
+                    + " deactivate block has moved!!");
+        }
     }
 
     private void SetEliteMob(Player player, String et)
@@ -338,7 +412,6 @@ public class ArenaManager extends JavaPlugin
             ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
             player.sendMessage(ab.MobToMat.Remove(et, m));
         }
-
     }
 
     private void SetMobToMat(Player player, String et, String m)
@@ -351,7 +424,7 @@ public class ArenaManager extends JavaPlugin
         else
         {
             ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-            ab.MobToMat.Add(et, m);
+            player.sendMessage(ab.MobToMat.Add(et, m));
         }
     }
 
@@ -447,8 +520,13 @@ public class ArenaManager extends JavaPlugin
             String arenaName = SelectedArenaBlocks.get(currentPlayer.getName()).arenaName;
             Block tempBlock = SelectedArenaBlocks.get(currentPlayer.getName()).blockToActivate;
             tempBlock.removeMetadata("ArenaBlock", this);
+            
             currentArenaBlocks.remove(SelectedArenaBlocks.get(currentPlayer
                     .getName()));
+            
+            SelectedArenaBlocks.remove(SelectedArenaBlocks.get(currentPlayer
+                    .getName()));
+            
             currentPlayer.sendMessage(arenaName + " was removed");
         }
     }

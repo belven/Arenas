@@ -26,10 +26,11 @@ public class MobToMaterialCollecton
         return et.name() + " will now spawn on " + m.name();
     }
 
-    public void Add(String et, String m)
+    public String Add(String et, String m)
     {
         this.MobToMaterials.add(new MobToMaterial(EntityType.valueOf(et),
                 Material.valueOf(m)));
+        return et + " will now spawn on " + m;
     }
 
     public List<EntityType> EntityTypes()

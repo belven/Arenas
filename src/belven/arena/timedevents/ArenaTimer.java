@@ -38,18 +38,12 @@ public class ArenaTimer extends BukkitRunnable
     {
         if (!GetPlayers())
         {
-            new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
-                    + " has ended!!").run();
-            arenaBlock.isActive = false;
             arenaBlock.RemoveMobs();
-            this.cancel();
+            EndArena();
         }
         else if (!arenaBlock.isActive)
         {
-            new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
-                    + " has ended!!").run();
-            // RemoveMobs();
-            this.cancel();
+            EndArena();
         }
         else if (currentRunTimes >= arenaBlock.maxRunTimes)
         {
@@ -62,11 +56,7 @@ public class ArenaTimer extends BukkitRunnable
             // return;
             // }
 
-            new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
-                    + " has ended!!").run();
-            // RemoveMobs();
-            arenaBlock.isActive = false;
-            this.cancel();
+            EndArena();
         }
         else if (spawnArea.size() > 0
                 && currentRunTimes < arenaBlock.maxRunTimes)
@@ -80,10 +70,23 @@ public class ArenaTimer extends BukkitRunnable
 
             new MessageTimer(arenaPlayers, arenaBlock.arenaName + " Wave: "
                     + String.valueOf(currentRunTimes)).run();
-            
+
             currentWave = new Wave(spawnArea, arenaPlayers, arenaBlock,
                     maxMobCounter, currentRunTimes, averageLevel);
         }
+    }
+
+    public void EndArena()
+    {
+
+        new MessageTimer(arenaPlayers, "Arena " + arenaBlock.arenaName
+                + " has ended!!").run();
+        // RemoveMobs();
+        new BlockRestorer(Material.REDSTONE_BLOCK, arenaBlock.deactivateBlock)
+                .runTaskLater(arenaBlock.GetPlugin(),
+                        functions.SecondsToTicks(4));
+        arenaBlock.isActive = false;
+        this.cancel();
     }
 
     public void GetArenaArea()
@@ -102,7 +105,6 @@ public class ArenaTimer extends BukkitRunnable
         {
             for (Block b : arenaArea)
             {
-
                 spawnLocation = b.getLocation();
                 spawnLocation = CanSpawnAt(spawnLocation);
 

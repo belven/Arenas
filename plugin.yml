@@ -1,7 +1,7 @@
 name: BelvensArenas
 main: belven.arena.ArenaManager
 version: 1
-depend: [SQLibrary]
+
 
 commands:   
    ba:

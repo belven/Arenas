@@ -15,23 +15,21 @@ import belven.arena.timedevents.ArenaTimer;
 
 public class ArenaBlock
 {
-    public String arenaName;
-    public Block blockToActivate;
-    public Block arenaWarp;
-    public Block arenaBlockStartLocation;
-    public Location LocationToCheckForPlayers;
-    public EliteMobCollection emc = new EliteMobCollection(this);
-    public int radius;
-    public int eliteWave = 0;
-    public int timerDelay;
-    public int timerPeriod;
-    public String playersString;
     private ArenaManager plugin;
-    public int maxRunTimes;
-    public BossMob bm = new BossMob();
     public boolean isActive = false;
+
+    public String arenaName, playersString;
+    public Block blockToActivate, deactivateBlock, arenaWarp,
+            arenaBlockStartLocation;
+
+    public Location LocationToCheckForPlayers;
+
+    public int radius, maxRunTimes, timerDelay, timerPeriod, eliteWave;
+
+    public BossMob bm = new BossMob();
     public MobToMaterialCollecton MobToMat;
     public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
+    public EliteMobCollection emc = new EliteMobCollection(this);
 
     public ArenaBlock(Block block, String ArenaName, Integer radius,
             MobToMaterialCollecton mobToMat, ArenaManager plugin,
@@ -42,6 +40,11 @@ public class ArenaBlock
                         block.getZ()));
 
         this.blockToActivate = block;
+
+        this.deactivateBlock = block.getWorld().getBlockAt(
+                new Location(block.getWorld(), block.getX(), block.getY() + 2,
+                        block.getZ()));
+
         this.LocationToCheckForPlayers = blockToActivate.getLocation();
         this.arenaWarp = block;
         this.radius = radius;
