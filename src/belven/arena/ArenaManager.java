@@ -3,6 +3,7 @@ package belven.arena;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,11 +39,18 @@ public class ArenaManager extends JavaPlugin
 
     public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
     public HashMap<String, ArenaBlock> SelectedArenaBlocks = new HashMap<String, ArenaBlock>();
-    // private Database sql;
+    public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
+
     private static String queryStringSep = "', '";
     private static String queryNumberSep = ", ";
     private static String queryStringToNumberSep = "', ";
     private static String queryNumberToStringSep = ", '";
+
+    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=PASS;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+
+    Connection con = null;
+    Statement stmt = null;
+    ResultSet rs = null;
 
     @Override
     public void onEnable()
@@ -52,67 +60,6 @@ public class ArenaManager extends JavaPlugin
         pm.registerEvents(blockListener, this);
         pm.registerEvents(arenaListener, this);
         pm.registerEvents(mobListener, this);
-
-        // Create a variable for the connection string.
-        String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=Something123;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-
-        // Declare the JDBC objects.
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-
-        try
-        {
-            // Establish the connection.
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver.class");
-            con = DriverManager.getConnection(connectionUrl);
-
-            // Create and execute an SQL statement that returns some data.
-            String SQL = "SELECT TOP 10 * FROM Arena";
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(SQL);
-
-            // Iterate through the data in the result set and display it.
-            while (rs.next())
-            {
-                getServer().getLogger().info("Sucessfull contection");
-                // System.out.println(rs.getString(2) + " " + rs.getString(3));
-            }
-        }
-
-        // Handle any errors that may have occurred.
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        finally
-        {
-            if (rs != null)
-                try
-                {
-                    rs.close();
-                }
-                catch (Exception e)
-                {
-                }
-            if (stmt != null)
-                try
-                {
-                    stmt.close();
-                }
-                catch (Exception e)
-                {
-                }
-            if (con != null)
-                try
-                {
-                    con.close();
-                }
-                catch (Exception e)
-                {
-                }
-        }
 
         RecreateArenas();
     }
@@ -229,8 +176,8 @@ public class ArenaManager extends JavaPlugin
                 SetBoss(player, args[1]);
                 return true;
             }
-            else if (args[0].equalsIgnoreCase("list")
-                    || args[0].equalsIgnoreCase("l"))
+            else if (args[0].equalsIgnoreCase("listarenas")
+                    || args[0].equalsIgnoreCase("la"))
             {
                 ListArenas(player);
                 return true;
@@ -247,15 +194,74 @@ public class ArenaManager extends JavaPlugin
                 SetWaveTimer(player, args[1]);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("leave")
+                    || args[0].equalsIgnoreCase("l"))
+            {
+                LeaveArena(player);
+                return true;
+            }
             else if (args[0].equalsIgnoreCase("setwaves")
                     || args[0].equalsIgnoreCase("sw"))
             {
                 SetWaves(player, args[1]);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("savearena")
+                    || args[0].equalsIgnoreCase("sa"))
+            {
+                if (SelectedArenaBlocks.get(player.getName()) == null)
+                {
+                    player.sendMessage("Please select an Arena using /ba select <ArenaName>");
+                    return false;
+                }
+                else
+                {
+                    ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+                    UpdateArena(ab);
+                    player.sendMessage("Arena " + ab.arenaName + " was saved");
+                    return true;
+                }
+            }
             else if (args.length >= 4)
             {
-                ArenaBlockCreated(player, player.getLocation().getBlock(), args);
+                try
+                {
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    con = DriverManager.getConnection(connectionUrl);
+                }
+                catch (ClassNotFoundException e1)
+                {
+                    e1.printStackTrace();
+                }
+                catch (SQLException e)
+                {
+                    e.printStackTrace();
+                }
+
+                try
+                {
+                    stmt = con.createStatement();
+
+                    rs = stmt.executeQuery("ArenaExists '" + args[0] + "'");
+
+                    if (rs.next()
+                            && rs.getString("ArenaExists")
+                                    .equalsIgnoreCase("1"))
+                    {
+                        player.sendMessage("Arena " + args[0]
+                                + " already exists");
+                    }
+                    else
+                    {
+                        ArenaBlockCreated(player, player.getLocation()
+                                .getBlock(), args);
+                    }
+                }
+                catch (SQLException e)
+                {
+                    e.printStackTrace();
+                }
+
                 return true;
             }
             else
@@ -263,6 +269,15 @@ public class ArenaManager extends JavaPlugin
         }
         else
             return false;
+    }
+
+    private void LeaveArena(Player player)
+    {
+        if (warpLocations.get(player.getName()) != null)
+        {
+            player.teleport(warpLocations.get(player.getName()));
+            warpLocations.put(player.getName(), null);
+        }
     }
 
     private void SetDeactivateBlock(Player player)
@@ -409,8 +424,32 @@ public class ArenaManager extends JavaPlugin
         }
         else
         {
-            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-            player.sendMessage(ab.MobToMat.Remove(et, m));
+            try
+            {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                con = DriverManager.getConnection(connectionUrl);
+
+                stmt = con.createStatement();
+
+                ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+
+                String mobToRemove = "";
+
+                mobToRemove = mobToRemove + ab.arenaName + "', '";
+                mobToRemove = mobToRemove + et + "', '";
+                mobToRemove = mobToRemove + m + "'";
+
+                stmt.executeUpdate("RemoveArenaMob '" + mobToRemove);
+                player.sendMessage(ab.MobToMat.Remove(et, m));
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+            catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -423,8 +462,31 @@ public class ArenaManager extends JavaPlugin
         }
         else
         {
-            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-            player.sendMessage(ab.MobToMat.Add(et, m));
+            try
+            {
+                ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                con = DriverManager.getConnection(connectionUrl);
+
+                stmt = con.createStatement();
+                String mobToAdd = "";
+
+                mobToAdd = mobToAdd + ab.arenaName + "', '";
+                mobToAdd = mobToAdd + et + "', '";
+                mobToAdd = mobToAdd + m + "'";
+
+                stmt.executeUpdate("InsertMobToMat '" + mobToAdd);
+                player.sendMessage(ab.MobToMat.Add(et, m));
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+            catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -481,6 +543,7 @@ public class ArenaManager extends JavaPlugin
         ArenaBlock tempArenaBlock = getArenaBlock(arenaToWarp);
         if (tempArenaBlock != null)
         {
+            warpLocations.put(player.getName(), player.getLocation());
             player.teleport(tempArenaBlock.arenaWarp.getLocation());
             player.sendMessage("Teleport to " + arenaToWarp);
         }
@@ -518,15 +581,17 @@ public class ArenaManager extends JavaPlugin
         else
         {
             String arenaName = SelectedArenaBlocks.get(currentPlayer.getName()).arenaName;
-            Block tempBlock = SelectedArenaBlocks.get(currentPlayer.getName()).blockToActivate;
-            tempBlock.removeMetadata("ArenaBlock", this);
-            
+            Block ab = SelectedArenaBlocks.get(currentPlayer.getName()).blockToActivate;
+            ab.removeMetadata("ArenaBlock", this);
+
+            RemoveArena(SelectedArenaBlocks.get(currentPlayer.getName()));
+
             currentArenaBlocks.remove(SelectedArenaBlocks.get(currentPlayer
                     .getName()));
-            
+
             SelectedArenaBlocks.remove(SelectedArenaBlocks.get(currentPlayer
                     .getName()));
-            
+
             currentPlayer.sendMessage(arenaName + " was removed");
         }
     }
@@ -637,6 +702,8 @@ public class ArenaManager extends JavaPlugin
         currentArenaBlocks.add(newArenaBlock);
         currentPlayer.sendMessage("Arena " + newArenaBlock.arenaName
                 + " was created!!");
+
+        InsertArena(newArenaBlock);
     }
 
     public void ArenaBlockCreated(Player currentPlayer, Block block, String mat)
@@ -651,6 +718,33 @@ public class ArenaManager extends JavaPlugin
         args.add(mat);
         args.add(timerPeriod);
         ArenaBlockCreated(currentPlayer, block, args.toArray(new String[5]));
+    }
+
+    public MobToMaterialCollecton MatToMob(String ArenaName, Statement stmt,
+            ResultSet rs)
+    {
+        MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
+
+        try
+        {
+            stmt = con.createStatement();
+
+            rs = stmt.executeQuery("GetArenaMobs '" + ArenaName + "'");
+
+            while (rs.next())
+            {
+                EntityType et = EntityType.valueOf(rs.getString("EntityType"));
+                Material m = Material.valueOf(rs.getString("Material"));
+
+                spawnMats.Add(et, m);
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return spawnMats;
     }
 
     public MobToMaterialCollecton MatToMob(String ArenaName, Material mat)
@@ -682,90 +776,286 @@ public class ArenaManager extends JavaPlugin
     public void onDisable()
     {
         getLogger().info("Goodbye world!");
-        // SaveArenas();
+        SaveArenas();
+    }
+
+    public void UpdateArena(ArenaBlock ab)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+        }
+        catch (ClassNotFoundException e1)
+        {
+            e1.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        String ArenaString = "'";
+        ArenaString = ArenaString + ab.arenaName + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.blockToActivate)
+                + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.arenaWarp)
+                + queryStringSep;
+        ArenaString = ArenaString
+                + LocationToString(ab.arenaBlockStartLocation) + queryStringSep;
+        ArenaString = ArenaString
+                + LocationToString(ab.LocationToCheckForPlayers)
+                + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.deactivateBlock)
+                + queryStringToNumberSep;
+        ArenaString = ArenaString + ab.radius + queryNumberSep;
+        ArenaString = ArenaString + ab.timerDelay + queryNumberSep;
+        ArenaString = ArenaString + ab.timerPeriod + queryNumberSep;
+        ArenaString = ArenaString + ab.maxRunTimes + queryNumberToStringSep;
+        ArenaString = ArenaString
+                + ab.arenaBlockStartLocation.getWorld().getName();
+        ArenaString = ArenaString + "'";
+
+        try
+        {
+            String Update = "UpdateArena ";
+
+            stmt = con.createStatement();
+
+            stmt.executeUpdate(Update + ArenaString);
+
+            for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
+            {
+                String mobExists = "";
+                String Insert = "InsertMobToMat '";
+
+                mobExists = mobExists + ab.arenaName + "', '";
+                mobExists = mobExists + mtm.et.name() + "', '";
+                mobExists = mobExists + mtm.m.name() + "'";
+
+                rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
+
+                if (rs.next()
+                        && rs.getString("MobExists").equalsIgnoreCase("0"))
+                {
+                    stmt.executeUpdate(Insert + mobExists);
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (stmt != null)
+            try
+            {
+                stmt.close();
+            }
+            catch (Exception e)
+            {
+            }
+        if (con != null)
+            try
+            {
+                con.close();
+            }
+            catch (Exception e)
+            {
+            }
+    }
+
+    public void InsertArena(ArenaBlock ab)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+        }
+        catch (ClassNotFoundException e1)
+        {
+            e1.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        String ArenaString = "'";
+        ArenaString = ArenaString + ab.arenaName + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.blockToActivate)
+                + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.arenaWarp)
+                + queryStringSep;
+        ArenaString = ArenaString
+                + LocationToString(ab.arenaBlockStartLocation) + queryStringSep;
+        ArenaString = ArenaString
+                + LocationToString(ab.LocationToCheckForPlayers)
+                + queryStringSep;
+        ArenaString = ArenaString + LocationToString(ab.deactivateBlock)
+                + queryStringToNumberSep;
+        ArenaString = ArenaString + ab.radius + queryNumberSep;
+        ArenaString = ArenaString + ab.timerDelay + queryNumberSep;
+        ArenaString = ArenaString + ab.timerPeriod + queryNumberSep;
+        ArenaString = ArenaString + ab.maxRunTimes + queryNumberToStringSep;
+        ArenaString = ArenaString
+                + ab.arenaBlockStartLocation.getWorld().getName();
+        ArenaString = ArenaString + "'";
+
+        try
+        {
+            String Insert = "InsertArena ";
+
+            stmt = con.createStatement();
+
+            stmt.executeUpdate(Insert + ArenaString);
+
+            for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
+            {
+                String mobExists = "";
+                Insert = "InsertMobToMat '";
+
+                mobExists = mobExists + ab.arenaName + "', '";
+                mobExists = mobExists + mtm.et.name() + "', '";
+                mobExists = mobExists + mtm.m.name() + "'";
+
+                rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
+
+                if (rs.next()
+                        && rs.getString("MobExists").equalsIgnoreCase("0"))
+                {
+                    stmt.executeUpdate(Insert + mobExists);
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (stmt != null)
+            try
+            {
+                stmt.close();
+            }
+            catch (Exception e)
+            {
+            }
+        if (con != null)
+            try
+            {
+                con.close();
+            }
+            catch (Exception e)
+            {
+            }
+    }
+
+    public void RemoveArena(ArenaBlock ab)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+            stmt = con.createStatement();
+
+            stmt.executeUpdate("delete from arena where ArenaName like '"
+                    + ab.arenaName + "'");
+        }
+        catch (ClassNotFoundException e1)
+        {
+            e1.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        if (stmt != null)
+            try
+            {
+                stmt.close();
+            }
+            catch (Exception e)
+            {
+            }
+        if (con != null)
+            try
+            {
+                con.close();
+            }
+            catch (Exception e)
+            {
+            }
     }
 
     public void SaveArenas()
     {
         for (ArenaBlock ab : currentArenaBlocks)
         {
-            String ArenaString = "";
-            ArenaString = ArenaString + ab.arenaName + queryStringSep;
-            ArenaString = ArenaString + LocationToString(ab.blockToActivate)
-                    + queryStringSep;
-            ArenaString = ArenaString + LocationToString(ab.arenaWarp)
-                    + queryStringSep;
-            ArenaString = ArenaString
-                    + LocationToString(ab.arenaBlockStartLocation)
-                    + queryStringSep;
-            ArenaString = ArenaString
-                    + LocationToString(ab.LocationToCheckForPlayers)
-                    + queryStringToNumberSep;
-            ArenaString = ArenaString + ab.radius + queryNumberToStringSep;
-
-            // ArenaString = ArenaString + ab.material.name()
-            // + queryStringToNumberSep;
-
-            ArenaString = ArenaString + ab.timerDelay + queryNumberSep;
-            ArenaString = ArenaString + ab.timerPeriod + queryNumberSep;
-            ArenaString = ArenaString + ab.maxRunTimes + queryNumberToStringSep;
-            ArenaString = ArenaString
-                    + ab.arenaBlockStartLocation.getWorld().getName();
-            ArenaString = ArenaString + "'";
-            //
-            // try
-            // {
-            // String Insert = "EXEC InsertArena ";
-            // String Update = "EXEC UpdateArena ";
-            //
-            // ResultSet arenaExists = sql.query("EXEC ArenaExists '"
-            // + ab.arenaName + "'");
-            //
-            // arenaExists.first();
-            //
-            // if (arenaExists.getString(1) == "0")
-            // {
-            // PreparedStatement ps = sql.prepare(Insert + ArenaString);
-            // ps.execute();
-            // }
-            // else
-            // {
-            // PreparedStatement ps = sql.prepare(Update + ArenaString);
-            // ps.execute();
-            // }
-            // }
-            // catch (SQLException e)
-            // {
-            // e.printStackTrace();
-            // }
+            UpdateArena(ab);
         }
     }
 
     private void RecreateArenas()
     {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM Arena");
+
+            while (rs.next())
+            {
+                String ArenaName = rs.getString("ArenaName");
+                String warpLocation = rs.getString("ArenaWarp");
+
+                int Radius = rs.getInt("Radius");
+                int TimerDelay = rs.getInt("TimerDelay");
+                int TimerPeriod = rs.getInt("TimerPeriod");
+                int MaxRunTimes = rs.getInt("MaxRunTimes");
+
+                World world = this.getServer().getWorld(rs.getString("World"));
+
+                if (world != null)
+                {
+                    Block BlockToActivate = StringToLocation(
+                            rs.getString("BlockToActivate"), world).getBlock();
+
+                    Block BlockToDeactivate = StringToLocation(
+                            rs.getString("DeactivateBlock"), world).getBlock();
+
+                    ArenaBlock newArenaBlock = new ArenaBlock(BlockToActivate,
+                            ArenaName, Radius, MatToMob(ArenaName, stmt, rs),
+                            this, TimerDelay, TimerPeriod);
+
+                    BlockToActivate.setMetadata("ArenaBlock",
+                            new FixedMetadataValue(this, "Something"));
+
+                    newArenaBlock.arenaWarp = StringToLocation(warpLocation,
+                            world).getBlock();
+
+                    newArenaBlock.deactivateBlock = BlockToDeactivate;
+
+                    newArenaBlock.maxRunTimes = Integer.valueOf(MaxRunTimes);
+
+                    currentArenaBlocks.add(newArenaBlock);
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
 
     }
-
-    // public void CreateArena(List<String> currentValues)
-    // {
-    // World world = this.getServer().getWorld(currentValues.get(10));
-    // Block BlockToActivate = StringToLocation(currentValues.get(1), world)
-    // .getBlock();
-    //
-    // BlockToActivate.setMetadata("ArenaBlock", new FixedMetadataValue(this,
-    // "Something"));
-    //
-    // ArenaBlock newArenaBlock = new ArenaBlock(BlockToActivate,
-    // currentValues.get(0), Integer.valueOf(currentValues.get(5)),
-    // MatToMob(currentValues.get(0)), this,
-    // Integer.valueOf(currentValues.get(7)),
-    // Integer.valueOf(currentValues.get(8)));
-    //
-    // newArenaBlock.arenaWarp = StringToLocation(currentValues.get(2), world)
-    // .getBlock();
-    // newArenaBlock.maxRunTimes = Integer.valueOf(currentValues.get(9));
-    // currentArenaBlocks.add(newArenaBlock);
-    // }
 
     public Location StringToLocation(String s, World world)
     {

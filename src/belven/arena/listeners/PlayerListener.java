@@ -1,6 +1,6 @@
 package belven.arena.listeners;
 
-import java.util.List;
+import java.util.HashMap;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,6 +12,9 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
 
@@ -19,13 +22,13 @@ public class PlayerListener implements Listener
 {
     private final ArenaManager plugin;
 
-    Location arenaWarp;
-    ItemStack[] currentPlayerInventory;
+    public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
+    public HashMap<String, ItemStack[]> playerInventories = new HashMap<String, ItemStack[]>();
 
     public PlayerListener(ArenaManager instance)
     {
         plugin = instance;
-    }  
+    }
 
     @EventHandler
     public void onPlayerDeathEvent(PlayerDeathEvent event)
@@ -41,23 +44,15 @@ public class PlayerListener implements Listener
                 if (ab.isActive
                         && ab.playersString.contains(currentPlayer.getName()))
                 {
-                    List<ItemStack> drops = event.getDrops();
                     event.getDrops().clear();
-                    drops.clear();
 
                     PlayerInventory pi = currentPlayer.getInventory();
 
-                    currentPlayerInventory = currentPlayer.getInventory()
-                            .getContents();
+                    playerInventories.put(currentPlayer.getName(),
+                            pi.getContents());
 
-                    drops.add(pi.getChestplate());
-                    drops.add(pi.getLeggings());
-                    drops.add(pi.getHelmet());
-                    drops.add(pi.getBoots());
-                    drops.add(pi.getItemInHand());
-                    event.getDrops().addAll(drops);
-
-                    arenaWarp = ab.arenaWarp.getLocation();
+                    warpLocations.put(currentPlayer.getName(),
+                            ab.arenaWarp.getLocation());
                 }
             }
         }
@@ -68,15 +63,20 @@ public class PlayerListener implements Listener
     {
         Player currentPlayer = event.getPlayer();
 
-        if (arenaWarp != null)
+        if (warpLocations.get(currentPlayer.getName()) != null)
         {
-            event.setRespawnLocation(arenaWarp);
-            currentPlayer.getInventory().setContents(currentPlayerInventory);
-            arenaWarp = null;
-            currentPlayerInventory = null;
+            event.setRespawnLocation(warpLocations.get(currentPlayer.getName()));
+            currentPlayer.getInventory().setContents(
+                    playerInventories.get(currentPlayer.getName()));
+            currentPlayer.addPotionEffect(new PotionEffect(
+                    PotionEffectType.DAMAGE_RESISTANCE, SecondsToTicks(8), 5));
+            
+            warpLocations.put(currentPlayer.getName(), null);
+            playerInventories.put(currentPlayer.getName(), null);
+
         }
     }
-    
+
     public boolean isNotInteractiveBlock(Material material)
     {
         switch (material.toString())
@@ -106,7 +106,7 @@ public class PlayerListener implements Listener
         default:
             return true;
         }
-    }    
+    }
 
     public boolean IsAMob(EntityType currentEntityType)
     {
@@ -129,7 +129,7 @@ public class PlayerListener implements Listener
         }
         else
             return false;
-    }    
+    }
 
     public int SecondsToTicks(int seconds)
     {
