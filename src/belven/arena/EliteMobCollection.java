@@ -72,8 +72,6 @@ public class EliteMobCollection
 
     public EliteMob Get(EntityType et)
     {
-        EliteMob tempEliteMob = null;
-
         for (EliteMob em : ems)
         {
             if (em.type == et)
@@ -82,12 +80,11 @@ public class EliteMobCollection
             }
         }
 
-        return tempEliteMob;
+        return null;
     }
 
     public boolean Contains(EntityType et)
     {
-        boolean tempContains = false;
         for (EliteMob em : ems)
         {
             if (em.type == et)
@@ -95,6 +92,6 @@ public class EliteMobCollection
                 return true;
             }
         }
-        return tempContains;
+        return false;
     }
 }

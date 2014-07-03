@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import belven.arena.ArenaManager;
 import belven.arena.BossMob;
@@ -23,39 +24,42 @@ public class ArenaBlock
     public boolean isActive = false;
 
     public String arenaName, playersString;
-    public Block blockToActivate, deactivateBlock, arenaWarp,
-            arenaBlockStartLocation;
+    public Block blockToActivate, deactivateBlock, arenaWarp;
 
     public List<Block> arenaArea;
     public List<Player> arenaPlayers = new ArrayList<Player>();
     public List<Block> spawnArea = new ArrayList<Block>();
 
-    public Location LocationToCheckForPlayers;
+    public Location LocationToCheckForPlayers, arenaBlockStartLocation,
+            arenaBlockEndLocation;
 
     public int radius, maxRunTimes, timerDelay, timerPeriod, eliteWave,
             averageLevel, maxMobCounter, currentRunTimes = 0;
 
+    public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
     public BossMob bm = new BossMob();
     public MobToMaterialCollecton MobToMat;
     public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
     public EliteMobCollection emc = new EliteMobCollection(this);
 
-    public ArenaBlock(Block block, String ArenaName, Integer radius,
-            MobToMaterialCollecton mobToMat, ArenaManager plugin,
-            int timerDelay, int timerPeriod)
+    public ArenaBlock(Location startLocation, Location endLocation,
+            String ArenaName, Integer radius, MobToMaterialCollecton mobToMat,
+            ArenaManager plugin, int timerDelay, int timerPeriod)
     {
-        this.arenaBlockStartLocation = block.getWorld().getBlockAt(
-                new Location(block.getWorld(), block.getX(), block.getY() - 1,
-                        block.getZ()));
+        this.arenaBlockStartLocation = new Location(startLocation.getWorld(),
+                startLocation.getX(), startLocation.getY() - 1,
+                startLocation.getZ());
 
-        this.blockToActivate = block;
+        this.arenaBlockEndLocation = endLocation;
 
-        this.deactivateBlock = block.getWorld().getBlockAt(
-                new Location(block.getWorld(), block.getX(), block.getY() + 2,
-                        block.getZ()));
+        this.blockToActivate = startLocation.getBlock();
+
+        this.deactivateBlock = startLocation.getWorld().getBlockAt(
+                new Location(startLocation.getWorld(), startLocation.getX(),
+                        startLocation.getY() + 2, startLocation.getZ()));
 
         this.LocationToCheckForPlayers = blockToActivate.getLocation();
-        this.arenaWarp = block;
+        this.arenaWarp = startLocation.getBlock();
         this.radius = radius;
         this.MobToMat = mobToMat;
         this.timerDelay = timerDelay;
@@ -69,6 +73,7 @@ public class ArenaBlock
     {
         isActive = true;
         RemoveMobs();
+        arenaPlayers.clear();
         ArenaEntities.clear();
         new ArenaTimer(this).runTaskLater(plugin, 10);
     }
@@ -80,6 +85,21 @@ public class ArenaBlock
         ArenaEntities.clear();
     }
 
+    public void GiveRewards()
+    {
+        for (Player p : arenaPlayers)
+        {
+            for (ItemStack is : arenaRewards)
+            {
+                if (is != null)
+                {
+                    p.getInventory().addItem(is);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     public void RemoveMobs()
     {
         currentRunTimes = 0;
@@ -95,8 +115,14 @@ public class ArenaBlock
 
     public void GetArenaArea()
     {
-        arenaArea = functions.getBlocksInRadius(
-                this.arenaBlockStartLocation.getLocation(), this.radius);
+        if (this.arenaBlockEndLocation == null)
+        {
+            plugin.getServer().getLogger().info("arenaBlockEndLocation NULL");
+            return;
+        }
+
+        arenaArea = functions.getBlocksBetweenPoints(
+                this.arenaBlockStartLocation, this.arenaBlockEndLocation);
     }
 
     public void GetSpawnArea()
@@ -104,7 +130,7 @@ public class ArenaBlock
         Location spawnLocation;
         spawnArea.clear();
 
-        if (arenaArea.size() > 0)
+        if (arenaArea != null && arenaArea.size() > 0)
         {
             for (Block b : arenaArea)
             {
@@ -171,15 +197,12 @@ public class ArenaBlock
 
         if (totalLevels == 0)
         {
-            this.averageLevel = 1;
-            this.maxMobCounter = 5;
+            totalLevels = 1;
         }
-        else
-        {
-            this.averageLevel = (int) (totalLevels / currentPlayers.length);
-            this.maxMobCounter = (int) (totalLevels / currentPlayers.length)
-                    + (currentPlayers.length * 5);
-        }
+
+        this.averageLevel = (int) (totalLevels / currentPlayers.length);
+        this.maxMobCounter = (int) (totalLevels / currentPlayers.length)
+                + (currentPlayers.length * 5);
 
         return true;
     }

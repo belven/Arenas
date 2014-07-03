@@ -35,7 +35,7 @@ public class BlockListener implements Listener
     {
         event.setCancelled(true);
     }
-
+    
     @EventHandler
     public void onBlockIgniteEvent(BlockIgniteEvent event)
     {

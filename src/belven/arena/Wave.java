@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -21,44 +22,76 @@ import belven.arena.timedevents.MessageTimer;
 public class Wave
 {
     private ArenaBlock arenaBlock;
+    Random randomGenerator = new Random();
 
     public Wave(ArenaBlock arenaBlock)
     {
         this.arenaBlock = arenaBlock;
         SpawnMobs();
+        renewPlayerWeapons();
     }
 
     public void SpawnMobs()
     {
-        Random randomGenerator = new Random();
         new MessageTimer(arenaBlock.arenaPlayers, "Mobs Spawning: "
                 + String.valueOf(arenaBlock.maxMobCounter)).run();
 
         for (int mobCounter = 0; mobCounter < arenaBlock.maxMobCounter; mobCounter++)
         {
-            int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea.size());
-            Location spawnLocation = arenaBlock.spawnArea.get(randomInt).getLocation();
+            int randomInt = randomGenerator
+                    .nextInt(arenaBlock.spawnArea.size());
+            Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
+                    .getLocation();
             MobToSpawn(spawnLocation);
         }
 
         if (arenaBlock.currentRunTimes == arenaBlock.maxRunTimes)
         {
-            int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea.size());
-            Location spawnLocation = arenaBlock.spawnArea.get(randomInt).getLocation();
-
-            LivingEntity currentEntity = arenaBlock.bm.SpawnBoss(spawnLocation);
-
-            new MessageTimer(arenaBlock.arenaPlayers, "A " + arenaBlock.bm.BossType.name()
-                    + " boss has Spawned!!").run();
-
-            ScaleMobHealth(currentEntity);
-
-            currentEntity.setMetadata("ArenaBoss", new FixedMetadataValue(
-                    arenaBlock.GetPlugin(), arenaBlock.arenaName + " "
-                            + arenaBlock.playersString));
-
-            arenaBlock.ArenaEntities.add(currentEntity);
+            SpawnBoss();
         }
+    }
+
+    public void renewPlayerWeapons()
+    {
+        for (Player p : arenaBlock.arenaPlayers)
+        {
+            boolean needsWeapon = true;
+
+            for (ItemStack is : functions.getAllMeeleWeapons())
+            {
+                if (p.getInventory().contains(is))
+                {
+                    needsWeapon = false;
+                    break;
+                }
+            }
+
+            if (needsWeapon)
+            {
+                p.getInventory()
+                        .addItem(new ItemStack(Material.STONE_SWORD, 1));
+            }
+        }
+    }
+
+    public void SpawnBoss()
+    {
+        int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea.size());
+        Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
+                .getLocation();
+
+        LivingEntity currentEntity = arenaBlock.bm.SpawnBoss(spawnLocation);
+
+        new MessageTimer(arenaBlock.arenaPlayers, "A "
+                + arenaBlock.bm.BossType.name() + " boss has Spawned!!").run();
+
+        ScaleBossHealth(currentEntity);
+
+        currentEntity.setMetadata("ArenaBoss", new FixedMetadataValue(
+                arenaBlock.GetPlugin(), arenaBlock.arenaName + " "
+                        + arenaBlock.playersString));
+
+        arenaBlock.ArenaEntities.add(currentEntity);
     }
 
     public void MobToSpawn(Location spawnLocation)
@@ -84,10 +117,12 @@ public class Wave
         LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
                 .spawnEntity(spawnLocation, et.get(randomInt));
 
-        if (arenaBlock.currentRunTimes == arenaBlock.eliteWave)
+        if (arenaBlock.currentRunTimes > 0 && arenaBlock.eliteWave > 0)
         {
-            currentEntity.setCanPickupItems(true);
-            EliteMob(currentEntity);
+            if (arenaBlock.currentRunTimes % arenaBlock.eliteWave == 0)
+            {
+                EliteMob(currentEntity);
+            }
         }
         else if (currentEntity.getType() == EntityType.SKELETON)
         {
@@ -116,11 +151,25 @@ public class Wave
             ee.setBoots(gear.get(3));
             ee.setItemInHand(gear.get(4));
         }
+        else if (currentEntity.getType() == EntityType.SKELETON)
+        {
+            currentEntity.getEquipment().setItemInHand(
+                    new ItemStack(Material.BOW));
+        }
     }
 
     public void ScaleMobHealth(LivingEntity currentEntity)
     {
-        int heathToscaleTo = (int) (functions.MobMaxHealth(currentEntity) + (arenaBlock.averageLevel * 1.2));
+        double heathToscaleTo = functions.MobMaxHealth(currentEntity)
+                + (arenaBlock.averageLevel * 1.2);
+        currentEntity.setMaxHealth(heathToscaleTo);
+        currentEntity.setHealth(heathToscaleTo);
+    }
+
+    public void ScaleBossHealth(LivingEntity currentEntity)
+    {
+        double heathToscaleTo = functions.MobMaxHealth(currentEntity)
+                + (arenaBlock.averageLevel * 3);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);
     }
