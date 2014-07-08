@@ -53,7 +53,7 @@ public class ArenaManager extends JavaPlugin
     private static String queryStringToNumberSep = "', ";
     private static String queryNumberToStringSep = ", '";
 
-    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=Something123;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
 
     Connection con = null;
     Statement stmt = null;
