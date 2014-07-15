@@ -1,6 +1,7 @@
 package belven.arena.blocks;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.resources.functions;
 import belven.arena.timedevents.ArenaTimer;
+import belven.arena.timedevents.NextWaveTimer;
 
 public class ArenaBlock
 {
@@ -26,15 +28,18 @@ public class ArenaBlock
     public String arenaName, playersString;
     public Block blockToActivate, deactivateBlock, arenaWarp;
 
-    public List<Block> arenaArea;
+    public List<Block> arenaArea = new ArrayList<Block>();
+    // public List<Team> arenaTeams = new ArrayList<Team>();
+
     public List<Player> arenaPlayers = new ArrayList<Player>();
     public List<Block> spawnArea = new ArrayList<Block>();
+    public List<ArenaBlock> linkedArenas = new ArrayList<ArenaBlock>();
 
     public Location LocationToCheckForPlayers, arenaBlockStartLocation,
             arenaBlockEndLocation;
 
     public int radius, maxRunTimes, timerDelay, timerPeriod, eliteWave,
-            averageLevel, maxMobCounter, currentRunTimes = 0;
+            averageLevel, maxMobCounter, linkedArenaDelay, currentRunTimes = 0;
 
     public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
     public BossMob bm = new BossMob();
@@ -73,9 +78,14 @@ public class ArenaBlock
     {
         isActive = true;
         RemoveMobs();
-        arenaPlayers.clear();
+        // arenaTeams.clear();
+        // arenaPlayers.clear();
         ArenaEntities.clear();
+        GetArenaArea();
+        GetSpawnArea();
+
         new ArenaTimer(this).runTaskLater(plugin, 10);
+        new NextWaveTimer(this).runTaskTimer(plugin, 15, 2);
     }
 
     public void Deactivate()
@@ -87,8 +97,11 @@ public class ArenaBlock
 
     public void GiveRewards()
     {
-        for (Player p : arenaPlayers)
+        Iterator<Player> ArenaPlayers = arenaPlayers.iterator();
+
+        while (ArenaPlayers.hasNext())
         {
+            Player p = ArenaPlayers.next();
             for (ItemStack is : arenaRewards)
             {
                 if (is != null)
@@ -99,7 +112,6 @@ public class ArenaBlock
         }
     }
 
-    @SuppressWarnings("deprecation")
     public void RemoveMobs()
     {
         currentRunTimes = 0;
@@ -107,8 +119,8 @@ public class ArenaBlock
         {
             if (!le.isDead())
             {
-                le.removeMetadata("ArenaMob", GetPlugin());
-                le.setHealth(0);
+                le.removeMetadata("ArenaMob", plugin);
+                le.setHealth(0.0);
             }
         }
     }
@@ -165,34 +177,20 @@ public class ArenaBlock
         }
     }
 
-    public boolean GetPlayers()
+    public void GetPlayersAverageLevel()
     {
-        Location areaToCheck = this.LocationToCheckForPlayers;
-        Player[] currentPlayers = functions.getNearbyPlayers(areaToCheck,
-                this.radius + (this.radius / 2));
+        if (arenaPlayers.size() == 0)
+        {
+            return;
+        }
+
         int totalLevels = 0;
         averageLevel = 0;
         maxMobCounter = 0;
 
-        if (currentPlayers.length <= 0)
-        {
-            return false;
-        }
-
-        for (Player p : currentPlayers)
+        for (Player p : arenaPlayers)
         {
             totalLevels += p.getLevel();
-
-            if (!this.arenaPlayers.contains(p))
-            {
-                this.arenaPlayers.add(p);
-                this.playersString = this.playersString + "," + p.getName();
-            }
-        }
-
-        if (this.arenaPlayers.size() <= 0)
-        {
-            return false;
         }
 
         if (totalLevels == 0)
@@ -200,15 +198,8 @@ public class ArenaBlock
             totalLevels = 1;
         }
 
-        this.averageLevel = (int) (totalLevels / currentPlayers.length);
-        this.maxMobCounter = (int) (totalLevels / currentPlayers.length)
-                + (currentPlayers.length * 5);
-
-        return true;
-    }
-
-    public ArenaManager GetPlugin()
-    {
-        return plugin;
+        this.averageLevel = (int) (totalLevels / arenaPlayers.size());
+        this.maxMobCounter = (int) (totalLevels / arenaPlayers.size())
+                + (arenaPlayers.size() * 5);
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.resources.functions;
 import belven.arena.timedevents.MessageTimer;
 
@@ -29,6 +31,8 @@ public class Wave
         this.arenaBlock = arenaBlock;
         SpawnMobs();
         renewPlayerWeapons();
+
+        Bukkit.getPluginManager().callEvent(new ArenaBlockNewWave(this));
     }
 
     public void SpawnMobs()
@@ -59,7 +63,7 @@ public class Wave
 
             for (ItemStack is : functions.getAllMeeleWeapons())
             {
-                if (p.getInventory().contains(is))
+                if (p.getInventory().contains(is.getType()))
                 {
                     needsWeapon = false;
                     break;
@@ -85,10 +89,10 @@ public class Wave
         new MessageTimer(arenaBlock.arenaPlayers, "A "
                 + arenaBlock.bm.BossType.name() + " boss has Spawned!!").run();
 
-        ScaleBossHealth(currentEntity);
+        // ScaleBossHealth(currentEntity);
 
         currentEntity.setMetadata("ArenaBoss", new FixedMetadataValue(
-                arenaBlock.GetPlugin(), arenaBlock.arenaName + " "
+                arenaBlock.plugin, arenaBlock.arenaName + " "
                         + arenaBlock.playersString));
 
         arenaBlock.ArenaEntities.add(currentEntity);
@@ -111,6 +115,11 @@ public class Wave
             }
         }
 
+        if (et.size() < 0)
+        {
+            return;
+        }
+
         Random randomGenerator = new Random();
         int randomInt = randomGenerator.nextInt(et.size());
 
@@ -130,11 +139,11 @@ public class Wave
                     new ItemStack(Material.BOW));
         }
 
-        ScaleMobHealth(currentEntity);
+        // ScaleMobHealth(currentEntity);
 
-        currentEntity.setMetadata("ArenaMob",
-                new FixedMetadataValue(arenaBlock.GetPlugin(),
-                        arenaBlock.arenaName + " " + arenaBlock.playersString));
+        currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(
+                arenaBlock.plugin, arenaBlock.arenaName + " "
+                        + arenaBlock.playersString));
 
         arenaBlock.ArenaEntities.add(currentEntity);
     }

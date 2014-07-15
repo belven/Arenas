@@ -1,7 +1,9 @@
 package belven.arena.listeners;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,12 +11,17 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
@@ -27,14 +34,67 @@ import belven.arena.resources.functions;
 public class PlayerListener implements Listener
 {
     private final ArenaManager plugin;
+    Random randomGenerator = new Random();
 
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
     public ArrayList<String> playerDeathProtection = new ArrayList<String>();
     public HashMap<String, ItemStack[]> playerInventories = new HashMap<String, ItemStack[]>();
+    public HashMap<String, ItemStack[]> playerArmour = new HashMap<String, ItemStack[]>();
+    public HashMap<String, Collection<PotionEffect>> playerEffects = new HashMap<String, Collection<PotionEffect>>();
 
     public PlayerListener(ArenaManager instance)
     {
         plugin = instance;
+    }
+
+    @EventHandler
+    public void onPlayerQuitEvent(PlayerQuitEvent event)
+    {
+        if (plugin.IsPlayerInArena(event.getPlayer()))
+        {
+            plugin.LeaveArena(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlaceEvent(BlockPlaceEvent event)
+    {
+        if (plugin != null && plugin.IsPlayerInArena(event.getPlayer())
+                && plugin.getArenaInIsPlayer(event.getPlayer()).isActive)
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMoveEvent(PlayerMoveEvent event)
+    {
+        // if (plugin.IsPlayerInArena(event.getPlayer()))
+        // {
+        // ArenaBlock ab = plugin.getArenaInIsPlayer(event.getPlayer());
+        //
+        // if (event.getTo().getWorld() == ab.LocationToCheckForPlayers
+        // .getWorld())
+        // {
+        // if (event.getTo().distance(ab.LocationToCheckForPlayers) >
+        // ((ab.radius - 2) + (ab.radius / 2)))
+        // {
+        // event.getPlayer().teleport(
+        // functions.lookAt(event.getFrom(),
+        // ab.LocationToCheckForPlayers));
+        // event.setCancelled(true);
+        // }
+        // }
+        // }
+    }
+
+    @EventHandler
+    public void onPlayerVelocityEvent(PlayerVelocityEvent event)
+    {
+        if (event.getPlayer().isBlocking())
+        {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -79,54 +139,56 @@ public class PlayerListener implements Listener
     }
 
     @EventHandler
-    public void onPlayerDeathEvent(PlayerDeathEvent event)
+    public void onPlayerDeathEvent(final PlayerDeathEvent event)
     {
         Player currentPlayer = (Player) event.getEntity();
+        event.getDrops().clear();
 
         event.setNewLevel((int) (currentPlayer.getLevel()));
 
-        if (plugin.currentArenaBlocks.size() > 0)
+        if (plugin.IsPlayerInArena(currentPlayer))
         {
-            for (ArenaBlock ab : plugin.currentArenaBlocks)
-            {
-                if (ab.isActive
-                        && ab.playersString.contains(currentPlayer.getName()))
-                {
-                    event.getDrops().clear();
-
-                    PlayerInventory pi = currentPlayer.getInventory();
-
-                    playerInventories.put(currentPlayer.getName(),
-                            pi.getContents());
-
-                    warpLocations.put(currentPlayer.getName(),
-                            ab.arenaWarp.getLocation());
-                    break;
-                }
-            }
+            ArenaBlock ab = plugin.getArenaInIsPlayer(currentPlayer);
+            int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
+            Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
+            warpLocations.put(currentPlayer.getName(), spawnLocation);
+            playerEffects.put(currentPlayer.getName(),
+                    currentPlayer.getActivePotionEffects());
         }
+
+        PlayerInventory pi = currentPlayer.getInventory();
+        playerInventories.put(currentPlayer.getName(), pi.getContents());
+        playerArmour.put(currentPlayer.getName(), currentPlayer.getInventory()
+                .getArmorContents());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerRespawnEvent(PlayerRespawnEvent event)
     {
         Player currentPlayer = event.getPlayer();
 
         if (warpLocations.get(currentPlayer.getName()) != null)
         {
-            event.setRespawnLocation(warpLocations.get(currentPlayer.getName()));
+            Location spawnLocation = warpLocations.get(currentPlayer.getName());
 
-            currentPlayer.getInventory().setContents(
-                    playerInventories.get(currentPlayer.getName()));
+            if (spawnLocation != null)
+            {
+                spawnLocation = new Location(spawnLocation.getWorld(),
+                        spawnLocation.getX() + 0.5, spawnLocation.getY(),
+                        spawnLocation.getZ() + 0.5);
 
-            currentPlayer.addPotionEffect(new PotionEffect(
-                    PotionEffectType.DAMAGE_RESISTANCE, functions.SecondsToTicks(8), 4),
-                    true);
+                event.setRespawnLocation(spawnLocation);
+            }
 
             warpLocations.put(currentPlayer.getName(), null);
-            playerInventories.put(currentPlayer.getName(), null);
             playerDeathProtection.add(currentPlayer.getName());
         }
+
+        currentPlayer.getInventory().setContents(
+                playerInventories.get(currentPlayer.getName()));
+
+        currentPlayer.getInventory().setArmorContents(
+                playerArmour.get(currentPlayer.getName()));
     }
 
     @EventHandler
@@ -144,11 +206,17 @@ public class PlayerListener implements Listener
 
         if (playerDeathProtection.contains(damagedPlayer.getName()))
         {
-            damagedPlayer.addPotionEffect(new PotionEffect(
-                    PotionEffectType.DAMAGE_RESISTANCE, functions.SecondsToTicks(8), 4),
-                    true);
+            event.setDamage(0.0);
+
+            damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer
+                    .getName()));
+
+            damagedPlayer.addPotionEffect(
+                    new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
+                            functions.SecondsToTicks(3), 4), true);
             playerDeathProtection.remove(damagedPlayer.getName());
         }
+
     }
 
 }

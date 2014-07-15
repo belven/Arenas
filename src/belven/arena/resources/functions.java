@@ -3,6 +3,8 @@ package belven.arena.resources;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -32,9 +34,9 @@ public class functions
                 for (Entity e : new Location(l.getWorld(), x + (chX * 16), y, z
                         + (chZ * 16)).getChunk().getEntities())
                 {
-                    if (e.getLocation().distance(l) <= radius
-                            && e instanceof Player
-                            && e.getLocation().getBlock() != l.getBlock())
+                    if (e instanceof Player
+                            && e.getLocation().distance(l) <= radius)
+                    // && e.getLocation().getBlock() != l.getBlock())
                     {
                         radiusEntities.add((Player) e);
                     }
@@ -43,6 +45,66 @@ public class functions
         }
 
         return radiusEntities.toArray(new Player[radiusEntities.size()]);
+    }
+
+    public static Player[] getNearbyPlayersNew(Location l, int radius)
+    {
+        HashSet<Entity> radiusEntities = new HashSet<Entity>();
+
+        for (Player p : Bukkit.getServer().getOnlinePlayers())
+        {
+            if (p.getLocation().getWorld() == l.getWorld()
+                    && p.getLocation().distance(l) <= radius)
+            // && e.getLocation().getBlock() != l.getBlock())
+            {
+                radiusEntities.add(p);
+            }
+        }
+
+        return radiusEntities.toArray(new Player[radiusEntities.size()]);
+    }
+
+    public static Location lookAt(Location loc, Location lookat)
+    {
+        // Clone the loc to prevent applied changes to the input loc
+        loc = loc.clone();
+
+        // Values of change in distance (make it relative)
+        double dx = lookat.getX() - loc.getX();
+        double dy = lookat.getY() - loc.getY();
+        double dz = lookat.getZ() - loc.getZ();
+
+        // Set yaw
+        if (dx != 0)
+        {
+            // Set yaw start value based on dx
+            if (dx < 0)
+            {
+                loc.setYaw((float) (1.5 * Math.PI));
+            }
+            else
+            {
+                loc.setYaw((float) (0.5 * Math.PI));
+            }
+            loc.setYaw((float) loc.getYaw() - (float) Math.atan(dz / dx));
+        }
+        else if (dz < 0)
+        {
+            loc.setYaw((float) Math.PI);
+        }
+
+        // Get the distance from dx/dz
+        double dxz = Math.sqrt(Math.pow(dx, 2) + Math.pow(dz, 2));
+
+        // Set pitch
+        loc.setPitch((float) -Math.atan(dy / dxz));
+
+        // Set values, convert to degrees (invert the yaw since Bukkit uses a
+        // different yaw dimension format)
+        loc.setYaw(-loc.getYaw() * 180f / (float) Math.PI);
+        loc.setPitch(loc.getPitch() * 180f / (float) Math.PI);
+
+        return loc;
     }
 
     public static List<Block> getBlocksInRadius(Location l, int radius)

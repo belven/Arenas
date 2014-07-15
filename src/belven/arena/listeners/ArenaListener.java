@@ -10,7 +10,6 @@ import belven.arena.events.ArenaBlockActivatedEvent;
 
 public class ArenaListener implements Listener
 {
-
     public ArenaManager plugin;
 
     public ArenaListener(ArenaManager instance)
@@ -38,16 +37,11 @@ public class ArenaListener implements Listener
     @EventHandler
     public void onArenaBlockBreakEvent(BlockBreakEvent event)
     {
-        if (plugin.currentArenaBlocks.size() > 0)
+        if (plugin.IsPlayerInArena(event.getPlayer()))
         {
-            for (ArenaBlock ab : plugin.currentArenaBlocks)
+            if (plugin.getArenaInIsPlayer(event.getPlayer()).isActive)
             {
-                if (ab.isActive
-                        && ab.playersString.contains(event.getPlayer()
-                                .getName()))
-                {
-                    event.setCancelled(true);
-                }
+                event.setCancelled(true);
             }
         }
     }

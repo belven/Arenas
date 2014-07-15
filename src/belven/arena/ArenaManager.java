@@ -36,6 +36,7 @@ import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
 import belven.arena.resources.functions;
+import belven.teams.TeamManager;
 
 public class ArenaManager extends JavaPlugin
 {
@@ -53,7 +54,10 @@ public class ArenaManager extends JavaPlugin
     private static String queryStringToNumberSep = "', ";
     private static String queryNumberToStringSep = ", '";
 
-    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+    public TeamManager teams = (TeamManager) Bukkit.getServer()
+            .getPluginManager().getPlugin("BelvensTeams");
+
+    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=Something123;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
 
     Connection con = null;
     Statement stmt = null;
@@ -91,6 +95,79 @@ public class ArenaManager extends JavaPlugin
                     || args[0].equalsIgnoreCase("ca"))
             {
                 ClearArena(player);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("setlinkedarenadelay")
+                    || args[0].equalsIgnoreCase("slad"))
+            {
+                if (HasArenaBlockSelected(player))
+                {
+                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                            .getName());
+                    selectedAB.linkedArenaDelay = Integer.valueOf(args[1]);
+
+                    player.sendMessage(selectedAB.arenaName
+                            + "s Linked Arena Delay is now " + args[1]);
+                }
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("addlinkedarena")
+                    || args[0].equalsIgnoreCase("ala"))
+            {
+                if (HasArenaBlockSelected(player))
+                {
+                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                            .getName());
+
+                    ArenaBlock arenaToLink = getArenaBlock(args[1]);
+
+                    if (arenaToLink != null)
+                    {
+                        if (arenaToLink != selectedAB)
+                        {
+                            selectedAB.linkedArenas.add(arenaToLink);
+
+                            if (StoreLinkedArena(selectedAB.arenaName, args[1]))
+                            {
+                                player.sendMessage(args[1] + " was added to "
+                                        + selectedAB.arenaName);
+                            }
+                        }
+                        else
+                        {
+                            player.sendMessage("Arenas can't link to themselves");
+                        }
+                    }
+                    else
+                    {
+                        player.sendMessage("Can't find arena " + args[1]);
+                    }
+                }
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("removelinkedarena")
+                    || args[0].equalsIgnoreCase("rla"))
+            {
+                if (HasArenaBlockSelected(player))
+                {
+                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                            .getName());
+
+                    selectedAB.linkedArenas.remove(getArenaBlock(args[1]));
+
+                    if (RemoveLinkedArena(selectedAB, args[1]))
+                    {
+                        player.sendMessage(args[1] + " was removed from "
+                                + selectedAB.arenaName);
+                    }
+                }
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("listlinkedarenas")
+                    || args[0].equalsIgnoreCase("lla"))
+            {
+                ListLinkedArenas(player);
+
                 return true;
             }
             else if (args[0].equalsIgnoreCase("setactivateblock")
@@ -352,10 +429,27 @@ public class ArenaManager extends JavaPlugin
 
     public void LeaveArena(Player player)
     {
-        if (warpLocations.get(player.getName()) != null)
+        if (IsPlayerInArena(player))
         {
-            player.teleport(warpLocations.get(player.getName()));
-            warpLocations.put(player.getName(), null);
+            ArenaBlock ab = getArenaInIsPlayer(player);
+            ab.arenaPlayers.remove(player);
+
+            if (ab.arenaPlayers.size() == 0)
+            {
+                ab.Deactivate();
+            }
+
+            if (warpLocations.get(player.getName()) != null)
+            {
+                player.teleport(warpLocations.get(player.getName()));
+                warpLocations.put(player.getName(), null);
+
+                player.sendMessage("You left the arena " + ab.arenaName
+                        + " and have been returned to your last warp");
+                return;
+            }
+
+            player.sendMessage("You left the arena " + ab.arenaName);
         }
     }
 
@@ -368,6 +462,39 @@ public class ArenaManager extends JavaPlugin
             player.sendMessage("Arena " + ab.arenaName
                     + " deactivate block has moved!!");
         }
+    }
+
+    public boolean IsPlayerInArena(Player p)
+    {
+        // for (ArenaBlock ab : currentArenaBlocks)
+        // {
+        // if (ab.arenaPlayers.contains(p))
+        // {
+        // return true;
+        // }
+        // }
+
+        for (ArenaBlock ab : currentArenaBlocks)
+        {
+            if (ab.arenaPlayers.contains(p))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public ArenaBlock getArenaInIsPlayer(Player p)
+    {
+        for (ArenaBlock ab : currentArenaBlocks)
+        {
+            if (ab.arenaPlayers.contains(p))
+            {
+                return ab;
+            }
+        }
+        return null;
     }
 
     private void SetEliteMob(Player player, String et)
@@ -519,6 +646,18 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
+    public void ListLinkedArenas(Player currentPlayer)
+    {
+        if (HasArenaBlockSelected(currentPlayer))
+        {
+            for (ArenaBlock lab : SelectedArenaBlocks.get(currentPlayer
+                    .getName()).linkedArenas)
+            {
+                currentPlayer.sendMessage(lab.arenaName);
+            }
+        }
+    }
+
     private void ListMobs(Player currentPlayer)
     {
         if (HasArenaBlockSelected(currentPlayer))
@@ -560,14 +699,32 @@ public class ArenaManager extends JavaPlugin
         ArenaBlock tempArenaBlock = getArenaBlock(arenaToWarp);
         if (tempArenaBlock != null)
         {
-            // if (warpLocations.containsKey(player.getName())
-            // && warpLocations.get(player.getName()) == null)
-            // {
-            warpLocations.put(player.getName(), player.getLocation());
-            // }
+            if (!tempArenaBlock.arenaPlayers.contains(player))
+            {
+                tempArenaBlock.arenaPlayers.add(player);
+            }
 
-            player.teleport(tempArenaBlock.arenaWarp.getLocation());
-            player.sendMessage("Teleport to " + arenaToWarp);
+            if (player.getLocation().getWorld() == tempArenaBlock.LocationToCheckForPlayers
+                    .getWorld())
+            {
+                if (player.getLocation().distance(
+                        tempArenaBlock.LocationToCheckForPlayers) > ((tempArenaBlock.radius - 2) + (tempArenaBlock.radius / 2)))
+                {
+                    warpLocations.put(player.getName(), player.getLocation());
+                    player.teleport(tempArenaBlock.arenaWarp.getLocation());
+                    player.sendMessage("You teleported to arena " + arenaToWarp);
+                }
+                else
+                {
+                    player.sendMessage("You were added to arena " + arenaToWarp);
+                }
+            }
+            else
+            {
+                warpLocations.put(player.getName(), player.getLocation());
+                player.teleport(tempArenaBlock.arenaWarp.getLocation());
+                player.sendMessage("You teleported to arena " + arenaToWarp);
+            }
         }
         else
         {
@@ -680,7 +837,6 @@ public class ArenaManager extends JavaPlugin
     public void ArenaBlockCreated(Player currentPlayer, Block block,
             String[] args)
     {
-        block.setType(Material.REDSTONE_WIRE);
         block.setMetadata("ArenaBlock", new FixedMetadataValue(this,
                 "Something"));
 
@@ -706,7 +862,7 @@ public class ArenaManager extends JavaPlugin
                 currentPlayer.sendMessage("Arena " + newArenaBlock.arenaName
                         + " was created!!");
 
-                UpdateArena(newArenaBlock);
+                InsertArena(newArenaBlock);
 
             }
         }
@@ -744,7 +900,12 @@ public class ArenaManager extends JavaPlugin
             while (rs.next())
             {
                 EntityType et = EntityType.valueOf(rs.getString("EntityType"));
-                Material m = Material.valueOf(rs.getString("Material"));
+                Material m = Material.getMaterial(rs.getString("Material"));
+
+                if (m == null)
+                {
+                    m = Material.STONE;
+                }
 
                 spawnMats.Add(et, m);
             }
@@ -836,7 +997,9 @@ public class ArenaManager extends JavaPlugin
         ArenaString = ArenaString + ab.radius + queryNumberSep;
         ArenaString = ArenaString + ab.timerDelay + queryNumberSep;
         ArenaString = ArenaString + ab.timerPeriod + queryNumberSep;
-        ArenaString = ArenaString + ab.maxRunTimes + queryNumberToStringSep;
+        ArenaString = ArenaString + ab.maxRunTimes + queryNumberSep;
+        ArenaString = ArenaString + ab.linkedArenaDelay
+                + queryNumberToStringSep;
         ArenaString = ArenaString
                 + ab.arenaBlockStartLocation.getWorld().getName();
         ArenaString = ArenaString + "'";
@@ -892,6 +1055,85 @@ public class ArenaManager extends JavaPlugin
 
                 stmt.executeUpdate(Insert + mobExists);
             }
+
+            RemovedAllLinkedArenas(ab);
+            StoreAllLinkedArenas(ab);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (stmt != null)
+            try
+            {
+                stmt.close();
+            }
+            catch (Exception e)
+            {
+            }
+        if (con != null)
+            try
+            {
+                con.close();
+            }
+            catch (Exception e)
+            {
+            }
+    }
+
+    public void InsertArena(ArenaBlock ab)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+
+            String Insert = "InsertArena ";
+
+            stmt = con.createStatement();
+
+            stmt.executeUpdate(Insert + ArenaString(ab));
+
+            for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
+            {
+                String mobExists = "";
+                Insert = "InsertMobToMat '";
+
+                mobExists = mobExists + ab.arenaName + "', '";
+                mobExists = mobExists + mtm.et.name() + "', '";
+                mobExists = mobExists + mtm.m.name() + "'";
+
+                rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
+
+                if (rs.next()
+                        && rs.getString("MobExists").equalsIgnoreCase("0"))
+                {
+                    stmt.executeUpdate(Insert + mobExists);
+                }
+            }
+
+            String resetArenaItems = "ResetArenaItems '" + ab.arenaName + "'";
+            stmt.executeUpdate(resetArenaItems);
+
+            for (ItemStack is : ab.arenaRewards)
+            {
+                String mobExists = "";
+                Insert = "AddArenaReward '";
+
+                mobExists = mobExists + ab.arenaName + queryStringSep;
+                mobExists = mobExists + is.getType().name() + queryStringSep;
+                mobExists = mobExists
+                        + String.valueOf((int) is.getDurability())
+                        + queryStringToNumberSep;
+                mobExists = mobExists + is.getAmount() + queryNumberSep;
+                mobExists = mobExists + 1;
+
+                stmt.executeUpdate(Insert + mobExists);
+            }
+
+            RemovedAllLinkedArenas(ab);
+            StoreAllLinkedArenas(ab);
         }
         catch (Exception e)
         {
@@ -964,34 +1206,6 @@ public class ArenaManager extends JavaPlugin
             }
     }
 
-    /*
-     * public void InsertArena(ArenaBlock ab) { try {
-     * Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver"); con =
-     * DriverManager.getConnection(connectionUrl);
-     * 
-     * String Insert = "InsertArena ";
-     * 
-     * stmt = con.createStatement();
-     * 
-     * stmt.executeUpdate(Insert + ArenaString(ab));
-     * 
-     * for (MobToMaterial mtm : ab.MobToMat.MobToMaterials) { String mobExists =
-     * ""; Insert = "InsertMobToMat '";
-     * 
-     * mobExists = mobExists + ab.arenaName + "', '"; mobExists = mobExists +
-     * mtm.et.name() + "', '"; mobExists = mobExists + mtm.m.name() + "'";
-     * 
-     * rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
-     * 
-     * if (rs.next() && rs.getString("MobExists").equalsIgnoreCase("0")) {
-     * stmt.executeUpdate(Insert + mobExists); } }
-     * 
-     * } catch (Exception e) { e.printStackTrace(); }
-     * 
-     * if (stmt != null) try { stmt.close(); } catch (Exception e) { } if (con
-     * != null) try { con.close(); } catch (Exception e) { } }
-     */
-
     public void RemoveArena(ArenaBlock ab)
     {
         try
@@ -1000,8 +1214,9 @@ public class ArenaManager extends JavaPlugin
             con = DriverManager.getConnection(connectionUrl);
             stmt = con.createStatement();
 
-            stmt.executeUpdate("delete from arena where ArenaName like '"
-                    + ab.arenaName + "'");
+            RemovedAllLinkedArenas(ab);
+
+            stmt.executeUpdate("RemoveArena '" + ab.arenaName + "'");
         }
         catch (ClassNotFoundException e1)
         {
@@ -1082,6 +1297,8 @@ public class ArenaManager extends JavaPlugin
                     Block BlockToDeactivate = StringToLocation(
                             rs.getString("DeactivateBlock"), world).getBlock();
 
+                    int LinkedArenaDelay = rs.getInt("LinkedArenaDelay");
+
                     ArenaBlock newArenaBlock = new ArenaBlock(
                             arenaBlockStartLocation, arenaBlockEndLocation,
                             ArenaName, Radius, MatToMob(ArenaName, stmt, rs),
@@ -1099,10 +1316,20 @@ public class ArenaManager extends JavaPlugin
                     newArenaBlock.blockToActivate = BlockToActivate;
                     newArenaBlock.LocationToCheckForPlayers = LocationToCheckForPlayers;
                     newArenaBlock.deactivateBlock = BlockToDeactivate;
+                    newArenaBlock.linkedArenaDelay = LinkedArenaDelay;
                     newArenaBlock.maxRunTimes = Integer.valueOf(MaxRunTimes);
                     currentArenaBlocks.add(newArenaBlock);
                 }
             }
+
+            for (ArenaBlock ab : currentArenaBlocks)
+            {
+                for (ArenaBlock lab : GetLinkedArenas(ab.arenaName, stmt, rs))
+                {
+                    ab.linkedArenas.add(lab);
+                }
+            }
+
         }
         catch (SQLException e)
         {
@@ -1113,6 +1340,102 @@ public class ArenaManager extends JavaPlugin
             e.printStackTrace();
         }
 
+    }
+
+    public List<ArenaBlock> GetLinkedArenas(String arenaName, Statement stmt,
+            ResultSet rs)
+    {
+        List<ArenaBlock> tempArenas = new ArrayList<ArenaBlock>();
+        ArenaBlock tempArena = null;
+        try
+        {
+            rs = stmt
+                    .executeQuery("SELECT * FROM linkedarenas WHERE Parent like '"
+                            + arenaName + "'");
+
+            while (rs.next())
+            {
+                String ArenaName = rs.getString("Child");
+                tempArena = getArenaBlock(ArenaName);
+
+                if (tempArena != null)
+                {
+                    tempArenas.add(tempArena);
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return tempArenas;
+    }
+
+    public void StoreAllLinkedArenas(ArenaBlock ab)
+    {
+        for (ArenaBlock lab : ab.linkedArenas)
+        {
+            if (lab != null)
+            {
+                StoreLinkedArena(ab.arenaName, lab.arenaName);
+            }
+        }
+    }
+
+    public boolean StoreLinkedArena(String arenaName, String linkedArena)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+            stmt = con.createStatement();
+
+            stmt.executeUpdate("AddLinkedArena '" + arenaName + "'" + ", '"
+                    + linkedArena + "'");
+            return true;
+
+        }
+        catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void RemovedAllLinkedArenas(ArenaBlock ab)
+    {
+        for (ArenaBlock lab : ab.linkedArenas)
+        {
+            RemoveLinkedArena(ab, lab.arenaName);
+        }
+    }
+
+    public boolean RemoveLinkedArena(ArenaBlock ab, String linkedArena)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+            stmt = con.createStatement();
+
+            stmt.executeUpdate("RemoveLinkedArena '" + ab.arenaName + "'"
+                    + ", '" + linkedArena + "'");
+            return true;
+        }
+        catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public Location StringToLocation(String s, World world)

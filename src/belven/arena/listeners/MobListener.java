@@ -9,12 +9,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.metadata.MetadataValue;
 
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
-import belven.arena.resources.functions;
 
 public class MobListener implements Listener
 {
@@ -26,6 +26,15 @@ public class MobListener implements Listener
     public MobListener(ArenaManager instance)
     {
         plugin = instance;
+    }
+
+    @EventHandler
+    public void onEntityCombustEvent(EntityCombustEvent event)
+    {
+        if (event.getDuration() == 8)
+        {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -51,22 +60,10 @@ public class MobListener implements Listener
             {
                 ArenaBlock ab = plugin.getArenaBlock(arena.get(0));
                 ab.ArenaEntities.remove(currentEntity);
-            }
 
-            List<String> playerList = Arrays.asList(arena.get(1).split(","));
-
-            if (playerList.get(0) != null)
-            {
-                for (String pn : playerList)
+                for (Player p : ab.arenaPlayers)
                 {
-                    @SuppressWarnings("deprecation")
-                    Player currentPlayer = plugin.getServer().getPlayer(pn);
-                    if (currentPlayer != null)
-                    {
-                        currentPlayer.giveExp(event.getDroppedExp());
-                        functions.Heal(currentPlayer, 1);
-                        functions.RestoreHunger(currentPlayer, 2);
-                    }
+                    p.giveExp(event.getDroppedExp());
                 }
             }
         }
