@@ -69,23 +69,23 @@ public class PlayerListener implements Listener
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event)
     {
-        // if (plugin.IsPlayerInArena(event.getPlayer()))
-        // {
-        // ArenaBlock ab = plugin.getArenaInIsPlayer(event.getPlayer());
-        //
-        // if (event.getTo().getWorld() == ab.LocationToCheckForPlayers
-        // .getWorld())
-        // {
-        // if (event.getTo().distance(ab.LocationToCheckForPlayers) >
-        // ((ab.radius - 2) + (ab.radius / 2)))
-        // {
-        // event.getPlayer().teleport(
-        // functions.lookAt(event.getFrom(),
-        // ab.LocationToCheckForPlayers));
-        // event.setCancelled(true);
-        // }
-        // }
-        // }
+        if (plugin.IsPlayerInArena(event.getPlayer()))
+        {
+            ArenaBlock ab = plugin.getArenaInIsPlayer(event.getPlayer());
+
+            if (event.getTo().getWorld() == ab.LocationToCheckForPlayers
+                    .getWorld())
+            {
+                if (event.getTo().distance(ab.LocationToCheckForPlayers) > (ab.radius * 2))
+                {
+                    // event.getPlayer().teleport(
+                    // functions.lookAt(event.getFrom(),
+                    // ab.LocationToCheckForPlayers));
+                    // event.setCancelled(true);
+                    plugin.LeaveArena(event.getPlayer());
+                }
+            }
+        }
     }
 
     @EventHandler

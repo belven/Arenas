@@ -2,6 +2,7 @@ package belven.arena;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,10 +27,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
-
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
@@ -37,6 +34,10 @@ import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
 import belven.arena.resources.functions;
 import belven.teams.TeamManager;
+
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
+import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaManager extends JavaPlugin
 {
@@ -47,12 +48,14 @@ public class ArenaManager extends JavaPlugin
 
     public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
     public HashMap<String, ArenaBlock> SelectedArenaBlocks = new HashMap<String, ArenaBlock>();
+
+    public HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
 
     private static String queryStringSep = "', '";
     private static String queryNumberSep = ", ";
     private static String queryStringToNumberSep = "', ";
-    private static String queryNumberToStringSep = ", '";
+    // private static String queryNumberToStringSep = ", '";
 
     public TeamManager teams = (TeamManager) Bukkit.getServer()
             .getPluginManager().getPlugin("BelvensTeams");
@@ -82,291 +85,319 @@ public class ArenaManager extends JavaPlugin
         Player player = (Player) sender;
         String commandSent = cmd.getName();
 
-        if (commandSent.equalsIgnoreCase("ba"))
+        if (commandSent.equalsIgnoreCase("ba") && args.length > 0)
         {
-            if (player.hasPermission("BelvensArenas.select")
-                    && (args[0].equalsIgnoreCase("select") || args[0]
-                            .equalsIgnoreCase("s")))
+            if (EditArenaCommand(player, args))
             {
-                SelectArena(player, args[1]);
                 return true;
             }
-            else if (args[0].equalsIgnoreCase("cleararena")
-                    || args[0].equalsIgnoreCase("ca"))
+            else if (ListArenaCommands(player, args))
             {
-                ClearArena(player);
                 return true;
             }
-            else if (args[0].equalsIgnoreCase("setlinkedarenadelay")
-                    || args[0].equalsIgnoreCase("slad"))
+            else if (UtilityArenaCommands(player, args))
             {
-                if (HasArenaBlockSelected(player))
-                {
-                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
-                            .getName());
-                    selectedAB.linkedArenaDelay = Integer.valueOf(args[1]);
+                return true;
+            }
+        }
+        return false;
+    }
 
-                    player.sendMessage(selectedAB.arenaName
-                            + "s Linked Arena Delay is now " + args[1]);
-                }
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("addlinkedarena")
-                    || args[0].equalsIgnoreCase("ala"))
-            {
-                if (HasArenaBlockSelected(player))
-                {
-                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
-                            .getName());
+    private boolean UtilityArenaCommands(Player player, String[] args)
+    {
+        if (args[0].equalsIgnoreCase("cleararena")
+                || args[0].equalsIgnoreCase("ca"))
+        {
+            ClearArena(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("forcestart")
+                || args[0].equalsIgnoreCase("fs"))
+        {
+            ForceStartArena(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("portmobs")
+                || args[0].equalsIgnoreCase("pm"))
+        {
+            TeleportArenaMobs(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("warp")
+                || args[0].equalsIgnoreCase("w"))
+        {
+            WarpToArena(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("leave")
+                || args[0].equalsIgnoreCase("l"))
+        {
+            LeaveArena(player);
+            return true;
+        }
 
-                    ArenaBlock arenaToLink = getArenaBlock(args[1]);
+        return false;
+    }
 
-                    if (arenaToLink != null)
-                    {
-                        if (arenaToLink != selectedAB)
-                        {
-                            selectedAB.linkedArenas.add(arenaToLink);
+    private boolean ListArenaCommands(Player player, String[] args)
+    {
+        if (args[0].equalsIgnoreCase("listarenas")
+                || args[0].equalsIgnoreCase("la"))
+        {
+            ListArenas(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("listmobs")
+                || args[0].equalsIgnoreCase("lm"))
+        {
+            ListMobs(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("listlinkedarenas")
+                || args[0].equalsIgnoreCase("lla"))
+        {
+            ListLinkedArenas(player);
+            return true;
+        }
 
-                            if (StoreLinkedArena(selectedAB.arenaName, args[1]))
-                            {
-                                player.sendMessage(args[1] + " was added to "
-                                        + selectedAB.arenaName);
-                            }
-                        }
-                        else
-                        {
-                            player.sendMessage("Arenas can't link to themselves");
-                        }
-                    }
-                    else
-                    {
-                        player.sendMessage("Can't find arena " + args[1]);
-                    }
-                }
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("removelinkedarena")
-                    || args[0].equalsIgnoreCase("rla"))
-            {
-                if (HasArenaBlockSelected(player))
-                {
-                    ArenaBlock selectedAB = SelectedArenaBlocks.get(player
-                            .getName());
+        return false;
+    }
 
-                    selectedAB.linkedArenas.remove(getArenaBlock(args[1]));
-
-                    if (RemoveLinkedArena(selectedAB, args[1]))
-                    {
-                        player.sendMessage(args[1] + " was removed from "
-                                + selectedAB.arenaName);
-                    }
-                }
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("listlinkedarenas")
-                    || args[0].equalsIgnoreCase("lla"))
+    private boolean EditArenaCommand(Player player, String[] args)
+    {
+        if (args[0].equalsIgnoreCase("savearena")
+                || args[0].equalsIgnoreCase("sa"))
+        {
+            if (HasArenaBlockSelected(player))
             {
-                ListLinkedArenas(player);
-
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setactivateblock")
-                    || args[0].equalsIgnoreCase("sab"))
-            {
-                MoveArenaBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("storexp"))
-            {
-                /*
-                 * float exp = player.getExp();
-                 * 
-                 * int expPotsToGive = (int) (exp / 7);
-                 * 
-                 * player.getInventory().addItem( new
-                 * ItemStack(Material.EXP_BOTTLE, expPotsToGive));
-                 * 
-                 * player.setExp(exp - (7 * expPotsToGive));
-                 */
-
-                // player.setItemInHand(item);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setdeactivateblock")
-                    || args[0].equalsIgnoreCase("sdab"))
-            {
-                SetDeactivateBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("portmobs")
-                    || args[0].equalsIgnoreCase("pm"))
-            {
-                TeleportArenaMobs(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("remove")
-                    || args[0].equalsIgnoreCase("r"))
-            {
-                RemoveArenaBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setplayerblock")
-                    || args[0].equalsIgnoreCase("spb"))
-            {
-                SetPlayerBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setwarpblock")
-                    || args[0].equalsIgnoreCase("swb"))
-            {
-                SetWarpBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setradius")
-                    || args[0].equalsIgnoreCase("sr"))
-            {
-                SetRadius(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setmobtomat")
-                    || args[0].equalsIgnoreCase("smtm"))
-            {
-                SetMobToMat(player, args[1], args[2]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("removemobtomat")
-                    || args[0].equalsIgnoreCase("rmtm"))
-            {
-                RemoveMobToMat(player, args[1], args[2]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setelitewave")
-                    || args[0].equalsIgnoreCase("sew"))
-            {
-                SetEliteWave(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setelitemob")
-                    || args[0].equalsIgnoreCase("sem"))
-            {
-                SetEliteMob(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("removeelitemob")
-                    || args[0].equalsIgnoreCase("rem"))
-            {
-                RemoveEliteMob(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("warp")
-                    || args[0].equalsIgnoreCase("w"))
-            {
-                WarpToArena(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setboss")
-                    || args[0].equalsIgnoreCase("sb"))
-            {
-                SetBoss(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setarenarewards")
-                    || args[0].equalsIgnoreCase("sar"))
-            {
-                SetArenaRewards(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("listarenas")
-                    || args[0].equalsIgnoreCase("la"))
-            {
-                ListArenas(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("listmobs")
-                    || args[0].equalsIgnoreCase("lm"))
-            {
-                ListMobs(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setwavetimer")
-                    || args[0].equalsIgnoreCase("swt"))
-            {
-                SetWaveTimer(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setarenaregionblock")
-                    || args[0].equalsIgnoreCase("sarb"))
-            {
-                SetArenaRegionBlock(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("leave")
-                    || args[0].equalsIgnoreCase("l"))
-            {
-                LeaveArena(player);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("setwaves")
-                    || args[0].equalsIgnoreCase("sw"))
-            {
-                SetWaves(player, args[1]);
-                return true;
-            }
-            else if (args[0].equalsIgnoreCase("savearena")
-                    || args[0].equalsIgnoreCase("sa"))
-            {
-                if (HasArenaBlockSelected(player))
-                {
-                    ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-                    UpdateArena(ab);
-                    player.sendMessage("Arena " + ab.arenaName + " was saved");
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (player.hasPermission("BelvensArenas.create")
-                    && args.length >= 4)
-            {
-                try
-                {
-                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                    con = DriverManager.getConnection(connectionUrl);
-                    stmt = con.createStatement();
-
-                    rs = stmt.executeQuery("ArenaExists '" + args[0] + "'");
-
-                    if (rs.next()
-                            && rs.getString("ArenaExists")
-                                    .equalsIgnoreCase("1"))
-                    {
-                        player.sendMessage("Arena " + args[0]
-                                + " already exists");
-                    }
-                    else
-                    {
-                        ArenaBlockCreated(player, player.getLocation()
-                                .getBlock(), args);
-                    }
-                }
-                catch (SQLException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (ClassNotFoundException e)
-                {
-                    e.printStackTrace();
-                }
-
+                ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+                UpdateArenaNew(ab);
+                player.sendMessage("Arena " + ab.arenaName + " was saved");
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
-        else
-            return false;
+        else if (args[0].equalsIgnoreCase("setwaves")
+                || args[0].equalsIgnoreCase("sw"))
+        {
+            SetWaves(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setarenaspawnarea")
+                || args[0].equalsIgnoreCase("sasa"))
+        {
+            SetArenaSpawnArea(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setarenaspawnarea")
+                || args[0].equalsIgnoreCase("sasa"))
+        {
+            SetArenaSpawnArea(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setarenarewards")
+                || args[0].equalsIgnoreCase("sar"))
+        {
+            SetArenaRewards(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setwavetimer")
+                || args[0].equalsIgnoreCase("swt"))
+        {
+            SetWaveTimer(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setboss")
+                || args[0].equalsIgnoreCase("sb"))
+        {
+            SetBoss(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("remove")
+                || args[0].equalsIgnoreCase("r"))
+        {
+            RemoveArenaBlock(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setplayerblock")
+                || args[0].equalsIgnoreCase("spb"))
+        {
+            SetPlayerBlock(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setwarpblock")
+                || args[0].equalsIgnoreCase("swb"))
+        {
+            SetWarpBlock(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setradius")
+                || args[0].equalsIgnoreCase("sr"))
+        {
+            SetRadius(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setmobtomat")
+                || args[0].equalsIgnoreCase("smtm"))
+        {
+            SetMobToMat(player, args[1], args[2]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("removemobtomat")
+                || args[0].equalsIgnoreCase("rmtm"))
+        {
+            RemoveMobToMat(player, args[1], args[2]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setelitewave")
+                || args[0].equalsIgnoreCase("sew"))
+        {
+            SetEliteWave(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setelitemob")
+                || args[0].equalsIgnoreCase("sem"))
+        {
+            SetEliteMob(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("removeelitemob")
+                || args[0].equalsIgnoreCase("rem"))
+        {
+            RemoveEliteMob(player, args[1]);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setdeactivateblock")
+                || args[0].equalsIgnoreCase("sdab"))
+        {
+            SetDeactivateBlock(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setactivateblock")
+                || args[0].equalsIgnoreCase("sab"))
+        {
+            MoveArenaBlock(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("setlinkedarenadelay")
+                || args[0].equalsIgnoreCase("slad"))
+        {
+            if (HasArenaBlockSelected(player))
+            {
+                ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                        .getName());
+                selectedAB.linkedArenaDelay = Integer.valueOf(args[1]);
+
+                player.sendMessage(selectedAB.arenaName
+                        + "s Linked Arena Delay is now " + args[1]);
+            }
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("addlinkedarena")
+                || args[0].equalsIgnoreCase("ala"))
+        {
+            if (HasArenaBlockSelected(player))
+            {
+                ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                        .getName());
+
+                ArenaBlock arenaToLink = getArenaBlock(args[1]);
+
+                if (arenaToLink != null)
+                {
+                    if (arenaToLink != selectedAB)
+                    {
+                        selectedAB.linkedArenas.add(arenaToLink);
+
+                        if (StoreLinkedArena(selectedAB.arenaName, args[1]))
+                        {
+                            player.sendMessage(args[1] + " was added to "
+                                    + selectedAB.arenaName);
+                        }
+                    }
+                    else
+                    {
+                        player.sendMessage("Arenas can't link to themselves");
+                    }
+                }
+                else
+                {
+                    player.sendMessage("Can't find arena " + args[1]);
+                }
+            }
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("removelinkedarena")
+                || args[0].equalsIgnoreCase("rla"))
+        {
+            if (HasArenaBlockSelected(player))
+            {
+                ArenaBlock selectedAB = SelectedArenaBlocks.get(player
+                        .getName());
+
+                selectedAB.linkedArenas.remove(getArenaBlock(args[1]));
+
+                if (RemoveLinkedArena(selectedAB, args[1]))
+                {
+                    player.sendMessage(args[1] + " was removed from "
+                            + selectedAB.arenaName);
+                }
+            }
+            return true;
+        }
+        else if (player.hasPermission("BelvensArenas.create")
+                && args.length >= 4)
+        {
+            try
+            {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                con = DriverManager.getConnection(connectionUrl);
+                stmt = con.createStatement();
+
+                rs = stmt.executeQuery("ArenaExists '" + args[0] + "'");
+
+                if (rs.next()
+                        && rs.getString("ArenaExists").equalsIgnoreCase("1"))
+                {
+                    player.sendMessage("Arena " + args[0] + " already exists");
+                }
+                else
+                {
+                    ArenaBlockCreated(player, player.getLocation().getBlock(),
+                            args);
+                }
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+            catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+        else if (player.hasPermission("BelvensArenas.select")
+                && (args[0].equalsIgnoreCase("select") || args[0]
+                        .equalsIgnoreCase("s")))
+        {
+            SelectArena(player, args[1]);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ForceStartArena(Player p)
+    {
+        if (HasArenaBlockSelected(p))
+        {
+            SelectedArenaBlocks.get(p.getName()).Activate();
+        }
     }
 
     private void SetArenaRewards(Player player)
@@ -400,7 +431,7 @@ public class ArenaManager extends JavaPlugin
             return true;
     }
 
-    private void SetArenaRegionBlock(Player player)
+    private void SetArenaSpawnArea(Player player)
     {
         if (HasArenaBlockSelected(player))
         {
@@ -416,8 +447,8 @@ public class ArenaManager extends JavaPlugin
                 {
                     Location min = sel.getMinimumPoint();
                     Location max = sel.getMaximumPoint();
-                    ab.arenaBlockStartLocation = min;
-                    ab.arenaBlockEndLocation = max;
+                    ab.spawnAreaStartLocation = min;
+                    ab.spawnAreaEndLocation = max;
 
                     player.sendMessage("Arena " + ab.arenaName
                             + " region has been updated!!");
@@ -433,6 +464,8 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = getArenaInIsPlayer(player);
             ab.arenaPlayers.remove(player);
+
+            PlayersInArenas.remove(player);
 
             if (ab.arenaPlayers.size() == 0)
             {
@@ -466,35 +499,12 @@ public class ArenaManager extends JavaPlugin
 
     public boolean IsPlayerInArena(Player p)
     {
-        // for (ArenaBlock ab : currentArenaBlocks)
-        // {
-        // if (ab.arenaPlayers.contains(p))
-        // {
-        // return true;
-        // }
-        // }
-
-        for (ArenaBlock ab : currentArenaBlocks)
-        {
-            if (ab.arenaPlayers.contains(p))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return PlayersInArenas.containsKey(p);
     }
 
     public ArenaBlock getArenaInIsPlayer(Player p)
     {
-        for (ArenaBlock ab : currentArenaBlocks)
-        {
-            if (ab.arenaPlayers.contains(p))
-            {
-                return ab;
-            }
-        }
-        return null;
+        return PlayersInArenas.get(p);
     }
 
     private void SetEliteMob(Player player, String et)
@@ -505,7 +515,6 @@ public class ArenaManager extends JavaPlugin
             player.sendMessage(ab.emc.Set(EntityType.valueOf(et),
                     player.getInventory()));
         }
-
     }
 
     private void RemoveEliteMob(Player player, String et)
@@ -515,7 +524,6 @@ public class ArenaManager extends JavaPlugin
             ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
             player.sendMessage(ab.emc.Remove(EntityType.valueOf(et)));
         }
-
     }
 
     private void TeleportArenaMobs(Player player)
@@ -702,6 +710,7 @@ public class ArenaManager extends JavaPlugin
             if (!tempArenaBlock.arenaPlayers.contains(player))
             {
                 tempArenaBlock.arenaPlayers.add(player);
+                PlayersInArenas.put(player, tempArenaBlock);
             }
 
             if (player.getLocation().getWorld() == tempArenaBlock.LocationToCheckForPlayers
@@ -851,11 +860,16 @@ public class ArenaManager extends JavaPlugin
                 Location min = sel.getMinimumPoint();
                 Location max = sel.getMaximumPoint();
 
-                ArenaBlock newArenaBlock = new ArenaBlock(min, max, args[0],
-                        Integer.valueOf(args[1]), MatToMob(args[0],
-                                Material.getMaterial(args[2])), this,
-                        functions.SecondsToTicks(1),
-                        functions.SecondsToTicks(Integer.valueOf(args[3])));
+                String ArenaName = args[0];
+
+                int Radius = Integer.valueOf(args[1]);
+
+                MobToMaterialCollecton mobs = MatToMob(args[0],
+                        Material.getMaterial(args[2]));
+
+                ArenaBlock newArenaBlock = new ArenaBlock(min, max, ArenaName,
+                        Radius, mobs, this, functions.SecondsToTicks(Integer
+                                .valueOf(args[3])));
 
                 SelectedArenaBlocks.put(currentPlayer.getName(), newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);
@@ -863,27 +877,12 @@ public class ArenaManager extends JavaPlugin
                         + " was created!!");
 
                 InsertArena(newArenaBlock);
-
             }
         }
         else
         {
             currentPlayer.sendMessage("Use world edit to select the region");
         }
-    }
-
-    public void ArenaBlockCreated(Player currentPlayer, Block block, String mat)
-    {
-        List<String> args = new ArrayList<String>();
-        String arenaName = "Test";
-        String radius = "10";
-        String timerPeriod = "10";
-
-        args.add(arenaName);
-        args.add(radius);
-        args.add(mat);
-        args.add(timerPeriod);
-        ArenaBlockCreated(currentPlayer, block, args.toArray(new String[5]));
     }
 
     public MobToMaterialCollecton MatToMob(String ArenaName, Statement stmt,
@@ -907,6 +906,11 @@ public class ArenaManager extends JavaPlugin
                     m = Material.STONE;
                 }
 
+                if (et == null)
+                {
+                    et = EntityType.ZOMBIE;
+                }
+
                 spawnMats.Add(et, m);
             }
         }
@@ -916,6 +920,126 @@ public class ArenaManager extends JavaPlugin
         }
 
         return spawnMats;
+    }
+
+    public void UpdateArenaNew(ArenaBlock ab)
+    {
+        try
+        {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            con = DriverManager.getConnection(connectionUrl);
+
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_UPDATABLE);
+
+            ResultSet rs = GetArenaResult(ab.arenaName, stmt);
+
+            if (rs != null)
+            {
+                while (!rs.isClosed() && rs.next())
+                {
+                    rs.updateString("BlockToActivate",
+                            LocationToString(ab.blockToActivate));
+
+                    rs.updateString("DeactivateBlock",
+                            LocationToString(ab.deactivateBlock));
+
+                    rs.updateString("ArenaWarp", LocationToString(ab.arenaWarp));
+
+                    rs.updateString("ArenaBlockStartLocation",
+                            LocationToString(ab.spawnAreaStartLocation));
+
+                    rs.updateString("LocationToCheckForPlayers",
+                            LocationToString(ab.LocationToCheckForPlayers));
+
+                    rs.updateInt("Radius", ab.radius);
+
+                    rs.updateInt("TimerPeriod", ab.timerPeriod);
+
+                    rs.updateInt("MaxRunTimes", ab.maxRunTimes);
+
+                    rs.updateString("World", ab.blockToActivate.getWorld()
+                            .getName());
+
+                    rs.updateString("ArenaBlockEndLocation",
+                            LocationToString(ab.spawnAreaEndLocation));
+
+                    rs.updateInt("LinkedArenaDelay", ab.linkedArenaDelay);
+
+                    rs.updateRow();
+
+                    for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
+                    {
+                        String mobExists = "";
+                        String Insert = "InsertMobToMat '";
+
+                        mobExists = mobExists + ab.arenaName + "', '";
+                        mobExists = mobExists + mtm.et.name() + "', '";
+                        mobExists = mobExists + mtm.m.name() + "'";
+
+                        rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
+
+                        if (rs.next()
+                                && rs.getString("MobExists").equalsIgnoreCase(
+                                        "0"))
+                        {
+                            stmt.executeUpdate(Insert + mobExists);
+                        }
+                    }
+
+                    String resetArenaItems = "ResetArenaItems '" + ab.arenaName
+                            + "'";
+
+                    stmt.executeUpdate(resetArenaItems);
+
+                    for (ItemStack is : ab.arenaRewards)
+                    {
+                        String mobExists = "";
+                        String Insert = "AddArenaReward '";
+
+                        mobExists = mobExists + ab.arenaName + queryStringSep;
+                        mobExists = mobExists + is.getType().name()
+                                + queryStringSep;
+                        mobExists = mobExists
+                                + String.valueOf((int) is.getDurability())
+                                + queryStringToNumberSep;
+                        mobExists = mobExists + is.getAmount() + queryNumberSep;
+                        mobExists = mobExists + 1;
+
+                        stmt.executeUpdate(Insert + mobExists);
+                    }
+
+                    RemovedAllLinkedArenas(ab);
+                    StoreAllLinkedArenas(ab);
+
+                    getLogger().info(ab.arenaName + " has been save to the database!!");
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public ResultSet GetArenaResult(String ArenaName, Statement stmt)
+    {
+        try
+        {
+            ResultSet rs = stmt
+                    .executeQuery("SELECT * FROM arena WHERE ArenaName LIKE '"
+                            + ArenaName + "'");
+            return rs;
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<ItemStack> GetArenaRewards(String ArenaName, Statement stmt,
@@ -977,111 +1101,6 @@ public class ArenaManager extends JavaPlugin
         SaveArenas();
     }
 
-    public String ArenaString(ArenaBlock ab)
-    {
-        String ArenaString = "'";
-        ArenaString = ArenaString + ab.arenaName + queryStringSep;
-        ArenaString = ArenaString + LocationToString(ab.blockToActivate)
-                + queryStringSep;
-        ArenaString = ArenaString + LocationToString(ab.arenaWarp)
-                + queryStringSep;
-        ArenaString = ArenaString
-                + LocationToString(ab.arenaBlockStartLocation) + queryStringSep;
-        ArenaString = ArenaString + LocationToString(ab.arenaBlockEndLocation)
-                + queryStringSep;
-        ArenaString = ArenaString
-                + LocationToString(ab.LocationToCheckForPlayers)
-                + queryStringSep;
-        ArenaString = ArenaString + LocationToString(ab.deactivateBlock)
-                + queryStringToNumberSep;
-        ArenaString = ArenaString + ab.radius + queryNumberSep;
-        ArenaString = ArenaString + ab.timerDelay + queryNumberSep;
-        ArenaString = ArenaString + ab.timerPeriod + queryNumberSep;
-        ArenaString = ArenaString + ab.maxRunTimes + queryNumberSep;
-        ArenaString = ArenaString + ab.linkedArenaDelay
-                + queryNumberToStringSep;
-        ArenaString = ArenaString
-                + ab.arenaBlockStartLocation.getWorld().getName();
-        ArenaString = ArenaString + "'";
-        return ArenaString;
-    }
-
-    public void UpdateArena(ArenaBlock ab)
-    {
-        try
-        {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-
-            String Update = "UpdateArena ";
-
-            stmt = con.createStatement();
-
-            stmt.executeUpdate(Update + ArenaString(ab));
-
-            for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
-            {
-                String mobExists = "";
-                String Insert = "InsertMobToMat '";
-
-                mobExists = mobExists + ab.arenaName + "', '";
-                mobExists = mobExists + mtm.et.name() + "', '";
-                mobExists = mobExists + mtm.m.name() + "'";
-
-                rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
-
-                if (rs.next()
-                        && rs.getString("MobExists").equalsIgnoreCase("0"))
-                {
-                    stmt.executeUpdate(Insert + mobExists);
-                }
-            }
-
-            String resetArenaItems = "ResetArenaItems '" + ab.arenaName + "'";
-            stmt.executeUpdate(resetArenaItems);
-
-            for (ItemStack is : ab.arenaRewards)
-            {
-                String mobExists = "";
-                String Insert = "AddArenaReward '";
-
-                mobExists = mobExists + ab.arenaName + queryStringSep;
-                mobExists = mobExists + is.getType().name() + queryStringSep;
-                mobExists = mobExists
-                        + String.valueOf((int) is.getDurability())
-                        + queryStringToNumberSep;
-                mobExists = mobExists + is.getAmount() + queryNumberSep;
-                mobExists = mobExists + 1;
-
-                stmt.executeUpdate(Insert + mobExists);
-            }
-
-            RemovedAllLinkedArenas(ab);
-            StoreAllLinkedArenas(ab);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        if (stmt != null)
-            try
-            {
-                stmt.close();
-            }
-            catch (Exception e)
-            {
-            }
-        if (con != null)
-            try
-            {
-                con.close();
-            }
-            catch (Exception e)
-            {
-            }
-    }
-
     public void InsertArena(ArenaBlock ab)
     {
         try
@@ -1093,7 +1112,26 @@ public class ArenaManager extends JavaPlugin
 
             stmt = con.createStatement();
 
-            stmt.executeUpdate(Insert + ArenaString(ab));
+            PreparedStatement ps = con
+                    .prepareStatement("INSERT INTO arena VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            ps.setString(1, ab.arenaName);
+            ps.setString(2, LocationToString(ab.blockToActivate));
+            ps.setString(3, LocationToString(ab.deactivateBlock));
+            ps.setString(4, LocationToString(ab.arenaWarp));
+            ps.setString(5, LocationToString(ab.spawnAreaStartLocation));
+            ps.setString(6, LocationToString(ab.LocationToCheckForPlayers));
+            ps.setInt(7, ab.radius);
+            ps.setString(8, "Grass");
+            ps.setInt(10, ab.timerPeriod);
+            ps.setInt(11, ab.maxRunTimes);
+            ps.setString(12, ab.blockToActivate.getWorld().getName());
+            ps.setString(13, LocationToString(ab.spawnAreaEndLocation));
+            ps.setInt(14, ab.linkedArenaDelay);
+            ps.addBatch();
+            ps.executeBatch();
+
+            // stmt.executeUpdate(Insert + ArenaString(ab));
 
             for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
             {
@@ -1249,7 +1287,7 @@ public class ArenaManager extends JavaPlugin
     {
         for (ArenaBlock ab : currentArenaBlocks)
         {
-            UpdateArena(ab);
+            UpdateArenaNew(ab);
         }
     }
 
@@ -1268,7 +1306,6 @@ public class ArenaManager extends JavaPlugin
                 String warpLocation = rs.getString("ArenaWarp");
 
                 int Radius = rs.getInt("Radius");
-                int TimerDelay = rs.getInt("TimerDelay");
                 int TimerPeriod = rs.getInt("TimerPeriod");
                 int MaxRunTimes = rs.getInt("MaxRunTimes");
 
@@ -1297,12 +1334,13 @@ public class ArenaManager extends JavaPlugin
                     Block BlockToDeactivate = StringToLocation(
                             rs.getString("DeactivateBlock"), world).getBlock();
 
+                    MobToMaterialCollecton mobs = MatToMob(ArenaName, stmt, rs);
+
                     int LinkedArenaDelay = rs.getInt("LinkedArenaDelay");
 
                     ArenaBlock newArenaBlock = new ArenaBlock(
                             arenaBlockStartLocation, arenaBlockEndLocation,
-                            ArenaName, Radius, MatToMob(ArenaName, stmt, rs),
-                            this, TimerDelay, TimerPeriod);
+                            ArenaName, Radius, mobs, this, TimerPeriod);
 
                     newArenaBlock.arenaRewards = GetArenaRewards(ArenaName,
                             stmt, rs);

@@ -3,16 +3,14 @@ package belven.arena.timedevents;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import belven.arena.Wave;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.events.ArenaSuccessful;
 import belven.arena.resources.functions;
@@ -21,40 +19,30 @@ public class ArenaTimer extends BukkitRunnable
 {
     private ArenaBlock arenaBlock;
 
-    @SuppressWarnings("unused")
-    private Wave currentWave;
-    private int lastWaveNum = 0;
-    private Random randomGenerator = new Random();
+    public UUID arenaRunID;
+    public int nextWave = 0;
+
+    // private Random randomGenerator = new Random();
 
     public ArenaTimer(ArenaBlock arenaBlock)
     {
         this.arenaBlock = arenaBlock;
-        lastWaveNum = arenaBlock.currentRunTimes;
+        arenaRunID = arenaBlock.arenaRunID;
+        nextWave = arenaBlock.currentRunTimes;
     }
 
     @Override
     public void run()
     {
-        if (lastWaveNum < arenaBlock.currentRunTimes)
+        if (arenaRunID != arenaBlock.arenaRunID
+                || nextWave < arenaBlock.currentRunTimes)
         {
             this.cancel();
         }
 
         CleanUpEntites();
 
-        if (arenaBlock.isActive && arenaBlock.arenaPlayers.size() == 0)
-        {
-            Player[] tempPlayers = functions.getNearbyPlayersNew(
-                    arenaBlock.LocationToCheckForPlayers,
-                    (arenaBlock.radius - 2) + (arenaBlock.radius / 2));
-            for (Player p : tempPlayers)
-            {
-                if (!arenaBlock.plugin.IsPlayerInArena(p))
-                {
-                    arenaBlock.arenaPlayers.add(p);
-                }
-            }
-        }
+    
 
         if (arenaBlock.arenaArea.size() == 0
                 || arenaBlock.arenaPlayers.size() == 0)
@@ -74,16 +62,17 @@ public class ArenaTimer extends BukkitRunnable
             {
                 ArenaSuccessfull();
             }
-            else if (arenaBlock.currentRunTimes >= (arenaBlock.maxRunTimes + 50))
-            {
-                ArenaSuccessfull();
-            }
-            else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes
-                    && arenaBlock.currentRunTimes % 5 == 0)
-            {
-                SpreadEntities();
-                ArenaHasEntitiesLeft();
-            }
+            // else if (arenaBlock.currentRunTimes >= (arenaBlock.maxRunTimes +
+            // 50))
+            // {
+            // ArenaSuccessfull();
+            // }
+            // else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes
+            // && arenaBlock.currentRunTimes % 10 == 0)
+            // {
+            // SpreadEntities();
+            // ArenaHasEntitiesLeft();
+            // }
             else if (arenaBlock.ArenaEntities.size() > 0)
             {
                 ArenaHasEntitiesLeft();
@@ -96,30 +85,31 @@ public class ArenaTimer extends BukkitRunnable
         else if (arenaBlock.spawnArea.size() > 0
                 && arenaBlock.currentRunTimes < arenaBlock.maxRunTimes)
         {
-            GoToNextWave();
+            arenaBlock.GoToNextWave();
+            this.cancel();
         }
     }
 
-    private void SpreadEntities()
-    {
-        for (LivingEntity le : arenaBlock.ArenaEntities)
-        {
-            int randomInt = randomGenerator
-                    .nextInt(arenaBlock.spawnArea.size());
-            Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-                    .getLocation();
-
-            if (spawnLocation != null)
-            {
-                spawnLocation = new Location(spawnLocation.getWorld(),
-                        spawnLocation.getX() + 0.5, spawnLocation.getY(),
-                        spawnLocation.getZ() + 0.5);
-                le.teleport(spawnLocation);
-            }
-        }
-
-        new MessageTimer(arenaBlock.arenaPlayers, "Scrambling Mobs").run();
-    }
+    // private void SpreadEntities()
+    // {
+    // for (LivingEntity le : arenaBlock.ArenaEntities)
+    // {
+    // int randomInt = randomGenerator
+    // .nextInt(arenaBlock.spawnArea.size());
+    // Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
+    // .getLocation();
+    //
+    // if (spawnLocation != null)
+    // {
+    // spawnLocation = new Location(spawnLocation.getWorld(),
+    // spawnLocation.getX() + 0.5, spawnLocation.getY(),
+    // spawnLocation.getZ() + 0.5);
+    // le.teleport(spawnLocation);
+    // }
+    // }
+    //
+    // new MessageTimer(arenaBlock.arenaPlayers, "Scrambling Mobs").run();
+    // }
 
     private void ArenaHasEntitiesLeft()
     {
@@ -131,25 +121,6 @@ public class ArenaTimer extends BukkitRunnable
                 + " mobs left").run();
         new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
                 functions.SecondsToTicks(10));
-        this.cancel();
-    }
-
-    private void GoToNextWave()
-    {
-        arenaBlock.GetPlayersAverageLevel();
-        arenaBlock.currentRunTimes++;
-        if (arenaBlock.currentRunTimes == 1)
-        {
-            new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.arenaName
-                    + " has Started!!").run();
-        }
-        new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.arenaName
-                + " Wave: " + String.valueOf(arenaBlock.currentRunTimes)).run();
-
-        currentWave = new Wave(arenaBlock);
-
-        new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
-                arenaBlock.timerPeriod);
         this.cancel();
     }
 

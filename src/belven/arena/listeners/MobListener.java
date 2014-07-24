@@ -41,9 +41,9 @@ public class MobListener implements Listener
     public void onEntityDeathEvent(EntityDeathEvent event)
     {
         Entity currentEntity = event.getEntity();
-        int currentRand = randomGenerator.nextInt(2);
+        // int currentRand = randomGenerator.nextInt(2);
 
-        if (currentEntity.hasMetadata("ArenaMob") && currentRand != 0)
+        if (currentEntity.hasMetadata("ArenaMob"))
         {
             List<MetadataValue> currentMetaData = currentEntity
                     .getMetadata("ArenaMob");
@@ -60,6 +60,11 @@ public class MobListener implements Listener
             {
                 ArenaBlock ab = plugin.getArenaBlock(arena.get(0));
                 ab.ArenaEntities.remove(currentEntity);
+
+                if (ab.ArenaEntities.size() <= 0)
+                {
+                    ab.GoToNextWave();
+                }
 
                 for (Player p : ab.arenaPlayers)
                 {

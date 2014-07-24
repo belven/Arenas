@@ -3,6 +3,7 @@ package belven.arena.blocks;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,30 +17,33 @@ import belven.arena.ArenaManager;
 import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
+import belven.arena.Wave;
+import belven.arena.resources.SavedBlock;
 import belven.arena.resources.functions;
 import belven.arena.timedevents.ArenaTimer;
-import belven.arena.timedevents.NextWaveTimer;
+import belven.arena.timedevents.MessageTimer;
 
 public class ArenaBlock
 {
     public ArenaManager plugin;
     public boolean isActive = false;
 
-    public String arenaName, playersString;
+    public String arenaName;
     public Block blockToActivate, deactivateBlock, arenaWarp;
 
     public List<Block> arenaArea = new ArrayList<Block>();
+    public List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
     // public List<Team> arenaTeams = new ArrayList<Team>();
 
     public List<Player> arenaPlayers = new ArrayList<Player>();
     public List<Block> spawnArea = new ArrayList<Block>();
     public List<ArenaBlock> linkedArenas = new ArrayList<ArenaBlock>();
 
-    public Location LocationToCheckForPlayers, arenaBlockStartLocation,
-            arenaBlockEndLocation;
+    public Location LocationToCheckForPlayers, spawnAreaStartLocation,
+            spawnAreaEndLocation;
 
-    public int radius, maxRunTimes, timerDelay, timerPeriod, eliteWave,
-            averageLevel, maxMobCounter, linkedArenaDelay, currentRunTimes = 0;
+    public int radius, maxRunTimes, timerPeriod, eliteWave, averageLevel,
+            maxMobCounter, linkedArenaDelay, currentRunTimes = 0;
 
     public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
     public BossMob bm = new BossMob();
@@ -47,52 +51,76 @@ public class ArenaBlock
     public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
     public EliteMobCollection emc = new EliteMobCollection(this);
 
+    public UUID arenaRunID = null;
+
     public ArenaBlock(Location startLocation, Location endLocation,
-            String ArenaName, Integer radius, MobToMaterialCollecton mobToMat,
-            ArenaManager plugin, int timerDelay, int timerPeriod)
+            String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
+            ArenaManager Plugin, int TimerPeriod)
     {
-        this.arenaBlockStartLocation = new Location(startLocation.getWorld(),
+        spawnAreaStartLocation = new Location(startLocation.getWorld(),
                 startLocation.getX(), startLocation.getY() - 1,
                 startLocation.getZ());
 
-        this.arenaBlockEndLocation = endLocation;
+        spawnAreaEndLocation = endLocation;
 
-        this.blockToActivate = startLocation.getBlock();
+        blockToActivate = startLocation.getBlock();
 
-        this.deactivateBlock = startLocation.getWorld().getBlockAt(
+        deactivateBlock = startLocation.getWorld().getBlockAt(
                 new Location(startLocation.getWorld(), startLocation.getX(),
                         startLocation.getY() + 2, startLocation.getZ()));
 
-        this.LocationToCheckForPlayers = blockToActivate.getLocation();
-        this.arenaWarp = startLocation.getBlock();
-        this.radius = radius;
-        this.MobToMat = mobToMat;
-        this.timerDelay = timerDelay;
-        this.timerPeriod = timerPeriod;
-        this.arenaName = ArenaName;
-        this.plugin = plugin;
-        this.maxRunTimes = 5;
+        LocationToCheckForPlayers = blockToActivate.getLocation();
+        arenaWarp = startLocation.getBlock();
+        radius = Radius;
+        MobToMat = mobToMat;
+        timerPeriod = TimerPeriod;
+        arenaName = ArenaName;
+        plugin = Plugin;
+        maxRunTimes = 5;
     }
 
     public void Activate()
     {
-        isActive = true;
-        RemoveMobs();
-        // arenaTeams.clear();
-        // arenaPlayers.clear();
-        ArenaEntities.clear();
-        GetArenaArea();
-        GetSpawnArea();
+        if (arenaPlayers.size() == 0)
+        {
+            Player[] tempPlayers = functions.getNearbyPlayersNew(
+                    LocationToCheckForPlayers, (radius - 2) + (radius / 2));
+            for (Player p : tempPlayers)
+            {
+                if (!plugin.IsPlayerInArena(p))
+                {
+                    plugin.WarpToArena(p, arenaName);
+                }
+            }
+        }
 
-        new ArenaTimer(this).runTaskLater(plugin, 10);
-        new NextWaveTimer(this).runTaskTimer(plugin, 15, 2);
+        if (arenaPlayers.size() != 0)
+        {
+            arenaRunID = UUID.randomUUID();
+            isActive = true;
+            RemoveMobs();
+            ArenaEntities.clear();
+            GetArenaArea();
+            GetSpawnArea();
+            new ArenaTimer(this).runTaskLater(plugin, 10);
+        }
     }
 
     public void Deactivate()
     {
+        arenaRunID = null;
+        RestoreArena();
         isActive = false;
         RemoveMobs();
         ArenaEntities.clear();
+    }
+
+    private void RestoreArena()
+    {
+        for (SavedBlock sb : originalBlocks)
+        {
+            sb.bs.update(true);
+        }
     }
 
     public void GiveRewards()
@@ -112,6 +140,26 @@ public class ArenaBlock
         }
     }
 
+    public void GoToNextWave()
+    {
+        if (arenaPlayers.size() > 0)
+        {
+            GetPlayersAverageLevel();
+            currentRunTimes++;
+            if (currentRunTimes == 1)
+            {
+                new MessageTimer(arenaPlayers, arenaName + " has Started!!")
+                        .run();
+            }
+            new MessageTimer(arenaPlayers, arenaName + " Wave: "
+                    + String.valueOf(currentRunTimes)).run();
+
+            new Wave(this);
+
+            new ArenaTimer(this).runTaskLater(plugin, timerPeriod);
+        }
+    }
+
     public void RemoveMobs()
     {
         currentRunTimes = 0;
@@ -127,14 +175,21 @@ public class ArenaBlock
 
     public void GetArenaArea()
     {
-        if (this.arenaBlockEndLocation == null)
+        if (spawnAreaEndLocation == null)
         {
             plugin.getServer().getLogger().info("arenaBlockEndLocation NULL");
             return;
         }
 
-        arenaArea = functions.getBlocksBetweenPoints(
-                this.arenaBlockStartLocation, this.arenaBlockEndLocation);
+        arenaArea = functions.getBlocksBetweenPoints(spawnAreaStartLocation,
+                spawnAreaEndLocation);
+
+        originalBlocks.clear();
+
+        for (Block b : arenaArea)
+        {
+            originalBlocks.add(new SavedBlock(b));
+        }
     }
 
     public void GetSpawnArea()
@@ -149,8 +204,7 @@ public class ArenaBlock
                 spawnLocation = b.getLocation();
                 spawnLocation = CanSpawnAt(spawnLocation);
 
-                if (spawnLocation != null
-                        && !b.equals(this.arenaBlockStartLocation))
+                if (spawnLocation != null && !b.equals(spawnAreaStartLocation))
                 {
                     Block spawnBlock = spawnLocation.getBlock();
                     spawnArea.add(spawnBlock);
@@ -167,7 +221,7 @@ public class ArenaBlock
 
         if (currentBlock.getType() == Material.AIR
                 && blockAbove.getType() == Material.AIR
-                && this.MobToMat.Contains(blockBelow.getType()))
+                && MobToMat.Contains(blockBelow.getType()))
         {
             return currentLocation;
         }
@@ -198,8 +252,13 @@ public class ArenaBlock
             totalLevels = 1;
         }
 
-        this.averageLevel = (int) (totalLevels / arenaPlayers.size());
-        this.maxMobCounter = (int) (totalLevels / arenaPlayers.size())
+        averageLevel = (int) (totalLevels / arenaPlayers.size());
+        maxMobCounter = (int) (totalLevels / arenaPlayers.size())
                 + (arenaPlayers.size() * 5);
+
+        if (maxMobCounter > (arenaPlayers.size() * 15))
+        {
+            maxMobCounter = arenaPlayers.size() * 15;
+        }
     }
 }

@@ -40,18 +40,21 @@ public class Wave
         new MessageTimer(arenaBlock.arenaPlayers, "Mobs Spawning: "
                 + String.valueOf(arenaBlock.maxMobCounter)).run();
 
-        for (int mobCounter = 0; mobCounter < arenaBlock.maxMobCounter; mobCounter++)
+        if (arenaBlock.spawnArea.size() > 0)
         {
-            int randomInt = randomGenerator
-                    .nextInt(arenaBlock.spawnArea.size());
-            Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-                    .getLocation();
-            MobToSpawn(spawnLocation);
-        }
+            for (int mobCounter = 0; mobCounter < arenaBlock.maxMobCounter; mobCounter++)
+            {
+                int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea
+                        .size());
+                Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
+                        .getLocation();
+                MobToSpawn(spawnLocation);
+            }
 
-        if (arenaBlock.currentRunTimes == arenaBlock.maxRunTimes)
-        {
-            SpawnBoss();
+            if (arenaBlock.currentRunTimes == arenaBlock.maxRunTimes)
+            {
+                SpawnBoss();
+            }
         }
     }
 
@@ -92,8 +95,7 @@ public class Wave
         // ScaleBossHealth(currentEntity);
 
         currentEntity.setMetadata("ArenaBoss", new FixedMetadataValue(
-                arenaBlock.plugin, arenaBlock.arenaName + " "
-                        + arenaBlock.playersString));
+                arenaBlock.plugin, arenaBlock.arenaName));
 
         arenaBlock.ArenaEntities.add(currentEntity);
     }
@@ -142,8 +144,7 @@ public class Wave
         // ScaleMobHealth(currentEntity);
 
         currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(
-                arenaBlock.plugin, arenaBlock.arenaName + " "
-                        + arenaBlock.playersString));
+                arenaBlock.plugin, arenaBlock.arenaName));
 
         arenaBlock.ArenaEntities.add(currentEntity);
     }

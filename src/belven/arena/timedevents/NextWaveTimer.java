@@ -24,7 +24,7 @@ public class NextWaveTimer extends BukkitRunnable
 
         if (arenaBlock.arenaPlayers.size() == 0 || !arenaBlock.isActive)
         {
-
+            this.cancel();
         }
         else if (arenaBlock.ArenaEntities.size() == 0
                 && arenaBlock.currentRunTimes < arenaBlock.maxRunTimes)
