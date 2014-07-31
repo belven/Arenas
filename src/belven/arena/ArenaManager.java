@@ -28,6 +28,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.StandardArenaBlock;
+import belven.arena.blocks.TempArenaBlock;
 import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
@@ -129,6 +131,12 @@ public class ArenaManager extends JavaPlugin
             WarpToArena(player, args[1]);
             return true;
         }
+        else if (args[0].equalsIgnoreCase("createtemparena")
+                || args[0].equalsIgnoreCase("cta"))
+        {
+            CreateTempArena(player);
+            return true;
+        }
         else if (args[0].equalsIgnoreCase("leave")
                 || args[0].equalsIgnoreCase("l"))
         {
@@ -137,6 +145,57 @@ public class ArenaManager extends JavaPlugin
         }
 
         return false;
+    }
+
+    private void CreateTempArena(Player p)
+    {
+        if (!IsPlayerInArena(p))
+        {
+            int maxSize = 0;
+            int Radius = 40;
+            int period = 0;
+
+            Location pLoc = p.getLocation();
+
+            Player[] tempPlayers = functions.getNearbyPlayersNew(pLoc,
+                    (Radius - 2) + (Radius / 2));
+
+            Radius = 0;
+
+            for (Player pl : tempPlayers)
+            {
+                if (!IsPlayerInArena(pl))
+                {
+                    maxSize += 10;
+                    Radius += 20;
+                    period += 20;
+                }
+            }
+
+            double MinX = pLoc.getX() - maxSize;
+            double MinY = pLoc.getY() - 2;
+            double MinZ = pLoc.getZ() - maxSize;
+
+            double MaxX = pLoc.getX() + maxSize;
+            double MaxY = pLoc.getY() + 4;
+            double MaxZ = pLoc.getZ() + maxSize;
+
+            Location min = new Location(p.getWorld(), MinX, MinY, MinZ);
+            Location max = new Location(p.getWorld(), MaxX, MaxY, MaxZ);
+
+            String ArenaName = "Temp Arena"; // UUID.randomUUID().toString();
+
+            MobToMaterialCollecton mobs = MatToMob(functions
+                    .offsetLocation(p.getLocation(), 0, -1, 0).getBlock()
+                    .getType());
+
+            new TempArenaBlock(min, max, ArenaName, Radius, mobs, this,
+                    functions.SecondsToTicks(period));
+        }
+        else
+        {
+            p.sendMessage("You can't do this while in an arena!!");
+        }
     }
 
     private boolean ListArenaCommands(Player player, String[] args)
@@ -707,37 +766,40 @@ public class ArenaManager extends JavaPlugin
         ArenaBlock tempArenaBlock = getArenaBlock(arenaToWarp);
         if (tempArenaBlock != null)
         {
-            if (!tempArenaBlock.arenaPlayers.contains(player))
-            {
-                tempArenaBlock.arenaPlayers.add(player);
-                PlayersInArenas.put(player, tempArenaBlock);
-            }
+            WarpToArena(player, tempArenaBlock);
+        }
+    }
 
-            if (player.getLocation().getWorld() == tempArenaBlock.LocationToCheckForPlayers
-                    .getWorld())
+    public void WarpToArena(Player player, ArenaBlock ab)
+    {
+        if (!ab.arenaPlayers.contains(player))
+        {
+            ab.arenaPlayers.add(player);
+            PlayersInArenas.put(player, ab);
+        }
+
+        if (player.getLocation().getWorld() == ab.LocationToCheckForPlayers
+                .getWorld())
+        {
+            if (player.getLocation().distance(ab.LocationToCheckForPlayers) > ((ab.radius - 2) + (ab.radius / 2)))
             {
-                if (player.getLocation().distance(
-                        tempArenaBlock.LocationToCheckForPlayers) > ((tempArenaBlock.radius - 2) + (tempArenaBlock.radius / 2)))
-                {
-                    warpLocations.put(player.getName(), player.getLocation());
-                    player.teleport(tempArenaBlock.arenaWarp.getLocation());
-                    player.sendMessage("You teleported to arena " + arenaToWarp);
-                }
-                else
-                {
-                    player.sendMessage("You were added to arena " + arenaToWarp);
-                }
+                warpLocations.put(player.getName(), player.getLocation());
+
+                player.teleport(functions.offsetLocation(
+                        ab.arenaWarp.getLocation(), 0.5, 0, 0.5));
+
+                player.sendMessage("You teleported to arena " + ab.arenaName);
             }
             else
             {
-                warpLocations.put(player.getName(), player.getLocation());
-                player.teleport(tempArenaBlock.arenaWarp.getLocation());
-                player.sendMessage("You teleported to arena " + arenaToWarp);
+                player.sendMessage("You were added to arena " + ab.arenaName);
             }
         }
         else
         {
-            player.sendMessage("Can't find arena " + arenaToWarp);
+            warpLocations.put(player.getName(), player.getLocation());
+            player.teleport(ab.arenaWarp.getLocation());
+            player.sendMessage("You teleported to arena " + ab.arenaName);
         }
     }
 
@@ -864,12 +926,12 @@ public class ArenaManager extends JavaPlugin
 
                 int Radius = Integer.valueOf(args[1]);
 
-                MobToMaterialCollecton mobs = MatToMob(args[0],
-                        Material.getMaterial(args[2]));
+                MobToMaterialCollecton mobs = MatToMob(Material
+                        .getMaterial(args[2]));
 
-                ArenaBlock newArenaBlock = new ArenaBlock(min, max, ArenaName,
-                        Radius, mobs, this, functions.SecondsToTicks(Integer
-                                .valueOf(args[3])));
+                StandardArenaBlock newArenaBlock = new StandardArenaBlock(min,
+                        max, ArenaName, Radius, mobs, this,
+                        functions.SecondsToTicks(Integer.valueOf(args[3])));
 
                 SelectedArenaBlocks.put(currentPlayer.getName(), newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);
@@ -1012,7 +1074,8 @@ public class ArenaManager extends JavaPlugin
                     RemovedAllLinkedArenas(ab);
                     StoreAllLinkedArenas(ab);
 
-                    getLogger().info(ab.arenaName + " has been save to the database!!");
+                    getLogger().info(
+                            ab.arenaName + " has been save to the database!!");
                 }
             }
         }
@@ -1069,7 +1132,7 @@ public class ArenaManager extends JavaPlugin
         return tempRewards;
     }
 
-    public MobToMaterialCollecton MatToMob(String ArenaName, Material mat)
+    public MobToMaterialCollecton MatToMob(Material mat)
     {
         MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
         spawnMats.Add(EntityType.ZOMBIE, mat);
@@ -1338,7 +1401,7 @@ public class ArenaManager extends JavaPlugin
 
                     int LinkedArenaDelay = rs.getInt("LinkedArenaDelay");
 
-                    ArenaBlock newArenaBlock = new ArenaBlock(
+                    StandardArenaBlock newArenaBlock = new StandardArenaBlock(
                             arenaBlockStartLocation, arenaBlockEndLocation,
                             ArenaName, Radius, mobs, this, TimerPeriod);
 

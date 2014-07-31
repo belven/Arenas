@@ -173,9 +173,8 @@ public class PlayerListener implements Listener
 
             if (spawnLocation != null)
             {
-                spawnLocation = new Location(spawnLocation.getWorld(),
-                        spawnLocation.getX() + 0.5, spawnLocation.getY(),
-                        spawnLocation.getZ() + 0.5);
+                spawnLocation = functions.offsetLocation(spawnLocation, 0.5, 0,
+                        0.5);
 
                 event.setRespawnLocation(spawnLocation);
             }

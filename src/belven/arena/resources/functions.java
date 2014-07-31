@@ -63,6 +63,13 @@ public class functions
         return radiusEntities.toArray(new Player[radiusEntities.size()]);
     }
 
+    public static Location offsetLocation(Location l, double x, double y,
+            double z)
+    {
+        return new Location(l.getWorld(), l.getX() + x, l.getY() + y, l.getZ()
+                + z);
+    }
+
     public static Location lookAt(Location loc, Location lookat)
     {
         loc = loc.clone();

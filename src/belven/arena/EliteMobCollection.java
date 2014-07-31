@@ -25,22 +25,19 @@ public class EliteMobCollection
         if (Contains(et))
         {
             em = Get(et);
-            em.gear.clear();
-            em.gear.add(pi.getChestplate());
-            em.gear.add(pi.getHelmet());
-            em.gear.add(pi.getLeggings());
-            em.gear.add(pi.getBoots());
-            em.gear.add(pi.getItemInHand());
+            em.armor.Clear();
+            em.armor.h = pi.getHelmet();
+            em.armor.c = pi.getChestplate();
+            em.armor.l = pi.getLeggings();
+            em.armor.b = pi.getBoots();
+            em.armor.w = pi.getItemInHand();
         }
         else
         {
             em = new EliteMob();
             em.type = et;
-            em.gear.add(pi.getChestplate());
-            em.gear.add(pi.getHelmet());
-            em.gear.add(pi.getLeggings());
-            em.gear.add(pi.getBoots());
-            em.gear.add(pi.getItemInHand());
+            em.armor = new Gear(pi.getHelmet(), pi.getChestplate(),
+                    pi.getLeggings(), pi.getBoots(), pi.getItemInHand());
             this.ems.add(em);
         }
 

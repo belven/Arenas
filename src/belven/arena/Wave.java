@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -37,7 +38,8 @@ public class Wave
 
     public void SpawnMobs()
     {
-        new MessageTimer(arenaBlock.arenaPlayers, "Mobs Spawning: "
+        new MessageTimer(arenaBlock.arenaPlayers, ChatColor.RED
+                + "Mobs Spawning: " + ChatColor.WHITE
                 + String.valueOf(arenaBlock.maxMobCounter)).run();
 
         if (arenaBlock.spawnArea.size() > 0)
@@ -102,9 +104,7 @@ public class Wave
 
     public void MobToSpawn(Location spawnLocation)
     {
-        spawnLocation = new Location(spawnLocation.getWorld(),
-                spawnLocation.getX() + 0.5, spawnLocation.getY(),
-                spawnLocation.getZ() + 0.5);
+        spawnLocation = functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
         Block blockBelow = spawnLocation.getBlock().getRelative(BlockFace.DOWN);
         List<EntityType> et = new ArrayList<EntityType>();
@@ -153,13 +153,13 @@ public class Wave
     {
         if (arenaBlock.emc.Contains(currentEntity.getType()))
         {
-            List<ItemStack> gear = arenaBlock.emc.Get(currentEntity.getType()).gear;
+            Gear gear = arenaBlock.emc.Get(currentEntity.getType()).armor;
             EntityEquipment ee = currentEntity.getEquipment();
-            ee.setChestplate(gear.get(0));
-            ee.setHelmet(gear.get(1));
-            ee.setLeggings(gear.get(2));
-            ee.setBoots(gear.get(3));
-            ee.setItemInHand(gear.get(4));
+            ee.setChestplate(gear.c);
+            ee.setHelmet(gear.h);
+            ee.setLeggings(gear.l);
+            ee.setBoots(gear.b);
+            ee.setItemInHand(gear.w);
         }
         else if (currentEntity.getType() == EntityType.SKELETON)
         {

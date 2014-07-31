@@ -3,9 +3,12 @@ package belven.arena.timedevents;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -22,7 +25,7 @@ public class ArenaTimer extends BukkitRunnable
     public UUID arenaRunID;
     public int nextWave = 0;
 
-    // private Random randomGenerator = new Random();
+    private Random randomGenerator = new Random();
 
     public ArenaTimer(ArenaBlock arenaBlock)
     {
@@ -42,8 +45,6 @@ public class ArenaTimer extends BukkitRunnable
 
         CleanUpEntites();
 
-    
-
         if (arenaBlock.arenaArea.size() == 0
                 || arenaBlock.arenaPlayers.size() == 0)
         {
@@ -62,17 +63,12 @@ public class ArenaTimer extends BukkitRunnable
             {
                 ArenaSuccessfull();
             }
-            // else if (arenaBlock.currentRunTimes >= (arenaBlock.maxRunTimes +
-            // 50))
-            // {
-            // ArenaSuccessfull();
-            // }
-            // else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes
-            // && arenaBlock.currentRunTimes % 10 == 0)
-            // {
-            // SpreadEntities();
-            // ArenaHasEntitiesLeft();
-            // }
+            else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes
+                    && arenaBlock.currentRunTimes % 10 == 0)
+            {
+                SpreadEntities();
+                ArenaHasEntitiesLeft();
+            }
             else if (arenaBlock.ArenaEntities.size() > 0)
             {
                 ArenaHasEntitiesLeft();
@@ -90,37 +86,42 @@ public class ArenaTimer extends BukkitRunnable
         }
     }
 
-    // private void SpreadEntities()
-    // {
-    // for (LivingEntity le : arenaBlock.ArenaEntities)
-    // {
-    // int randomInt = randomGenerator
-    // .nextInt(arenaBlock.spawnArea.size());
-    // Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-    // .getLocation();
-    //
-    // if (spawnLocation != null)
-    // {
-    // spawnLocation = new Location(spawnLocation.getWorld(),
-    // spawnLocation.getX() + 0.5, spawnLocation.getY(),
-    // spawnLocation.getZ() + 0.5);
-    // le.teleport(spawnLocation);
-    // }
-    // }
-    //
-    // new MessageTimer(arenaBlock.arenaPlayers, "Scrambling Mobs").run();
-    // }
+    private void SpreadEntities()
+    {
+        for (LivingEntity le : arenaBlock.ArenaEntities)
+        {
+            int randomInt = randomGenerator
+                    .nextInt(arenaBlock.spawnArea.size());
+            Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
+                    .getLocation();
+
+            if (spawnLocation != null)
+            {
+                spawnLocation = new Location(spawnLocation.getWorld(),
+                        spawnLocation.getX() + 0.5, spawnLocation.getY(),
+                        spawnLocation.getZ() + 0.5);
+                le.teleport(spawnLocation);
+            }
+        }
+
+        new MessageTimer(arenaBlock.arenaPlayers, ChatColor.RED
+                + "Scrambling Mobs").run();
+    }
 
     private void ArenaHasEntitiesLeft()
     {
         arenaBlock.GetPlayersAverageLevel();
+
         arenaBlock.currentRunTimes++;
+
         new MessageTimer(arenaBlock.arenaPlayers, "Arena "
-                + arenaBlock.arenaName + " has "
+                + arenaBlock.ArenaName() + " has "
                 + String.valueOf(arenaBlock.ArenaEntities.size())
                 + " mobs left").run();
+
         new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
                 functions.SecondsToTicks(10));
+
         this.cancel();
     }
 
@@ -174,7 +175,7 @@ public class ArenaTimer extends BukkitRunnable
     public void EndArena()
     {
         new MessageTimer(arenaBlock.arenaPlayers, "Arena "
-                + arenaBlock.arenaName + " has ended!!").run();
+                + arenaBlock.ArenaName() + " has ended!!").run();
         arenaBlock.RemoveMobs();
         arenaBlock.isActive = false;
 

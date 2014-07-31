@@ -6,13 +6,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import belven.arena.Wave;
-import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.StandardArenaBlock;
 
 public class NextWaveTimer extends BukkitRunnable
 {
-    private ArenaBlock arenaBlock;
+    private StandardArenaBlock arenaBlock;
 
-    public NextWaveTimer(ArenaBlock arenaBlock)
+    public NextWaveTimer(StandardArenaBlock arenaBlock)
     {
         this.arenaBlock = arenaBlock;
     }

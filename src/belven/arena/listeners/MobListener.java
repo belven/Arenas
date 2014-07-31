@@ -61,7 +61,8 @@ public class MobListener implements Listener
                 ArenaBlock ab = plugin.getArenaBlock(arena.get(0));
                 ab.ArenaEntities.remove(currentEntity);
 
-                if (ab.ArenaEntities.size() <= 0)
+                if (ab.ArenaEntities.size() <= 0
+                        && ab.currentRunTimes <= ab.maxRunTimes)
                 {
                     ab.GoToNextWave();
                 }

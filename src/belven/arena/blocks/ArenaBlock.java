@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -17,13 +18,10 @@ import belven.arena.ArenaManager;
 import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
-import belven.arena.Wave;
 import belven.arena.resources.SavedBlock;
 import belven.arena.resources.functions;
-import belven.arena.timedevents.ArenaTimer;
-import belven.arena.timedevents.MessageTimer;
 
-public class ArenaBlock
+public abstract class ArenaBlock
 {
     public ArenaManager plugin;
     public boolean isActive = false;
@@ -57,17 +55,15 @@ public class ArenaBlock
             String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
             ArenaManager Plugin, int TimerPeriod)
     {
-        spawnAreaStartLocation = new Location(startLocation.getWorld(),
-                startLocation.getX(), startLocation.getY() - 1,
-                startLocation.getZ());
+        spawnAreaStartLocation = functions.offsetLocation(startLocation, 0, -1,
+                0);
 
         spawnAreaEndLocation = endLocation;
 
         blockToActivate = startLocation.getBlock();
 
-        deactivateBlock = startLocation.getWorld().getBlockAt(
-                new Location(startLocation.getWorld(), startLocation.getX(),
-                        startLocation.getY() + 2, startLocation.getZ()));
+        deactivateBlock = functions.offsetLocation(startLocation, 0, 2, 0)
+                .getBlock();
 
         LocationToCheckForPlayers = blockToActivate.getLocation();
         arenaWarp = startLocation.getBlock();
@@ -79,43 +75,16 @@ public class ArenaBlock
         maxRunTimes = 5;
     }
 
-    public void Activate()
+    public String ArenaName()
     {
-        if (arenaPlayers.size() == 0)
-        {
-            Player[] tempPlayers = functions.getNearbyPlayersNew(
-                    LocationToCheckForPlayers, (radius - 2) + (radius / 2));
-            for (Player p : tempPlayers)
-            {
-                if (!plugin.IsPlayerInArena(p))
-                {
-                    plugin.WarpToArena(p, arenaName);
-                }
-            }
-        }
-
-        if (arenaPlayers.size() != 0)
-        {
-            arenaRunID = UUID.randomUUID();
-            isActive = true;
-            RemoveMobs();
-            ArenaEntities.clear();
-            GetArenaArea();
-            GetSpawnArea();
-            new ArenaTimer(this).runTaskLater(plugin, 10);
-        }
+        return ChatColor.RED + arenaName + ChatColor.WHITE;
     }
 
-    public void Deactivate()
-    {
-        arenaRunID = null;
-        RestoreArena();
-        isActive = false;
-        RemoveMobs();
-        ArenaEntities.clear();
-    }
+    public abstract void Activate();
 
-    private void RestoreArena()
+    public abstract void Deactivate();
+
+    public void RestoreArena()
     {
         for (SavedBlock sb : originalBlocks)
         {
@@ -140,25 +109,7 @@ public class ArenaBlock
         }
     }
 
-    public void GoToNextWave()
-    {
-        if (arenaPlayers.size() > 0)
-        {
-            GetPlayersAverageLevel();
-            currentRunTimes++;
-            if (currentRunTimes == 1)
-            {
-                new MessageTimer(arenaPlayers, arenaName + " has Started!!")
-                        .run();
-            }
-            new MessageTimer(arenaPlayers, arenaName + " Wave: "
-                    + String.valueOf(currentRunTimes)).run();
-
-            new Wave(this);
-
-            new ArenaTimer(this).runTaskLater(plugin, timerPeriod);
-        }
-    }
+    public abstract void GoToNextWave();
 
     public void RemoveMobs()
     {
@@ -213,24 +164,6 @@ public class ArenaBlock
         }
     }
 
-    private Location CanSpawnAt(Location currentLocation)
-    {
-        Block currentBlock = currentLocation.getBlock();
-        Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
-        Block blockAbove = currentBlock.getRelative(BlockFace.UP);
-
-        if (currentBlock.getType() == Material.AIR
-                && blockAbove.getType() == Material.AIR
-                && MobToMat.Contains(blockBelow.getType()))
-        {
-            return currentLocation;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     public void GetPlayersAverageLevel()
     {
         if (arenaPlayers.size() == 0)
@@ -261,4 +194,23 @@ public class ArenaBlock
             maxMobCounter = arenaPlayers.size() * 15;
         }
     }
+
+    private Location CanSpawnAt(Location currentLocation)
+    {
+        Block currentBlock = currentLocation.getBlock();
+        Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
+        Block blockAbove = currentBlock.getRelative(BlockFace.UP);
+
+        if (currentBlock.getType() == Material.AIR
+                && blockAbove.getType() == Material.AIR
+                && MobToMat.Contains(blockBelow.getType()))
+        {
+            return currentLocation;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
 }
