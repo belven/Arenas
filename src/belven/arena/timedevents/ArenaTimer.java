@@ -14,6 +14,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import resources.Functions;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.events.ArenaSuccessful;
 import belven.arena.resources.functions;
@@ -120,7 +121,7 @@ public class ArenaTimer extends BukkitRunnable
                 + " mobs left").run();
 
         new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
-                functions.SecondsToTicks(10));
+                Functions.SecondsToTicks(10));
 
         this.cancel();
     }
@@ -147,7 +148,7 @@ public class ArenaTimer extends BukkitRunnable
     public void ArenaSuccessfull()
     {
         new BlockRestorer(Material.REDSTONE_BLOCK, arenaBlock.deactivateBlock)
-                .runTaskLater(arenaBlock.plugin, functions.SecondsToTicks(1));
+                .runTaskLater(arenaBlock.plugin, Functions.SecondsToTicks(1));
         // Give arena rewards
         arenaBlock.GiveRewards();
 

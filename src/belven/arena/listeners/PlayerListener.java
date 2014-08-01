@@ -27,9 +27,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
-import belven.arena.resources.functions;
 
 public class PlayerListener implements Listener
 {
@@ -79,7 +79,7 @@ public class PlayerListener implements Listener
                 if (event.getTo().distance(ab.LocationToCheckForPlayers) > (ab.radius * 2))
                 {
                     // event.getPlayer().teleport(
-                    // functions.lookAt(event.getFrom(),
+                    // Functions.lookAt(event.getFrom(),
                     // ab.LocationToCheckForPlayers));
                     // event.setCancelled(true);
                     plugin.LeaveArena(event.getPlayer());
@@ -173,7 +173,7 @@ public class PlayerListener implements Listener
 
             if (spawnLocation != null)
             {
-                spawnLocation = functions.offsetLocation(spawnLocation, 0.5, 0,
+                spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0,
                         0.5);
 
                 event.setRespawnLocation(spawnLocation);
@@ -212,7 +212,7 @@ public class PlayerListener implements Listener
 
             damagedPlayer.addPotionEffect(
                     new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
-                            functions.SecondsToTicks(3), 4), true);
+                            Functions.SecondsToTicks(3), 4), true);
             playerDeathProtection.remove(damagedPlayer.getName());
         }
 

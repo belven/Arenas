@@ -17,9 +17,11 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import resources.Functions;
+import resources.Gear;
+import resources.MaterialFunctions;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.events.ArenaBlockNewWave;
-import belven.arena.resources.functions;
 import belven.arena.timedevents.MessageTimer;
 
 public class Wave
@@ -66,7 +68,7 @@ public class Wave
         {
             boolean needsWeapon = true;
 
-            for (ItemStack is : functions.getAllMeeleWeapons())
+            for (ItemStack is : MaterialFunctions.getAllMeeleWeapons())
             {
                 if (p.getInventory().contains(is.getType()))
                 {
@@ -104,7 +106,7 @@ public class Wave
 
     public void MobToSpawn(Location spawnLocation)
     {
-        spawnLocation = functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
+        spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
         Block blockBelow = spawnLocation.getBlock().getRelative(BlockFace.DOWN);
         List<EntityType> et = new ArrayList<EntityType>();
@@ -170,7 +172,7 @@ public class Wave
 
     public void ScaleMobHealth(LivingEntity currentEntity)
     {
-        double heathToscaleTo = functions.MobMaxHealth(currentEntity)
+        double heathToscaleTo = Functions.MobMaxHealth(currentEntity)
                 + (arenaBlock.averageLevel * 1.2);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);
@@ -178,7 +180,7 @@ public class Wave
 
     public void ScaleBossHealth(LivingEntity currentEntity)
     {
-        double heathToscaleTo = functions.MobMaxHealth(currentEntity)
+        double heathToscaleTo = Functions.MobMaxHealth(currentEntity)
                 + (arenaBlock.averageLevel * 3);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);

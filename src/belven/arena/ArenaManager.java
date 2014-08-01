@@ -27,6 +27,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import resources.Functions;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.blocks.TempArenaBlock;
@@ -76,7 +77,7 @@ public class ArenaManager extends JavaPlugin
         pm.registerEvents(blockListener, this);
         pm.registerEvents(arenaListener, this);
         pm.registerEvents(mobListener, this);
-        // getServer().getName();
+        // getServer().getName(); 
         RecreateArenas();
     }
 
@@ -157,7 +158,7 @@ public class ArenaManager extends JavaPlugin
 
             Location pLoc = p.getLocation();
 
-            Player[] tempPlayers = functions.getNearbyPlayersNew(pLoc,
+            Player[] tempPlayers = Functions.getNearbyPlayersNew(pLoc,
                     (Radius - 2) + (Radius / 2));
 
             Radius = 0;
@@ -190,7 +191,7 @@ public class ArenaManager extends JavaPlugin
                     .getType());
 
             new TempArenaBlock(min, max, ArenaName, Radius, mobs, this,
-                    functions.SecondsToTicks(period));
+                    Functions.SecondsToTicks(period));
         }
         else
         {
@@ -785,7 +786,7 @@ public class ArenaManager extends JavaPlugin
             {
                 warpLocations.put(player.getName(), player.getLocation());
 
-                player.teleport(functions.offsetLocation(
+                player.teleport(Functions.offsetLocation(
                         ab.arenaWarp.getLocation(), 0.5, 0, 0.5));
 
                 player.sendMessage("You teleported to arena " + ab.arenaName);
@@ -836,7 +837,7 @@ public class ArenaManager extends JavaPlugin
 
     private void SetWaveTimer(Player currentPlayer, String newPeriod)
     {
-        int period = functions.SecondsToTicks(Integer.valueOf(newPeriod));
+        int period = Functions.SecondsToTicks(Integer.valueOf(newPeriod));
 
         if (HasArenaBlockSelected(currentPlayer))
         {
@@ -931,7 +932,7 @@ public class ArenaManager extends JavaPlugin
 
                 StandardArenaBlock newArenaBlock = new StandardArenaBlock(min,
                         max, ArenaName, Radius, mobs, this,
-                        functions.SecondsToTicks(Integer.valueOf(args[3])));
+                        Functions.SecondsToTicks(Integer.valueOf(args[3])));
 
                 SelectedArenaBlocks.put(currentPlayer.getName(), newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);

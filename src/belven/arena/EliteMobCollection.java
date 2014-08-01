@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.PlayerInventory;
 
+import resources.Gear;
 import belven.arena.blocks.ArenaBlock;
 
 public class EliteMobCollection

@@ -14,12 +14,12 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.resources.SavedBlock;
-import belven.arena.resources.functions;
 
 public abstract class ArenaBlock
 {
@@ -55,14 +55,14 @@ public abstract class ArenaBlock
             String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
             ArenaManager Plugin, int TimerPeriod)
     {
-        spawnAreaStartLocation = functions.offsetLocation(startLocation, 0, -1,
+        spawnAreaStartLocation = Functions.offsetLocation(startLocation, 0, -1,
                 0);
 
         spawnAreaEndLocation = endLocation;
 
         blockToActivate = startLocation.getBlock();
 
-        deactivateBlock = functions.offsetLocation(startLocation, 0, 2, 0)
+        deactivateBlock = Functions.offsetLocation(startLocation, 0, 2, 0)
                 .getBlock();
 
         LocationToCheckForPlayers = blockToActivate.getLocation();
@@ -132,7 +132,7 @@ public abstract class ArenaBlock
             return;
         }
 
-        arenaArea = functions.getBlocksBetweenPoints(spawnAreaStartLocation,
+        arenaArea = Functions.getBlocksBetweenPoints(spawnAreaStartLocation,
                 spawnAreaEndLocation);
 
         originalBlocks.clear();
