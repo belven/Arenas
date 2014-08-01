@@ -4,8 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/bukkit.jar"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/WorldEdit.jar"/>
-	<classpathentry kind="lib" path="C:/Users/sam/Desktop/Bukkit Reference/sqljdbc4.jar"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/BelvensTeams.jar"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/Resources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/lib/sqljdbc4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
