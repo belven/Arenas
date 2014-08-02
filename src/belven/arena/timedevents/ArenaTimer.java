@@ -17,7 +17,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import resources.Functions;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.events.ArenaSuccessful;
-import belven.arena.resources.functions;
 
 public class ArenaTimer extends BukkitRunnable
 {
@@ -162,7 +161,7 @@ public class ArenaTimer extends BukkitRunnable
                     new LinkedArenaTimer(arenaBlock, lab)
                             .runTaskLater(
                                     arenaBlock.plugin,
-                                    functions
+                                    Functions
                                             .SecondsToTicks(arenaBlock.linkedArenaDelay));
                 }
             }

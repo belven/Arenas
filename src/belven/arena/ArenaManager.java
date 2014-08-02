@@ -35,7 +35,6 @@ import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
-import belven.arena.resources.functions;
 import belven.teams.TeamManager;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -186,7 +185,7 @@ public class ArenaManager extends JavaPlugin
 
             String ArenaName = "Temp Arena"; // UUID.randomUUID().toString();
 
-            MobToMaterialCollecton mobs = MatToMob(functions
+            MobToMaterialCollecton mobs = MatToMob(Functions
                     .offsetLocation(p.getLocation(), 0, -1, 0).getBlock()
                     .getType());
 
