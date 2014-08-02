@@ -51,7 +51,7 @@ public class ArenaManager extends JavaPlugin
     public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
     public HashMap<String, ArenaBlock> SelectedArenaBlocks = new HashMap<String, ArenaBlock>();
 
-    public HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
+    private HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
 
     private static String queryStringSep = "', '";
@@ -76,7 +76,7 @@ public class ArenaManager extends JavaPlugin
         pm.registerEvents(blockListener, this);
         pm.registerEvents(arenaListener, this);
         pm.registerEvents(mobListener, this);
-        // getServer().getName(); 
+        // getServer().getName();
         RecreateArenas();
     }
 
@@ -479,7 +479,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public boolean HasArenaBlockSelected(Player player)
+    private boolean HasArenaBlockSelected(Player player)
     {
         if (SelectedArenaBlocks.get(player.getName()) == null)
         {
@@ -713,7 +713,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public void ListLinkedArenas(Player currentPlayer)
+    private void ListLinkedArenas(Player currentPlayer)
     {
         if (HasArenaBlockSelected(currentPlayer))
         {
@@ -905,7 +905,7 @@ public class ArenaManager extends JavaPlugin
         return tempArenaBlock;
     }
 
-    public void ArenaBlockCreated(Player currentPlayer, Block block,
+    private void ArenaBlockCreated(Player currentPlayer, Block block,
             String[] args)
     {
         block.setMetadata("ArenaBlock", new FixedMetadataValue(this,
@@ -947,7 +947,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public MobToMaterialCollecton MatToMob(String ArenaName, Statement stmt,
+    private MobToMaterialCollecton MatToMob(String ArenaName, Statement stmt,
             ResultSet rs)
     {
         MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
@@ -984,7 +984,7 @@ public class ArenaManager extends JavaPlugin
         return spawnMats;
     }
 
-    public void UpdateArenaNew(ArenaBlock ab)
+    private void UpdateArenaNew(ArenaBlock ab)
     {
         try
         {
@@ -1089,7 +1089,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public ResultSet GetArenaResult(String ArenaName, Statement stmt)
+    private ResultSet GetArenaResult(String ArenaName, Statement stmt)
     {
         try
         {
@@ -1105,7 +1105,7 @@ public class ArenaManager extends JavaPlugin
         return null;
     }
 
-    public List<ItemStack> GetArenaRewards(String ArenaName, Statement stmt,
+    private List<ItemStack> GetArenaRewards(String ArenaName, Statement stmt,
             ResultSet rs)
     {
         ArrayList<ItemStack> tempRewards = new ArrayList<ItemStack>();
@@ -1132,29 +1132,12 @@ public class ArenaManager extends JavaPlugin
         return tempRewards;
     }
 
-    public MobToMaterialCollecton MatToMob(Material mat)
+    private MobToMaterialCollecton MatToMob(Material mat)
     {
         MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
         spawnMats.Add(EntityType.ZOMBIE, mat);
         spawnMats.Add(EntityType.SKELETON, mat);
         return spawnMats;
-    }
-
-    public boolean ArenaExists(String ArenaName)
-    {
-        boolean tempArenaExists = false;
-        if (currentArenaBlocks.size() > 0)
-        {
-            for (ArenaBlock ab : currentArenaBlocks)
-            {
-                if (ab.arenaName == ArenaName)
-                {
-                    tempArenaExists = true;
-                    break;
-                }
-            }
-        }
-        return tempArenaExists;
     }
 
     @Override
@@ -1164,7 +1147,7 @@ public class ArenaManager extends JavaPlugin
         SaveArenas();
     }
 
-    public void InsertArena(ArenaBlock ab)
+    private void InsertArena(ArenaBlock ab)
     {
         try
         {
@@ -1259,55 +1242,7 @@ public class ArenaManager extends JavaPlugin
             }
     }
 
-    public void SetArenaRewards(ArenaBlock ab)
-    {
-        try
-        {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-
-            stmt = con.createStatement();
-
-            stmt.executeUpdate("ClearArenaRewards '" + ab.arenaName + "'");
-
-            for (ItemStack is : ab.arenaRewards)
-            {
-                String queryString = "AddArenaReward '";
-                queryString = queryString + ab.arenaName + queryStringSep;
-                queryString = queryString + is.getType().name()
-                        + queryStringToNumberSep;
-                queryString = queryString + is.getDurability() + queryNumberSep;
-                queryString = queryString + is.getAmount() + queryNumberSep;
-                queryString = queryString + 0;
-
-                stmt.executeUpdate(queryString);
-            }
-
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        if (stmt != null)
-            try
-            {
-                stmt.close();
-            }
-            catch (Exception e)
-            {
-            }
-        if (con != null)
-            try
-            {
-                con.close();
-            }
-            catch (Exception e)
-            {
-            }
-    }
-
-    public void RemoveArena(ArenaBlock ab)
+    private void RemoveArena(ArenaBlock ab)
     {
         try
         {
@@ -1346,7 +1281,7 @@ public class ArenaManager extends JavaPlugin
             }
     }
 
-    public void SaveArenas()
+    private void SaveArenas()
     {
         for (ArenaBlock ab : currentArenaBlocks)
         {
@@ -1443,7 +1378,7 @@ public class ArenaManager extends JavaPlugin
 
     }
 
-    public List<ArenaBlock> GetLinkedArenas(String arenaName, Statement stmt,
+    private List<ArenaBlock> GetLinkedArenas(String arenaName, Statement stmt,
             ResultSet rs)
     {
         List<ArenaBlock> tempArenas = new ArrayList<ArenaBlock>();
@@ -1473,7 +1408,7 @@ public class ArenaManager extends JavaPlugin
         return tempArenas;
     }
 
-    public void StoreAllLinkedArenas(ArenaBlock ab)
+    private void StoreAllLinkedArenas(ArenaBlock ab)
     {
         for (ArenaBlock lab : ab.linkedArenas)
         {
@@ -1484,7 +1419,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public boolean StoreLinkedArena(String arenaName, String linkedArena)
+    private boolean StoreLinkedArena(String arenaName, String linkedArena)
     {
         try
         {
@@ -1508,7 +1443,7 @@ public class ArenaManager extends JavaPlugin
         return false;
     }
 
-    public void RemovedAllLinkedArenas(ArenaBlock ab)
+    private void RemovedAllLinkedArenas(ArenaBlock ab)
     {
         for (ArenaBlock lab : ab.linkedArenas)
         {
@@ -1516,7 +1451,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    public boolean RemoveLinkedArena(ArenaBlock ab, String linkedArena)
+    private boolean RemoveLinkedArena(ArenaBlock ab, String linkedArena)
     {
         try
         {
@@ -1539,7 +1474,7 @@ public class ArenaManager extends JavaPlugin
         return false;
     }
 
-    public Location StringToLocation(String s, World world)
+    private Location StringToLocation(String s, World world)
     {
         Location tempLoc;
         String[] strings = s.split(",");
@@ -1550,7 +1485,7 @@ public class ArenaManager extends JavaPlugin
         return tempLoc;
     }
 
-    public String LocationToString(Block block)
+    private String LocationToString(Block block)
     {
         String locationString = "";
         Location l = block.getLocation();
@@ -1561,7 +1496,7 @@ public class ArenaManager extends JavaPlugin
         return locationString;
     }
 
-    public String LocationToString(Location l)
+    private String LocationToString(Location l)
     {
         String locationString = "";
 
