@@ -442,7 +442,7 @@ public class ArenaManager extends JavaPlugin
 
     public ArenaBlock GetSelectedArenaBlock(Player p)
     {
-        return GetSelectedArenaBlock(p);
+        return SelectedArenaBlocks.get(p);
     }
 
     private void ForceStartArena(Player p)
