@@ -17,6 +17,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import resources.EntityFunctions;
 import resources.Functions;
 import resources.Gear;
 import resources.MaterialFunctions;
@@ -172,7 +173,7 @@ public class Wave
 
     public void ScaleMobHealth(LivingEntity currentEntity)
     {
-        double heathToscaleTo = Functions.MobMaxHealth(currentEntity)
+        double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
                 + (arenaBlock.averageLevel * 1.2);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);
@@ -180,7 +181,7 @@ public class Wave
 
     public void ScaleBossHealth(LivingEntity currentEntity)
     {
-        double heathToscaleTo = Functions.MobMaxHealth(currentEntity)
+        double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
                 + (arenaBlock.averageLevel * 3);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);

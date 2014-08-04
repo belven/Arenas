@@ -44,13 +44,30 @@ public class MobToMaterialCollecton
         return ets;
     }
 
+    public List<EntityType> EntityTypes(Material m)
+    {
+        List<EntityType> ets = new ArrayList<EntityType>();
+
+        for (MobToMaterial mtm : MobToMaterials)
+        {
+            if (mtm.m == m && !ets.contains(mtm.et))
+            {
+                ets.add(mtm.et);
+            }
+        }
+        return ets;
+    }
+
     public List<Material> Materials()
     {
         List<Material> mats = new ArrayList<Material>();
 
         for (MobToMaterial mtm : MobToMaterials)
         {
-            mats.add(mtm.m);
+            if (!mats.contains(mtm.m))
+            {
+                mats.add(mtm.m);
+            }
         }
         return mats;
     }

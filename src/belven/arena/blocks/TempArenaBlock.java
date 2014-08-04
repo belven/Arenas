@@ -6,7 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import resources.Functions;
+import resources.EntityFunctions;
 import belven.arena.ArenaManager;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.Wave;
@@ -31,7 +31,7 @@ public class TempArenaBlock extends ArenaBlock
     {
         if (arenaPlayers.size() == 0)
         {
-            Player[] tempPlayers = Functions.getNearbyPlayersNew(
+            Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(
                     LocationToCheckForPlayers, (radius - 2) + (radius / 2));
             for (Player p : tempPlayers)
             {

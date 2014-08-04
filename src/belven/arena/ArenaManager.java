@@ -1,14 +1,11 @@
 package belven.arena;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,6 +15,8 @@ import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,8 +25,14 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.Potion;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
+import resources.EntityFunctions;
 import resources.Functions;
+import resources.Gear;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.blocks.TempArenaBlock;
@@ -54,19 +59,10 @@ public class ArenaManager extends JavaPlugin
     private HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
 
-    private static String queryStringSep = "', '";
-    private static String queryNumberSep = ", ";
-    private static String queryStringToNumberSep = "', ";
     // private static String queryNumberToStringSep = ", '";
 
     public TeamManager teams = (TeamManager) Bukkit.getServer()
             .getPluginManager().getPlugin("BelvensTeams");
-
-    String connectionUrl = "jdbc:sqlserver://f0bh84aran.database.windows.net:1433;database=Arenas;user=belven@f0bh84aran;password=Something123;encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-
-    Connection con = null;
-    Statement stmt = null;
-    ResultSet rs = null;
 
     @Override
     public void onEnable()
@@ -77,7 +73,8 @@ public class ArenaManager extends JavaPlugin
         pm.registerEvents(arenaListener, this);
         pm.registerEvents(mobListener, this);
         // getServer().getName();
-        RecreateArenas();
+        // RecreateArenas();
+        RecreateArenasFromConfig();
     }
 
     @Override
@@ -119,6 +116,18 @@ public class ArenaManager extends JavaPlugin
             ForceStartArena(player);
             return true;
         }
+        else if (args[0].equalsIgnoreCase("reloadarena")
+                || args[0].equalsIgnoreCase("ra"))
+        {
+            ReloadArena(player);
+            return true;
+        }
+        else if (args[0].equalsIgnoreCase("givearenarewards")
+                || args[0].equalsIgnoreCase("gar"))
+        {
+            GiveArenaRewards(player);
+            return true;
+        }
         else if (args[0].equalsIgnoreCase("portmobs")
                 || args[0].equalsIgnoreCase("pm"))
         {
@@ -147,6 +156,30 @@ public class ArenaManager extends JavaPlugin
         return false;
     }
 
+    private void ReloadArena(Player p)
+    {
+        if (HasArenaBlockSelected(p))
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(p.getName());
+            ReloadArenaFromConfig(ab.arenaName);
+            p.sendMessage("Arena " + ab.ArenaName() + " has been reloaded");
+        }
+
+    }
+
+    private void GiveArenaRewards(Player p)
+    {
+        if (HasArenaBlockSelected(p))
+        {
+            ArenaBlock ab = SelectedArenaBlocks.get(p.getName());
+            ab.arenaPlayers.add(p);
+            ab.GiveRewards();
+            ab.arenaPlayers.remove(p);
+            p.sendMessage("You were given arena " + ab.ArenaName()
+                    + "s rewards");
+        }
+    }
+
     private void CreateTempArena(Player p)
     {
         if (!IsPlayerInArena(p))
@@ -157,7 +190,7 @@ public class ArenaManager extends JavaPlugin
 
             Location pLoc = p.getLocation();
 
-            Player[] tempPlayers = Functions.getNearbyPlayersNew(pLoc,
+            Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(pLoc,
                     (Radius - 2) + (Radius / 2));
 
             Radius = 0;
@@ -230,7 +263,7 @@ public class ArenaManager extends JavaPlugin
             if (HasArenaBlockSelected(player))
             {
                 ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-                UpdateArenaNew(ab);
+                SaveArenaToConfig(ab);
                 player.sendMessage("Arena " + ab.arenaName + " was saved");
                 return true;
             }
@@ -371,11 +404,11 @@ public class ArenaManager extends JavaPlugin
                     {
                         selectedAB.linkedArenas.add(arenaToLink);
 
-                        if (StoreLinkedArena(selectedAB.arenaName, args[1]))
-                        {
-                            player.sendMessage(args[1] + " was added to "
-                                    + selectedAB.arenaName);
-                        }
+                        // if (StoreLinkedArena(selectedAB.arenaName, args[1]))
+                        // {
+                        // player.sendMessage(args[1] + " was added to "
+                        // + selectedAB.arenaName);
+                        // }
                     }
                     else
                     {
@@ -399,45 +432,14 @@ public class ArenaManager extends JavaPlugin
 
                 selectedAB.linkedArenas.remove(getArenaBlock(args[1]));
 
-                if (RemoveLinkedArena(selectedAB, args[1]))
-                {
-                    player.sendMessage(args[1] + " was removed from "
-                            + selectedAB.arenaName);
-                }
             }
             return true;
         }
         else if (player.hasPermission("BelvensArenas.create")
                 && args.length >= 4)
         {
-            try
-            {
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                con = DriverManager.getConnection(connectionUrl);
-                stmt = con.createStatement();
 
-                rs = stmt.executeQuery("ArenaExists '" + args[0] + "'");
-
-                if (rs.next()
-                        && rs.getString("ArenaExists").equalsIgnoreCase("1"))
-                {
-                    player.sendMessage("Arena " + args[0] + " already exists");
-                }
-                else
-                {
-                    ArenaBlockCreated(player, player.getLocation().getBlock(),
-                            args);
-                }
-            }
-            catch (SQLException e)
-            {
-                e.printStackTrace();
-            }
-            catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-
+            ArenaBlockCreated(player, player.getLocation().getBlock(), args);
             return true;
         }
         else if (player.hasPermission("BelvensArenas.select")
@@ -447,7 +449,6 @@ public class ArenaManager extends JavaPlugin
             SelectArena(player, args[1]);
             return true;
         }
-
         return false;
     }
 
@@ -652,32 +653,8 @@ public class ArenaManager extends JavaPlugin
     {
         if (HasArenaBlockSelected(player))
         {
-            try
-            {
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                con = DriverManager.getConnection(connectionUrl);
-
-                stmt = con.createStatement();
-
-                ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-
-                String mobToRemove = "";
-
-                mobToRemove = mobToRemove + ab.arenaName + "', '";
-                mobToRemove = mobToRemove + et + "', '";
-                mobToRemove = mobToRemove + m + "'";
-
-                stmt.executeUpdate("RemoveArenaMob '" + mobToRemove);
-                player.sendMessage(ab.MobToMat.Remove(et, m));
-            }
-            catch (SQLException e)
-            {
-                e.printStackTrace();
-            }
-            catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            player.sendMessage(ab.MobToMat.Remove(et, m));
         }
     }
 
@@ -685,31 +662,8 @@ public class ArenaManager extends JavaPlugin
     {
         if (HasArenaBlockSelected(player))
         {
-            try
-            {
-                ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
-
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                con = DriverManager.getConnection(connectionUrl);
-
-                stmt = con.createStatement();
-                String mobToAdd = "";
-
-                mobToAdd = mobToAdd + ab.arenaName + "', '";
-                mobToAdd = mobToAdd + et + "', '";
-                mobToAdd = mobToAdd + m + "'";
-
-                stmt.executeUpdate("InsertMobToMat '" + mobToAdd);
-                player.sendMessage(ab.MobToMat.Add(et, m));
-            }
-            catch (SQLException e)
-            {
-                e.printStackTrace();
-            }
-            catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
+            ArenaBlock ab = SelectedArenaBlocks.get(player.getName());
+            player.sendMessage(ab.MobToMat.Add(et, m));
         }
     }
 
@@ -822,7 +776,10 @@ public class ArenaManager extends JavaPlugin
             Block ab = SelectedArenaBlocks.get(currentPlayer.getName()).blockToActivate;
             ab.removeMetadata("ArenaBlock", this);
 
-            RemoveArena(SelectedArenaBlocks.get(currentPlayer.getName()));
+            String path = "Arenas."
+                    + SelectedArenaBlocks.get(currentPlayer).arenaName;
+
+            getConfig().set(path, null);
 
             currentArenaBlocks.remove(SelectedArenaBlocks.get(currentPlayer
                     .getName()));
@@ -938,7 +895,7 @@ public class ArenaManager extends JavaPlugin
                 currentPlayer.sendMessage("Arena " + newArenaBlock.arenaName
                         + " was created!!");
 
-                InsertArena(newArenaBlock);
+                // InsertArena(newArenaBlock);
             }
         }
         else
@@ -947,189 +904,157 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
-    private MobToMaterialCollecton MatToMob(String ArenaName, Statement stmt,
-            ResultSet rs)
+    private void SaveArenaToConfig(ArenaBlock ab)
     {
-        MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
+        String path = "Arenas." + ab.arenaName;
+        getConfig().set(path, null);
+        getConfig().set(path + ".Radius", ab.radius);
+        getConfig().set(path + ".timerPeriod", ab.timerPeriod);
+        getConfig().set(path + ".maxRunTimes", ab.maxRunTimes);
 
-        try
-        {
-            stmt = con.createStatement();
+        getConfig().set(path + ".LocationToCheckForPlayers",
+                LocationToString(ab.LocationToCheckForPlayers));
 
-            rs = stmt.executeQuery("GetArenaMobs '" + ArenaName + "'");
+        getConfig().set(path + ".World",
+                ab.spawnAreaStartLocation.getWorld().getName());
 
-            while (rs.next())
-            {
-                EntityType et = EntityType.valueOf(rs.getString("EntityType"));
-                Material m = Material.getMaterial(rs.getString("Material"));
+        getConfig().set(path + ".blockToActivate",
+                LocationToString(ab.blockToActivate));
 
-                if (m == null)
-                {
-                    m = Material.STONE;
-                }
+        getConfig().set(path + ".deactivateBlock",
+                LocationToString(ab.deactivateBlock));
 
-                if (et == null)
-                {
-                    et = EntityType.ZOMBIE;
-                }
+        getConfig().set(path + ".arenaWarp", LocationToString(ab.arenaWarp));
 
-                spawnMats.Add(et, m);
-            }
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
+        getConfig().set(path + ".spawnAreaStartLocation",
+                LocationToString(ab.spawnAreaStartLocation));
 
-        return spawnMats;
+        getConfig().set(path + ".spawnAreaEndLocation",
+                LocationToString(ab.spawnAreaEndLocation));
+
+        getConfig().set(path + ".linkedArenaDelay", ab.linkedArenaDelay);
+        getConfig().set(path + ".eliteWave", ab.eliteWave);
+
+        SaveArenaEliteMobs(ab);
+        SaveArenaMobs(ab);
+        SaveArenaRewards(ab);
+        getConfig().set(path + ".Boss.Type", ab.bm.BossType.toString());
+        saveConfig();
     }
 
-    private void UpdateArenaNew(ArenaBlock ab)
+    private void SaveArenaEliteMobs(ArenaBlock ab)
     {
-        try
+        String path = "Arenas." + ab.arenaName + ".EliteMobs.";
+
+        for (EliteMob em : ab.emc.ems)
         {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
+            String typePath = path + em.type.name();
+            Gear g = em.armor;
 
-            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,
-                    ResultSet.CONCUR_UPDATABLE);
-
-            ResultSet rs = GetArenaResult(ab.arenaName, stmt);
-
-            if (rs != null)
+            if (g.h != null)
             {
-                while (!rs.isClosed() && rs.next())
-                {
-                    rs.updateString("BlockToActivate",
-                            LocationToString(ab.blockToActivate));
-
-                    rs.updateString("DeactivateBlock",
-                            LocationToString(ab.deactivateBlock));
-
-                    rs.updateString("ArenaWarp", LocationToString(ab.arenaWarp));
-
-                    rs.updateString("ArenaBlockStartLocation",
-                            LocationToString(ab.spawnAreaStartLocation));
-
-                    rs.updateString("LocationToCheckForPlayers",
-                            LocationToString(ab.LocationToCheckForPlayers));
-
-                    rs.updateInt("Radius", ab.radius);
-
-                    rs.updateInt("TimerPeriod", ab.timerPeriod);
-
-                    rs.updateInt("MaxRunTimes", ab.maxRunTimes);
-
-                    rs.updateString("World", ab.blockToActivate.getWorld()
-                            .getName());
-
-                    rs.updateString("ArenaBlockEndLocation",
-                            LocationToString(ab.spawnAreaEndLocation));
-
-                    rs.updateInt("LinkedArenaDelay", ab.linkedArenaDelay);
-
-                    rs.updateRow();
-
-                    for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
-                    {
-                        String mobExists = "";
-                        String Insert = "InsertMobToMat '";
-
-                        mobExists = mobExists + ab.arenaName + "', '";
-                        mobExists = mobExists + mtm.et.name() + "', '";
-                        mobExists = mobExists + mtm.m.name() + "'";
-
-                        rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
-
-                        if (rs.next()
-                                && rs.getString("MobExists").equalsIgnoreCase(
-                                        "0"))
-                        {
-                            stmt.executeUpdate(Insert + mobExists);
-                        }
-                    }
-
-                    String resetArenaItems = "ResetArenaItems '" + ab.arenaName
-                            + "'";
-
-                    stmt.executeUpdate(resetArenaItems);
-
-                    for (ItemStack is : ab.arenaRewards)
-                    {
-                        String mobExists = "";
-                        String Insert = "AddArenaReward '";
-
-                        mobExists = mobExists + ab.arenaName + queryStringSep;
-                        mobExists = mobExists + is.getType().name()
-                                + queryStringSep;
-                        mobExists = mobExists
-                                + String.valueOf((int) is.getDurability())
-                                + queryStringToNumberSep;
-                        mobExists = mobExists + is.getAmount() + queryNumberSep;
-                        mobExists = mobExists + 1;
-
-                        stmt.executeUpdate(Insert + mobExists);
-                    }
-
-                    RemovedAllLinkedArenas(ab);
-                    StoreAllLinkedArenas(ab);
-
-                    getLogger().info(
-                            ab.arenaName + " has been save to the database!!");
-                }
+                ItemStackToPath(g.h, typePath + ".Helmet");
             }
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
+
+            if (g.c != null)
+            {
+                ItemStackToPath(g.c, typePath + ".ChestPlate");
+            }
+
+            if (g.l != null)
+            {
+                ItemStackToPath(g.l, typePath + ".Leggins");
+            }
+
+            if (g.b != null)
+            {
+                ItemStackToPath(g.b, typePath + ".Boots");
+            }
+
+            if (g.w != null)
+            {
+                ItemStackToPath(g.w, typePath + ".Weapon");
+            }
         }
     }
 
-    private ResultSet GetArenaResult(String ArenaName, Statement stmt)
+    private void SaveArenaMobs(ArenaBlock ab)
     {
-        try
+        String path = "Arenas." + ab.arenaName;
+
+        for (Material m : ab.MobToMat.Materials())
         {
-            ResultSet rs = stmt
-                    .executeQuery("SELECT * FROM arena WHERE ArenaName LIKE '"
-                            + ArenaName + "'");
-            return rs;
+            String entities = "";
+
+            for (EntityType et : ab.MobToMat.EntityTypes(m))
+            {
+                entities += et.toString() + ", ";
+            }
+
+            entities = entities.substring(0, entities.length() - 2);
+            getConfig().set(path + ".Mobs." + m.toString(), entities);
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
     }
 
-    private List<ItemStack> GetArenaRewards(String ArenaName, Statement stmt,
-            ResultSet rs)
+    private void SaveArenaRewards(ArenaBlock ab)
     {
-        ArrayList<ItemStack> tempRewards = new ArrayList<ItemStack>();
-        try
+        String path = "Arenas." + ab.arenaName;
+
+        for (ItemStack is : ab.arenaRewards)
         {
-            stmt = con.createStatement();
+            String currentPath = path + ".Rewards";
+            ItemStackToPath(is, currentPath);
+        }
+    }
 
-            rs = stmt.executeQuery("GetArenaItems '" + ArenaName + "'");
+    public void ItemStackToPath(ItemStack is, String Path)
+    {
+        if (is == null)
+            return;
 
-            while (rs.next())
+        if (is.getType() == Material.POTION)
+        {
+            SaveItemPotionEffect(is, Path);
+        }
+        else
+        {
+            Path += "." + is.getType().toString();
+            getConfig().set(Path + ".Amount", is.getAmount());
+            getConfig().set(Path + ".Durability", is.getDurability());
+
+            if (is.getEnchantments().size() > 0)
             {
-                Material m = Material.valueOf(rs.getString("MaterialType"));
-                int a = rs.getInt("Amount");
-                ItemStack is = new ItemStack(m, a);
-                is.setDurability(rs.getShort("Durability"));
-                tempRewards.add(is);
+                SaveItemEnchantments(is, Path);
             }
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
+    }
 
-        return tempRewards;
+    private void SaveItemPotionEffect(ItemStack is, String currentPath)
+    {
+        Potion p = Potion.fromItemStack(is);
+        currentPath += ".Potions.";
+        Collection<PotionEffect> fx = p.getEffects();
+        for (PotionEffect pe : fx)
+        {
+            String path = currentPath + pe.getType().getName();
+            getConfig().set(path + ".Amplifier", pe.getAmplifier());
+            getConfig().set(path + ".Splash", p.isSplash());
+        }
+    }
+
+    private void SaveItemEnchantments(ItemStack is, String currentPath)
+    {
+        Map<Enchantment, Integer> enchants = is.getEnchantments();
+
+        if (!enchants.isEmpty())
+        {
+            currentPath += ".Enchantments.";
+
+            for (Enchantment e : enchants.keySet())
+            {
+                getConfig().set(currentPath + e.getName(), enchants.get(e));
+            }
+        }
     }
 
     private MobToMaterialCollecton MatToMob(Material mat)
@@ -1143,335 +1068,221 @@ public class ArenaManager extends JavaPlugin
     @Override
     public void onDisable()
     {
-        getLogger().info("Goodbye world!");
         SaveArenas();
-    }
-
-    private void InsertArena(ArenaBlock ab)
-    {
-        try
-        {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-
-            String Insert = "InsertArena ";
-
-            stmt = con.createStatement();
-
-            PreparedStatement ps = con
-                    .prepareStatement("INSERT INTO arena VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-            ps.setString(1, ab.arenaName);
-            ps.setString(2, LocationToString(ab.blockToActivate));
-            ps.setString(3, LocationToString(ab.deactivateBlock));
-            ps.setString(4, LocationToString(ab.arenaWarp));
-            ps.setString(5, LocationToString(ab.spawnAreaStartLocation));
-            ps.setString(6, LocationToString(ab.LocationToCheckForPlayers));
-            ps.setInt(7, ab.radius);
-            ps.setString(8, "Grass");
-            ps.setInt(10, ab.timerPeriod);
-            ps.setInt(11, ab.maxRunTimes);
-            ps.setString(12, ab.blockToActivate.getWorld().getName());
-            ps.setString(13, LocationToString(ab.spawnAreaEndLocation));
-            ps.setInt(14, ab.linkedArenaDelay);
-            ps.addBatch();
-            ps.executeBatch();
-
-            // stmt.executeUpdate(Insert + ArenaString(ab));
-
-            for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
-            {
-                String mobExists = "";
-                Insert = "InsertMobToMat '";
-
-                mobExists = mobExists + ab.arenaName + "', '";
-                mobExists = mobExists + mtm.et.name() + "', '";
-                mobExists = mobExists + mtm.m.name() + "'";
-
-                rs = stmt.executeQuery("ArenaMobsExist '" + mobExists);
-
-                if (rs.next()
-                        && rs.getString("MobExists").equalsIgnoreCase("0"))
-                {
-                    stmt.executeUpdate(Insert + mobExists);
-                }
-            }
-
-            String resetArenaItems = "ResetArenaItems '" + ab.arenaName + "'";
-            stmt.executeUpdate(resetArenaItems);
-
-            for (ItemStack is : ab.arenaRewards)
-            {
-                String mobExists = "";
-                Insert = "AddArenaReward '";
-
-                mobExists = mobExists + ab.arenaName + queryStringSep;
-                mobExists = mobExists + is.getType().name() + queryStringSep;
-                mobExists = mobExists
-                        + String.valueOf((int) is.getDurability())
-                        + queryStringToNumberSep;
-                mobExists = mobExists + is.getAmount() + queryNumberSep;
-                mobExists = mobExists + 1;
-
-                stmt.executeUpdate(Insert + mobExists);
-            }
-
-            RemovedAllLinkedArenas(ab);
-            StoreAllLinkedArenas(ab);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        if (stmt != null)
-            try
-            {
-                stmt.close();
-            }
-            catch (Exception e)
-            {
-            }
-        if (con != null)
-            try
-            {
-                con.close();
-            }
-            catch (Exception e)
-            {
-            }
-    }
-
-    private void RemoveArena(ArenaBlock ab)
-    {
-        try
-        {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-            stmt = con.createStatement();
-
-            RemovedAllLinkedArenas(ab);
-
-            stmt.executeUpdate("RemoveArena '" + ab.arenaName + "'");
-        }
-        catch (ClassNotFoundException e1)
-        {
-            e1.printStackTrace();
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-
-        if (stmt != null)
-            try
-            {
-                stmt.close();
-            }
-            catch (Exception e)
-            {
-            }
-        if (con != null)
-            try
-            {
-                con.close();
-            }
-            catch (Exception e)
-            {
-            }
     }
 
     private void SaveArenas()
     {
         for (ArenaBlock ab : currentArenaBlocks)
         {
-            UpdateArenaNew(ab);
+            SaveArenaToConfig(ab);
         }
     }
 
-    private void RecreateArenas()
+    private void ReloadArenaFromConfig(String ArenaName)
     {
-        try
+        String currentPath = "Arenas.";
+        String path = currentPath + ArenaName;
+
+        int radius = getConfig().getInt(path + ".Radius");
+        int maxRunTimes = getConfig().getInt(path + ".maxRunTimes");
+        int timerPeriod = getConfig().getInt(path + ".timerPeriod");
+        int linkedArenaDelay = getConfig().getInt(path + ".linkedArenaDelay");
+        int eliteWave = getConfig().getInt(path + ".eliteWave");
+
+        String worldName = getConfig().getString(path + ".World");
+
+        if (worldName == null)
         {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-            stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Arena");
-
-            while (rs.next())
-            {
-                String ArenaName = rs.getString("ArenaName");
-                String warpLocation = rs.getString("ArenaWarp");
-
-                int Radius = rs.getInt("Radius");
-                int TimerPeriod = rs.getInt("TimerPeriod");
-                int MaxRunTimes = rs.getInt("MaxRunTimes");
-
-                World world = this.getServer().getWorld(rs.getString("World"));
-
-                if (world == null)
-                {
-                    WorldCreator wc = new WorldCreator(rs.getString("World"));
-                    world = this.getServer().createWorld(wc);
-                }
-
-                if (world != null)
-                {
-                    Block BlockToActivate = StringToLocation(
-                            rs.getString("BlockToActivate"), world).getBlock();
-
-                    Location arenaBlockStartLocation = StringToLocation(
-                            rs.getString("ArenaBlockStartLocation"), world);
-
-                    Location arenaBlockEndLocation = StringToLocation(
-                            rs.getString("ArenaBlockEndLocation"), world);
-
-                    Location LocationToCheckForPlayers = StringToLocation(
-                            rs.getString("LocationToCheckForPlayers"), world);
-
-                    Block BlockToDeactivate = StringToLocation(
-                            rs.getString("DeactivateBlock"), world).getBlock();
-
-                    MobToMaterialCollecton mobs = MatToMob(ArenaName, stmt, rs);
-
-                    int LinkedArenaDelay = rs.getInt("LinkedArenaDelay");
-
-                    StandardArenaBlock newArenaBlock = new StandardArenaBlock(
-                            arenaBlockStartLocation, arenaBlockEndLocation,
-                            ArenaName, Radius, mobs, this, TimerPeriod);
-
-                    newArenaBlock.arenaRewards = GetArenaRewards(ArenaName,
-                            stmt, rs);
-
-                    BlockToActivate.setMetadata("ArenaBlock",
-                            new FixedMetadataValue(this, "Something"));
-
-                    newArenaBlock.arenaWarp = StringToLocation(warpLocation,
-                            world).getBlock();
-
-                    newArenaBlock.blockToActivate = BlockToActivate;
-                    newArenaBlock.LocationToCheckForPlayers = LocationToCheckForPlayers;
-                    newArenaBlock.deactivateBlock = BlockToDeactivate;
-                    newArenaBlock.linkedArenaDelay = LinkedArenaDelay;
-                    newArenaBlock.maxRunTimes = Integer.valueOf(MaxRunTimes);
-                    currentArenaBlocks.add(newArenaBlock);
-                }
-            }
-
-            for (ArenaBlock ab : currentArenaBlocks)
-            {
-                for (ArenaBlock lab : GetLinkedArenas(ab.arenaName, stmt, rs))
-                {
-                    ab.linkedArenas.add(lab);
-                }
-            }
-
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
+            worldName = "world";
         }
 
-    }
+        World world = this.getServer().getWorld(worldName);
 
-    private List<ArenaBlock> GetLinkedArenas(String arenaName, Statement stmt,
-            ResultSet rs)
-    {
-        List<ArenaBlock> tempArenas = new ArrayList<ArenaBlock>();
-        ArenaBlock tempArena = null;
-        try
+        if (world == null)
         {
-            rs = stmt
-                    .executeQuery("SELECT * FROM linkedarenas WHERE Parent like '"
-                            + arenaName + "'");
+            WorldCreator wc = new WorldCreator(worldName);
+            world = this.getServer().createWorld(wc);
 
-            while (rs.next())
+            if (world == null)
             {
-                String ArenaName = rs.getString("Child");
-                tempArena = getArenaBlock(ArenaName);
-
-                if (tempArena != null)
-                {
-                    tempArenas.add(tempArena);
-                }
+                return;
             }
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
 
-        return tempArenas;
+        Location LocationToCheckForPlayers = StringToLocation(getConfig()
+                .getString(path + ".LocationToCheckForPlayers"), world);
+
+        Block blockToActivate = StringToLocation(
+                getConfig().getString(path + ".blockToActivate"), world)
+                .getBlock();
+
+        Block deactivateBlock = StringToLocation(
+                getConfig().getString(path + ".deactivateBlock"), world)
+                .getBlock();
+
+        Block arenaWarp = StringToLocation(
+                getConfig().getString(path + ".arenaWarp"), world).getBlock();
+
+        Location spawnAreaStartLocation = StringToLocation(getConfig()
+                .getString(path + ".spawnAreaStartLocation"), world);
+
+        Location spawnAreaEndLocation = StringToLocation(
+                getConfig().getString(path + ".spawnAreaEndLocation"), world);
+
+        MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
+
+        StandardArenaBlock newArenaBlock = new StandardArenaBlock(
+                spawnAreaStartLocation, spawnAreaEndLocation, ArenaName,
+                radius, mobs, this, timerPeriod);
+
+        blockToActivate.setMetadata("ArenaBlock", new FixedMetadataValue(this,
+                "Something"));
+
+        newArenaBlock.arenaWarp = arenaWarp;
+        newArenaBlock.arenaRewards = GetArenaRewards(ArenaName, path);
+        newArenaBlock.blockToActivate = blockToActivate;
+        newArenaBlock.LocationToCheckForPlayers = LocationToCheckForPlayers;
+        newArenaBlock.deactivateBlock = deactivateBlock;
+        newArenaBlock.linkedArenaDelay = linkedArenaDelay;
+        newArenaBlock.maxRunTimes = maxRunTimes;
+        newArenaBlock.eliteWave = eliteWave;
+        currentArenaBlocks.add(newArenaBlock);
+        getLogger().info(ArenaName + " has been created!!");
     }
 
-    private void StoreAllLinkedArenas(ArenaBlock ab)
+    private void RecreateArenasFromConfig()
     {
-        for (ArenaBlock lab : ab.linkedArenas)
+        String currentPath = "Arenas.";
+        Set<String> arenas = getConfig().getConfigurationSection(currentPath)
+                .getKeys(false);
+
+        for (String ArenaName : arenas)
         {
-            if (lab != null)
+            ReloadArenaFromConfig(ArenaName);
+        }
+    }
+
+    private MobToMaterialCollecton GetArenaMobs(String ArenaName, String Path)
+    {
+        MobToMaterialCollecton tempMobs = new MobToMaterialCollecton();
+        Set<String> materials = getConfig().getConfigurationSection(
+                Path + ".Mobs").getKeys(false);
+
+        for (String mat : materials)
+        {
+            String[] mobs = getConfig().getString(Path + ".Mobs." + mat).split(
+                    ", ");
+
+            for (String et : mobs)
             {
-                StoreLinkedArena(ab.arenaName, lab.arenaName);
+                tempMobs.Add(EntityType.valueOf(et), Material.valueOf(mat));
             }
         }
+
+        return tempMobs;
     }
 
-    private boolean StoreLinkedArena(String arenaName, String linkedArena)
+    private List<ItemStack> GetItemsAtPath(String Path)
     {
-        try
-        {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-            stmt = con.createStatement();
+        List<ItemStack> tempItems = new ArrayList<ItemStack>();
 
-            stmt.executeUpdate("AddLinkedArena '" + arenaName + "'" + ", '"
-                    + linkedArena + "'");
-            return true;
+        Set<String> items = getConfig().getConfigurationSection(Path).getKeys(
+                false);
 
-        }
-        catch (ClassNotFoundException e)
+        for (String item : items)
         {
-            e.printStackTrace();
+            if (item.equals("Potions"))
+            {
+                ConfigurationSection potionsConfig = getConfig()
+                        .getConfigurationSection(Path + ".Potions");
+                if (potionsConfig != null)
+                {
+                    for (String pe : potionsConfig.getKeys(false))
+                    {
+                        tempItems.add(GetItemFromPath(pe, Path));
+                    }
+                }
+            }
+            else
+            {
+                tempItems.add(GetItemFromPath(item, Path));
+            }
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        return false;
+        return tempItems;
+
     }
 
-    private void RemovedAllLinkedArenas(ArenaBlock ab)
+    private ItemStack GetItemFromPath(String item, String Path)
     {
-        for (ArenaBlock lab : ab.linkedArenas)
+        ItemStack currentItem;
+        String itemPath = Path + item;
+
+        Material mat = Material.getMaterial(item);
+
+        if (mat != null)
         {
-            RemoveLinkedArena(ab, lab.arenaName);
+            int amount = getConfig().getInt(itemPath + ".Amount");
+            int durability = getConfig().getInt(itemPath + ".Durability");
+            currentItem = new ItemStack(mat, amount);
+            currentItem.setDurability((short) durability);
+
+            ConfigurationSection enchantsConfig = getConfig()
+                    .getConfigurationSection(itemPath + ".Enchantments");
+
+            if (enchantsConfig != null)
+            {
+                AddItemEnchantments(currentItem, itemPath);
+            }
+            return currentItem;
+        }
+        return AddPotionFromConfig(item, Path);
+    }
+
+    private void AddItemEnchantments(ItemStack is, String Path)
+    {
+        Set<String> enchants = getConfig().getConfigurationSection(
+                Path + ".Enchantments").getKeys(false);
+
+        for (String et : enchants)
+        {
+            String enchantPath = Path + ".Enchantments." + et;
+            int level = getConfig().getInt(enchantPath);
+            Enchantment e = Enchantment.getByName(et);
+            is.addEnchantment(e, level);
         }
     }
 
-    private boolean RemoveLinkedArena(ArenaBlock ab, String linkedArena)
+    private List<ItemStack> GetArenaRewards(String ArenaName, String Path)
     {
-        try
+        if (getConfig().getConfigurationSection(Path + ".Rewards") == null)
         {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection(connectionUrl);
-            stmt = con.createStatement();
+            return new ArrayList<ItemStack>();
+        }
+        return GetItemsAtPath(Path + ".Rewards");
+    }
 
-            stmt.executeUpdate("RemoveLinkedArena '" + ab.arenaName + "'"
-                    + ", '" + linkedArena + "'");
-            return true;
-        }
-        catch (ClassNotFoundException e)
+    @SuppressWarnings("deprecation")
+    private ItemStack AddPotionFromConfig(String pe, String itemPath)
+    {
+        PotionEffectType pet = PotionEffectType.getByName(pe);
+
+        if (pet == null)
+            return null;
+
+        PotionType pt = PotionType.getByEffect(pet);
+
+        if (pt != null)
         {
-            e.printStackTrace();
+            String potionPath = itemPath + ".Potions." + pe;
+            int Amplifier = getConfig().getInt(potionPath + ".Amplifier");
+            boolean Splash = getConfig().getBoolean(potionPath + ".Splash");
+
+            Potion p = new Potion(pt, Amplifier == 0 ? 1 : Amplifier, Splash);
+
+            return p.toItemStack(1);
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        return false;
+        return null;
     }
 
     private Location StringToLocation(String s, World world)
@@ -1508,5 +1319,4 @@ public class ArenaManager extends JavaPlugin
         }
         return locationString;
     }
-
 }
