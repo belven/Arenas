@@ -98,57 +98,54 @@ public class ArenaManager extends JavaPlugin
         return false;
     }
 
-    private boolean UtilityArenaCommands(Player player, String[] args)
-    {
-        if (args[0].equalsIgnoreCase("cleararena")
-                || args[0].equalsIgnoreCase("ca"))
-        {
-            ClearArena(player);
+    private boolean UtilityArenaCommands(Player player, String[] args){
+    	
+    	switch(args[0]){
+    	
+    	case "cleararena":
+    	case "ca":
+    		ClearArena(player);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("forcestart")
-                || args[0].equalsIgnoreCase("fs"))
-        {
-            ForceStartArena(player);
+        
+    	case "forcestart":
+    	case "fs":
+    		ForceStartArena(player);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("reloadarena")
-                || args[0].equalsIgnoreCase("ra"))
-        {
-            ReloadArena(player);
+            
+    	case "reloadarena":
+    	case "ra":
+    		ReloadArena(player);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("givearenarewards")
-                || args[0].equalsIgnoreCase("gar"))
-        {
-            GiveArenaRewards(player);
+            
+    	case "givearenarewards":
+    	case "gar":
+    		GiveArenaRewards(player);
+    		return true;
+    		
+    	case "portmobs":
+    	case "pm":
+    		TeleportArenaMobs(player);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("portmobs")
-                || args[0].equalsIgnoreCase("pm"))
-        {
-            TeleportArenaMobs(player);
+    	
+    	case "warp":
+    	case "w":
+    		WarpToArena(player, args[1]);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("warp")
-                || args[0].equalsIgnoreCase("w"))
-        {
-            WarpToArena(player, args[1]);
+            
+    	case "createtemparena":
+    	case "cta":
+    		CreateTempArena(player);
             return true;
-        }
-        else if (args[0].equalsIgnoreCase("createtemparena")
-                || args[0].equalsIgnoreCase("cta"))
-        {
-            CreateTempArena(player);
-            return true;
-        }
-        else if (args[0].equalsIgnoreCase("leave")
-                || args[0].equalsIgnoreCase("l"))
-        {
-            LeaveArena(player);
-            return true;
-        }
-        return false;
+    		
+    	case "leave":
+    	case "l":
+    		LeaveArena(player);
+    		return true;
+    		
+    	}
+    	
+    	return false;
+    		
     }
 
     private void ReloadArena(Player p)
