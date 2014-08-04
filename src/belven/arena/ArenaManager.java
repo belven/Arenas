@@ -79,23 +79,12 @@ public class ArenaManager extends JavaPlugin
     {
         Player player = (Player) sender;
         String commandSent = cmd.getName();
-
-        if (commandSent.equalsIgnoreCase("ba") && args.length > 0)
-        {
-            if (EditArenaCommand(player, args))
-            {
-                return true;
-            }
-            else if (ListArenaCommands(player, args))
-            {
-                return true;
-            }
-            else if (UtilityArenaCommands(player, args))
-            {
-                return true;
-            }
-        }
-        return false;
+        
+        return (args.length != 0 && commandSent.equalsIgnoreCase("ba")) && 
+          	   (EditArenaCommand(player, args)  ||
+          	    ListArenaCommands(player, args) ||
+          	    UtilityArenaCommands(player, args));
+        
     }
 
     private boolean UtilityArenaCommands(Player player, String[] args){
@@ -166,8 +155,7 @@ public class ArenaManager extends JavaPlugin
             ab.arenaPlayers.add(p);
             ab.GiveRewards();
             ab.arenaPlayers.remove(p);
-            p.sendMessage("You were given arena " + ab.ArenaName()
-                    + "s rewards");
+            p.sendMessage("You were given arena " + ab.ArenaName() + "s rewards");
         }
     }
 
