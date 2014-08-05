@@ -58,6 +58,14 @@ public class ArenaManager extends JavaPlugin
 
     private HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
+    public static HashMap<String, String> commandPerms = new HashMap<String, String>();
+
+    static
+    {
+        commandPerms.put("s", "BelvensArenas.select");
+        commandPerms.put("select", "BelvensArenas.select");
+        commandPerms.put("createarena", "BelvensArenas.create");
+    }
 
     public TeamManager teams = (TeamManager) Bukkit.getServer()
             .getPluginManager().getPlugin("BelvensTeams");
@@ -80,6 +88,17 @@ public class ArenaManager extends JavaPlugin
         Player player = (Player) sender;
         String commandSent = cmd.getName();
 
+        if (args.length > 0 && commandPerms.containsKey(args[0]))
+        {
+            if (!player.hasPermission(commandPerms.get(args[0])))
+            {
+                player.sendMessage("You need the permission "
+                        + commandPerms.get(args[0]) + " in order to do /"
+                        + commandSent + args[0]);
+                return false;
+            }
+        }
+
         return (args.length != 0 && commandSent.equalsIgnoreCase("ba"))
                 && (EditArenaCommand(player, args)
                         || ListArenaCommands(player, args) || UtilityArenaCommands(
@@ -88,7 +107,6 @@ public class ArenaManager extends JavaPlugin
 
     private boolean UtilityArenaCommands(Player player, String[] args)
     {
-
         switch (args[0])
         {
         case "cleararena":
@@ -351,19 +369,11 @@ public class ArenaManager extends JavaPlugin
 
         case "select":
         case "s":
-            if (player.hasPermission("BelvensArenas.select"))
-            {
-                SelectArena(player, args[1]);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            SelectArena(player, args[1]);
+            return true;
 
-        default:
-            if (player.hasPermission("BelvensArenas.create")
-                    && args.length >= 4)
+        case "createarena":
+            if (args.length >= 4)
             {
                 ArenaBlockCreated(player, player.getLocation().getBlock(), args);
                 return true;
@@ -493,7 +503,6 @@ public class ArenaManager extends JavaPlugin
                             + " region has been updated!!");
                 }
             }
-
         }
     }
 
@@ -503,7 +512,6 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = getArenaInIsPlayer(player);
             ab.arenaPlayers.remove(player);
-
             PlayersInArenas.remove(player);
 
             if (ab.arenaPlayers.size() == 0)
@@ -515,7 +523,6 @@ public class ArenaManager extends JavaPlugin
             {
                 player.teleport(warpLocations.get(player));
                 warpLocations.put(player.getName(), null);
-
                 player.sendMessage("You left the arena " + ab.arenaName
                         + " and have been returned to your last warp");
                 return;
