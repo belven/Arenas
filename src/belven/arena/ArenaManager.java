@@ -34,6 +34,7 @@ import resources.EntityFunctions;
 import resources.Functions;
 import resources.Gear;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.ChallengeBlock;
 import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.blocks.TempArenaBlock;
 import belven.arena.listeners.ArenaListener;
@@ -60,11 +61,57 @@ public class ArenaManager extends JavaPlugin
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
     public static HashMap<String, String> commandPerms = new HashMap<String, String>();
     private static List<String> arenaPaths = new ArrayList<String>();
+    public List<ChallengeBlock> challengeBlocks = new ArrayList<ChallengeBlock>();
+    public static HashMap<Integer, Gear> scalingGear = new HashMap<Integer, Gear>();
 
     private static String preFix = "BelvensArenas.";
 
     static
     {
+        String helm = "_HELMET";
+        String chest = "_CHESTPLATE";
+        String leggs = "_LEGGINGS";
+        String boots = "_BOOTS";
+        String sword = "_SWORD";
+
+        String wood = "WOOD";
+        String leather = "LEATHER";
+        String gold = "GOLD";
+        String iron = "IRON";
+        String diamond = "DIAMOND";
+
+        ItemStack helmM = new ItemStack(Material.getMaterial(leather + helm));
+        ItemStack chestM = new ItemStack(Material.getMaterial(leather + chest));
+        ItemStack legsM = new ItemStack(Material.getMaterial(leather + leggs));
+        ItemStack bootsM = new ItemStack(Material.getMaterial(leather + boots));
+        ItemStack weaponM = new ItemStack(Material.getMaterial(wood + sword));
+
+        scalingGear.put(1, new Gear(helmM, chestM, legsM, bootsM, weaponM));
+
+        helmM = new ItemStack(Material.getMaterial(gold + helm));
+        chestM = new ItemStack(Material.getMaterial(gold + chest));
+        legsM = new ItemStack(Material.getMaterial(gold + leggs));
+        bootsM = new ItemStack(Material.getMaterial(gold + boots));
+        weaponM = new ItemStack(Material.getMaterial(gold + sword));
+
+        scalingGear.put(2, new Gear(helmM, chestM, legsM, bootsM, weaponM));
+
+        helmM = new ItemStack(Material.getMaterial(iron + helm));
+        chestM = new ItemStack(Material.getMaterial(iron + chest));
+        legsM = new ItemStack(Material.getMaterial(iron + leggs));
+        bootsM = new ItemStack(Material.getMaterial(iron + boots));
+        weaponM = new ItemStack(Material.getMaterial(iron + sword));
+
+        scalingGear.put(3, new Gear(helmM, chestM, legsM, bootsM, weaponM));
+
+        helmM = new ItemStack(Material.getMaterial(diamond + helm));
+        chestM = new ItemStack(Material.getMaterial(diamond + chest));
+        legsM = new ItemStack(Material.getMaterial(diamond + leggs));
+        bootsM = new ItemStack(Material.getMaterial(diamond + boots));
+        weaponM = new ItemStack(Material.getMaterial(diamond + sword));
+
+        scalingGear.put(4, new Gear(helmM, chestM, legsM, bootsM, weaponM));
+
         commandPerms.put("s", preFix + "select");
         commandPerms.put("select", preFix + "select");
         commandPerms.put("createarena", preFix + "create");
@@ -81,6 +128,7 @@ public class ArenaManager extends JavaPlugin
         arenaPaths.add(9, ".Spawn End Location");
         arenaPaths.add(10, ".Linked Arena Delay");
         arenaPaths.add(11, ".Elite Wave");
+
     }
 
     public TeamManager teams = (TeamManager) Bukkit.getServer()

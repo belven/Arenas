@@ -3,6 +3,7 @@ package belven.arena.blocks;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -28,6 +29,8 @@ public abstract class ArenaBlock
 
     public String arenaName;
     public Block blockToActivate, deactivateBlock, arenaWarp;
+    public ChallengeBlock currentChallengeBlock = null;
+    public int ChallengeBlockWave = 1;
 
     public List<Block> arenaArea = new ArrayList<Block>();
     public List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
@@ -211,6 +214,13 @@ public abstract class ArenaBlock
         {
             return null;
         }
+    }
+
+    public static Block GetRandomArenaSpawnBlock(ArenaBlock ab)
+    {
+        Block b;
+        b = ab.spawnArea.get(new Random().nextInt(ab.spawnArea.size()));
+        return b;
     }
 
 }

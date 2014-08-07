@@ -78,10 +78,6 @@ public class PlayerListener implements Listener
             {
                 if (event.getTo().distance(ab.LocationToCheckForPlayers) > (ab.radius * 2))
                 {
-                    // event.getPlayer().teleport(
-                    // Functions.lookAt(event.getFrom(),
-                    // ab.LocationToCheckForPlayers));
-                    // event.setCancelled(true);
                     plugin.LeaveArena(event.getPlayer());
                 }
             }

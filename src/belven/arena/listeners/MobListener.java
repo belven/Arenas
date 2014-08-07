@@ -15,6 +15,9 @@ import org.bukkit.metadata.MetadataValue;
 
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.ChallengeBlock;
+import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.challengeclasses.Kills;
 
 public class MobListener implements Listener
 {
@@ -70,6 +73,18 @@ public class MobListener implements Listener
                 for (Player p : ab.arenaPlayers)
                 {
                     p.giveExp(event.getDroppedExp());
+                }
+
+                if (ab.currentChallengeBlock != null)
+                {
+                    ChallengeBlock cb = ab.currentChallengeBlock;
+
+                    if (!cb.completed
+                            && cb.challengeType.challengeType == ChallengeTypes.Kills)
+                    {
+                        Kills ct = (Kills) cb.challengeType;
+                        ct.EntityKilled(currentEntity.getType());
+                    }
                 }
             }
         }

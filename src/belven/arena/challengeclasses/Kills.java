@@ -4,28 +4,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 
-import belven.arena.rewardclasses.ExperienceReward;
-import belven.arena.rewardclasses.Reward;
+import belven.arena.blocks.ArenaBlock;
+import belven.arena.events.ChallengeComplete;
 
 public class Kills extends ChallengeType
 {
     HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
-    Reward killsReward = new ExperienceReward(10);
 
-    public Kills(HashMap<EntityType, Integer> entities, Reward reward)
+    public Kills(HashMap<EntityType, Integer> entities)
     {
-        challengeType = Type.Kills;
+        challengeType = ChallengeTypes.Kills;
         entitiesToKill = entities;
-        killsReward = reward;
     }
 
     public void EntityKilled(EntityType et)
     {
-        int amountLeft = entitiesToKill.get(et);
-        amountLeft--;
-        entitiesToKill.put(et, amountLeft);
+        if (!ChallengeComplete())
+        {
+            int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
+                    .get(et) : 0;
+
+            amountLeft--;
+            entitiesToKill.put(et, amountLeft);
+
+            if (ChallengeComplete())
+            {
+                Bukkit.getPluginManager()
+                        .callEvent(new ChallengeComplete(this));
+            }
+        }
     }
 
     public List<String> ListRemainingEntities()
@@ -38,4 +48,24 @@ public class Kills extends ChallengeType
         }
         return EntitiesLeft;
     }
+
+    @Override
+    public boolean ChallengeComplete()
+    {
+        int enitiesLeft = 0;
+
+        for (EntityType et : entitiesToKill.keySet())
+        {
+            enitiesLeft += entitiesToKill.get(et);
+        }
+        return enitiesLeft <= 0;
+    }
+
+    public static HashMap<EntityType, Integer> GetRandomEntities(ArenaBlock ab)
+    {
+        HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
+        tempEntities.put(EntityType.ZOMBIE, 5);
+        return tempEntities;
+    }
+
 }

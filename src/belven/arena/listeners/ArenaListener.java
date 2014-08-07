@@ -6,7 +6,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.ChallengeBlock;
+import belven.arena.challengeclasses.ChallengeType;
 import belven.arena.events.ArenaBlockActivatedEvent;
+import belven.arena.events.ChallengeComplete;
 
 public class ArenaListener implements Listener
 {
@@ -42,6 +45,20 @@ public class ArenaListener implements Listener
             if (plugin.getArenaInIsPlayer(event.getPlayer()).isActive)
             {
                 event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onChallengeComplete(ChallengeComplete event)
+    {
+        ChallengeType cct = event.GetChallengeType();
+        for (ChallengeBlock cb : plugin.challengeBlocks)
+        {
+            if (cb.challengeType == cct)
+            {
+                cb.GiveRewards();
+                break;
             }
         }
     }

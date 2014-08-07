@@ -1,5 +1,6 @@
 package belven.arena.blocks;
 
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -46,6 +47,7 @@ public class TempArenaBlock extends ArenaBlock
         {
             arenaRunID = UUID.randomUUID();
             isActive = true;
+            ChallengeBlockWave = new Random().nextInt(maxRunTimes - 1) + 1;
             RemoveMobs();
             ArenaEntities.clear();
             GetArenaArea();
@@ -75,6 +77,12 @@ public class TempArenaBlock extends ArenaBlock
             {
                 new MessageTimer(arenaPlayers, ChatColor.RED + arenaName
                         + ChatColor.WHITE + " has Started!!").run();
+            }
+
+            if (currentRunTimes == ChallengeBlockWave)
+            {
+                currentChallengeBlock = ChallengeBlock.RandomChallengeBlock(
+                        plugin, this);
             }
 
             new MessageTimer(arenaPlayers, ChatColor.RED + arenaName
