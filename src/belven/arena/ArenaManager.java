@@ -59,12 +59,28 @@ public class ArenaManager extends JavaPlugin
     private HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
     public static HashMap<String, String> commandPerms = new HashMap<String, String>();
+    private static List<String> arenaPaths = new ArrayList<String>();
+
+    private static String preFix = "BelvensArenas.";
 
     static
     {
-        commandPerms.put("s", "BelvensArenas.select");
-        commandPerms.put("select", "BelvensArenas.select");
-        commandPerms.put("createarena", "BelvensArenas.create");
+        commandPerms.put("s", preFix + "select");
+        commandPerms.put("select", preFix + "select");
+        commandPerms.put("createarena", preFix + "create");
+
+        arenaPaths.add(0, ".Radius");
+        arenaPaths.add(1, ".Timer Period");
+        arenaPaths.add(2, ".Max Run Times");
+        arenaPaths.add(3, ".Players Check Location");
+        arenaPaths.add(4, ".World");
+        arenaPaths.add(5, ".Activate Block");
+        arenaPaths.add(6, ".Deactivate Block");
+        arenaPaths.add(7, ".Arena Warp");
+        arenaPaths.add(8, ".Spawn Start Location");
+        arenaPaths.add(9, ".Spawn End Location");
+        arenaPaths.add(10, ".Linked Arena Delay");
+        arenaPaths.add(11, ".Elite Wave");
     }
 
     public TeamManager teams = (TeamManager) Bukkit.getServer()
@@ -88,7 +104,12 @@ public class ArenaManager extends JavaPlugin
         Player player = (Player) sender;
         String commandSent = cmd.getName();
 
-        if (args.length > 0 && commandPerms.containsKey(args[0]))
+        if (args.length <= 0)
+        {
+            return false;
+        }
+
+        if (commandPerms.containsKey(args[0]))
         {
             if (!player.hasPermission(commandPerms.get(args[0])))
             {
@@ -99,7 +120,7 @@ public class ArenaManager extends JavaPlugin
             }
         }
 
-        return (args.length != 0 && commandSent.equalsIgnoreCase("ba"))
+        return commandSent.equals("ba")
                 && (EditArenaCommand(player, args)
                         || ListArenaCommands(player, args) || UtilityArenaCommands(
                             player, args));
@@ -162,6 +183,7 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void GiveArenaRewards(Player p)
     {
         if (HasArenaBlockSelected(p))
@@ -170,6 +192,7 @@ public class ArenaManager extends JavaPlugin
             ab.arenaPlayers.add(p);
             ab.GiveRewards();
             ab.arenaPlayers.remove(p);
+            p.updateInventory();
             p.sendMessage("You were given arena " + ab.ArenaName()
                     + "s rewards");
         }
@@ -254,17 +277,8 @@ public class ArenaManager extends JavaPlugin
         {
         case "savearena":
         case "sa":
-            if (HasArenaBlockSelected(player))
-            {
-                ArenaBlock ab = GetSelectedArenaBlock(player);
-                SaveArenaToConfig(ab);
-                player.sendMessage("Arena " + ab.arenaName + " was saved");
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            SaveArena(player);
+            return true;
 
         case "setwaves":
         case "sw":
@@ -348,13 +362,7 @@ public class ArenaManager extends JavaPlugin
 
         case "setlinkedarenadelay":
         case "slad":
-            if (HasArenaBlockSelected(player))
-            {
-                ArenaBlock selectedAB = GetSelectedArenaBlock(player);
-                selectedAB.linkedArenaDelay = Integer.valueOf(args[1]);
-                player.sendMessage(selectedAB.arenaName
-                        + "s Linked Arena Delay is now " + args[1]);
-            }
+            SetLinkedArenaDelay(player, args[1]);
             return true;
 
         case "addlinkedarena":
@@ -380,6 +388,27 @@ public class ArenaManager extends JavaPlugin
             }
         }
         return false;
+    }
+
+    private void SetLinkedArenaDelay(Player player, String delay)
+    {
+        if (HasArenaBlockSelected(player))
+        {
+            ArenaBlock selectedAB = GetSelectedArenaBlock(player);
+            selectedAB.linkedArenaDelay = Integer.valueOf(delay);
+            player.sendMessage(selectedAB.arenaName
+                    + "s Linked Arena Delay is now " + delay);
+        }
+    }
+
+    private void SaveArena(Player player)
+    {
+        if (HasArenaBlockSelected(player))
+        {
+            ArenaBlock ab = GetSelectedArenaBlock(player);
+            SaveArenaToConfig(ab);
+            player.sendMessage("Arena " + ab.arenaName + " was saved");
+        }
     }
 
     private void RemoveLinkedArena(Player player, String arenaToRemove)
@@ -500,7 +529,7 @@ public class ArenaManager extends JavaPlugin
                     ab.spawnAreaEndLocation = max;
 
                     player.sendMessage("Arena " + ab.arenaName
-                            + " region has been updated!!");
+                            + "s region has been updated!!");
                 }
             }
         }
@@ -858,7 +887,7 @@ public class ArenaManager extends JavaPlugin
                 SelectedArenaBlocks.put(p, newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);
                 p.sendMessage("Arena " + newArenaBlock.arenaName
-                        + " was created!!");
+                        + " was created");
             }
         }
         else
@@ -867,36 +896,53 @@ public class ArenaManager extends JavaPlugin
         }
     }
 
+    private String ArenaPath(String arenaName)
+    {
+        return "Arenas." + arenaName;
+    }
+
+    private String ArenaRewardsPath(String arenaName)
+    {
+        return ArenaPath(arenaName) + ".Rewards";
+    }
+
+    @SuppressWarnings("unused")
+    private String ArenaPotionsPath(String arenaName)
+    {
+        return ArenaRewardsPath(arenaName) + ".Potions";
+    }
+
     private void SaveArenaToConfig(ArenaBlock ab)
     {
-        String path = "Arenas." + ab.arenaName;
+        String path = ArenaPath(ab.arenaName);
         getConfig().set(path, null);
-        getConfig().set(path + ".Radius", ab.radius);
-        getConfig().set(path + ".timerPeriod", ab.timerPeriod);
-        getConfig().set(path + ".maxRunTimes", ab.maxRunTimes);
+        getConfig().set(path + arenaPaths.get(0), ab.radius);
+        getConfig().set(path + arenaPaths.get(1), ab.timerPeriod);
+        getConfig().set(path + arenaPaths.get(2), ab.maxRunTimes);
 
-        getConfig().set(path + ".LocationToCheckForPlayers",
+        getConfig().set(path + arenaPaths.get(3),
                 LocationToString(ab.LocationToCheckForPlayers));
 
-        getConfig().set(path + ".World",
+        getConfig().set(path + arenaPaths.get(4),
                 ab.spawnAreaStartLocation.getWorld().getName());
 
-        getConfig().set(path + ".blockToActivate",
+        getConfig().set(path + arenaPaths.get(5),
                 LocationToString(ab.blockToActivate));
 
-        getConfig().set(path + ".deactivateBlock",
+        getConfig().set(path + arenaPaths.get(6),
                 LocationToString(ab.deactivateBlock));
 
-        getConfig().set(path + ".arenaWarp", LocationToString(ab.arenaWarp));
+        getConfig().set(path + arenaPaths.get(7),
+                LocationToString(ab.arenaWarp));
 
-        getConfig().set(path + ".spawnAreaStartLocation",
+        getConfig().set(path + arenaPaths.get(8),
                 LocationToString(ab.spawnAreaStartLocation));
 
-        getConfig().set(path + ".spawnAreaEndLocation",
+        getConfig().set(path + arenaPaths.get(9),
                 LocationToString(ab.spawnAreaEndLocation));
 
-        getConfig().set(path + ".linkedArenaDelay", ab.linkedArenaDelay);
-        getConfig().set(path + ".eliteWave", ab.eliteWave);
+        getConfig().set(path + arenaPaths.get(10), ab.linkedArenaDelay);
+        getConfig().set(path + arenaPaths.get(11), ab.eliteWave);
 
         SaveArenaEliteMobs(ab);
         SaveArenaMobs(ab);
@@ -961,12 +1007,11 @@ public class ArenaManager extends JavaPlugin
 
     private void SaveArenaRewards(ArenaBlock ab)
     {
-        String path = "Arenas." + ab.arenaName;
+        String path = ArenaRewardsPath(ab.arenaName);
 
         for (ItemStack is : ab.arenaRewards)
         {
-            String currentPath = path + ".Rewards";
-            ItemStackToPath(is, currentPath);
+            ItemStackToPath(is, path);
         }
     }
 
@@ -1047,13 +1092,13 @@ public class ArenaManager extends JavaPlugin
         String currentPath = "Arenas.";
         String path = currentPath + ArenaName;
 
-        int radius = getConfig().getInt(path + ".Radius");
-        int maxRunTimes = getConfig().getInt(path + ".maxRunTimes");
-        int timerPeriod = getConfig().getInt(path + ".timerPeriod");
-        int linkedArenaDelay = getConfig().getInt(path + ".linkedArenaDelay");
-        int eliteWave = getConfig().getInt(path + ".eliteWave");
+        int radius = getConfig().getInt(path + arenaPaths.get(0));
+        int timerPeriod = getConfig().getInt(path + arenaPaths.get(1));
+        int maxRunTimes = getConfig().getInt(path + arenaPaths.get(2));
+        int linkedArenaDelay = getConfig().getInt(path + arenaPaths.get(10));
+        int eliteWave = getConfig().getInt(path + arenaPaths.get(11));
 
-        String worldName = getConfig().getString(path + ".World");
+        String worldName = getConfig().getString(path + arenaPaths.get(4));
 
         if (worldName == null)
         {
@@ -1074,24 +1119,25 @@ public class ArenaManager extends JavaPlugin
         }
 
         Location LocationToCheckForPlayers = StringToLocation(getConfig()
-                .getString(path + ".LocationToCheckForPlayers"), world);
+                .getString(path + arenaPaths.get(3)), world);
 
         Block blockToActivate = StringToLocation(
-                getConfig().getString(path + ".blockToActivate"), world)
+                getConfig().getString(path + arenaPaths.get(5)), world)
                 .getBlock();
 
         Block deactivateBlock = StringToLocation(
-                getConfig().getString(path + ".deactivateBlock"), world)
+                getConfig().getString(path + arenaPaths.get(6)), world)
                 .getBlock();
 
         Block arenaWarp = StringToLocation(
-                getConfig().getString(path + ".arenaWarp"), world).getBlock();
+                getConfig().getString(path + arenaPaths.get(7)), world)
+                .getBlock();
 
         Location spawnAreaStartLocation = StringToLocation(getConfig()
-                .getString(path + ".spawnAreaStartLocation"), world);
+                .getString(path + arenaPaths.get(8)), world);
 
         Location spawnAreaEndLocation = StringToLocation(
-                getConfig().getString(path + ".spawnAreaEndLocation"), world);
+                getConfig().getString(path + arenaPaths.get(9)), world);
 
         MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
 
@@ -1108,10 +1154,10 @@ public class ArenaManager extends JavaPlugin
         newArenaBlock.LocationToCheckForPlayers = LocationToCheckForPlayers;
         newArenaBlock.deactivateBlock = deactivateBlock;
         newArenaBlock.linkedArenaDelay = linkedArenaDelay;
-        newArenaBlock.maxRunTimes = maxRunTimes;
+        newArenaBlock.maxRunTimes = maxRunTimes <= 0 ? 1 : maxRunTimes;
         newArenaBlock.eliteWave = eliteWave;
         currentArenaBlocks.add(newArenaBlock);
-        getLogger().info(ArenaName + " has been created!!");
+        getLogger().info(ArenaName + " has been created");
     }
 
     private void RecreateArenasFromConfig()
@@ -1163,7 +1209,7 @@ public class ArenaManager extends JavaPlugin
                 {
                     for (String pe : potionsConfig.getKeys(false))
                     {
-                        tempItems.add(GetItemFromPath(pe, Path));
+                        tempItems.add(AddPotionFromConfig(pe, Path));
                     }
                 }
             }
@@ -1173,21 +1219,19 @@ public class ArenaManager extends JavaPlugin
             }
         }
         return tempItems;
-
     }
 
     private ItemStack GetItemFromPath(String item, String Path)
     {
         ItemStack currentItem;
         String itemPath = Path + item;
-
         Material mat = Material.getMaterial(item);
 
         if (mat != null)
         {
             int amount = getConfig().getInt(itemPath + ".Amount");
             int durability = getConfig().getInt(itemPath + ".Durability");
-            currentItem = new ItemStack(mat, amount);
+            currentItem = new ItemStack(mat, amount > 0 ? amount : 1);
             currentItem.setDurability((short) durability);
 
             ConfigurationSection enchantsConfig = getConfig()
@@ -1195,14 +1239,14 @@ public class ArenaManager extends JavaPlugin
 
             if (enchantsConfig != null)
             {
-                AddItemEnchantments(currentItem, itemPath);
+                currentItem = AddItemEnchantments(currentItem, itemPath);
             }
             return currentItem;
         }
-        return AddPotionFromConfig(item, Path);
+        return new ItemStack(Material.AIR);
     }
 
-    private void AddItemEnchantments(ItemStack is, String Path)
+    private ItemStack AddItemEnchantments(ItemStack is, String Path)
     {
         Set<String> enchants = getConfig().getConfigurationSection(
                 Path + ".Enchantments").getKeys(false);
@@ -1214,15 +1258,16 @@ public class ArenaManager extends JavaPlugin
             Enchantment e = Enchantment.getByName(et);
             is.addEnchantment(e, level);
         }
+        return is;
     }
 
     private List<ItemStack> GetArenaRewards(String ArenaName, String Path)
     {
-        if (getConfig().getConfigurationSection(Path + ".Rewards") == null)
+        if (getConfig().getConfigurationSection(ArenaRewardsPath(ArenaName)) == null)
         {
             return new ArrayList<ItemStack>();
         }
-        return GetItemsAtPath(Path + ".Rewards");
+        return GetItemsAtPath(ArenaRewardsPath(ArenaName));
     }
 
     @SuppressWarnings("deprecation")
@@ -1240,9 +1285,7 @@ public class ArenaManager extends JavaPlugin
             String potionPath = itemPath + ".Potions." + pe;
             int Amplifier = getConfig().getInt(potionPath + ".Amplifier");
             boolean Splash = getConfig().getBoolean(potionPath + ".Splash");
-
             Potion p = new Potion(pt, Amplifier == 0 ? 1 : Amplifier, Splash);
-
             return p.toItemStack(1);
         }
         return null;
