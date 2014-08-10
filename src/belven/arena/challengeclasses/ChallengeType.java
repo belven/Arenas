@@ -1,22 +1,20 @@
 package belven.arena.challengeclasses;
 
 import java.util.Random;
+import java.util.UUID;
 
 import belven.arena.blocks.ArenaBlock;
 
 public abstract class ChallengeType
 {
-    public ChallengeType()
-    {
-
-    }
 
     public enum ChallengeTypes
     {
         Default, Kills, PlayerSacrifice, ItemSacrifice
     }
 
-    public ChallengeTypes challengeType = ChallengeTypes.Default;
+    public UUID challengeID = UUID.randomUUID();
+    public ChallengeTypes type = ChallengeTypes.Default;
 
     public abstract boolean ChallengeComplete();
 
@@ -28,6 +26,8 @@ public abstract class ChallengeType
         {
         case 0:
             return new Kills(Kills.GetRandomEntities(ab));
+        case 1:
+            return new PlayerSacrifice(ab.arenaPlayers.size());
         default:
             return new Kills(Kills.GetRandomEntities(ab));
         }

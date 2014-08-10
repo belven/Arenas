@@ -55,7 +55,7 @@ public class ArenaListener implements Listener
         ChallengeType cct = event.GetChallengeType();
         for (ChallengeBlock cb : plugin.challengeBlocks)
         {
-            if (cb.challengeType == cct)
+            if (cb.challengeType.challengeID == cct.challengeID)
             {
                 cb.GiveRewards();
                 break;

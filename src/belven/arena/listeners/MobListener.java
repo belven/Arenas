@@ -80,15 +80,17 @@ public class MobListener implements Listener
                     ChallengeBlock cb = ab.currentChallengeBlock;
 
                     if (!cb.completed
-                            && cb.challengeType.challengeType == ChallengeTypes.Kills)
+                            && cb.challengeType.type == ChallengeTypes.Kills)
                     {
                         Kills ct = (Kills) cb.challengeType;
                         ct.EntityKilled(currentEntity.getType());
+                        cb.SetPlayersScoreboard();
                     }
                 }
             }
         }
         event.setDroppedExp(0);
+        event.getDrops().clear();
     }
 
 }

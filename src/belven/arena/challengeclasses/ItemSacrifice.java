@@ -4,7 +4,7 @@ public class ItemSacrifice extends ChallengeType
 {
     public ItemSacrifice()
     {
-        challengeType = ChallengeTypes.ItemSacrifice;
+        type = ChallengeTypes.ItemSacrifice;
     }
 
     @Override

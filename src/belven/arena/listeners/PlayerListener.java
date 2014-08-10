@@ -24,12 +24,16 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.ChallengeBlock;
+import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.challengeclasses.PlayerSacrifice;
 
 public class PlayerListener implements Listener
 {
@@ -99,7 +103,24 @@ public class PlayerListener implements Listener
         Sign currentSign;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK)
         {
-            if (event.getClickedBlock().getType() == Material.SIGN)
+            if (event.getClickedBlock().hasMetadata("Challenge Block"))
+            {
+                MetadataValue data = event.getClickedBlock()
+                        .getMetadata("Challenge Block").get(0);
+                ChallengeBlock cb = (ChallengeBlock) data.value();
+
+                if (cb.challengeType.type == ChallengeTypes.PlayerSacrifice)
+                {
+                    PlayerSacrifice ps = (PlayerSacrifice) cb.challengeType;
+                    ps.SacrificePlayer(event.getPlayer());
+                }
+                else if (cb.challengeType.type == ChallengeTypes.ItemSacrifice)
+                {
+                    // TO DO
+                }
+
+            }
+            else if (event.getClickedBlock().getType() == Material.SIGN)
             {
                 currentSign = (Sign) event.getClickedBlock();
 
@@ -135,12 +156,12 @@ public class PlayerListener implements Listener
     }
 
     @EventHandler
-    public void onPlayerDeathEvent(final PlayerDeathEvent event)
+    public void onPlayerDeathEvent(PlayerDeathEvent event)
     {
         Player currentPlayer = (Player) event.getEntity();
         event.getDrops().clear();
 
-        event.setNewLevel((int) (currentPlayer.getLevel()));
+        event.setNewLevel(currentPlayer.getLevel());
 
         if (plugin.IsPlayerInArena(currentPlayer))
         {

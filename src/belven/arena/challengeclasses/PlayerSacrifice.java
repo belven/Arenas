@@ -13,19 +13,29 @@ public class PlayerSacrifice extends ChallengeType
     public List<Player> playersSacrificed = new ArrayList<Player>();
     public int amountToSacrifice = 1;
 
-    public PlayerSacrifice()
+    public PlayerSacrifice(int amount)
     {
-        challengeType = ChallengeTypes.PlayerSacrifice;
+        type = ChallengeTypes.PlayerSacrifice;
+        amountToSacrifice = amount;
     }
 
-    public void SacricePlayer(Player p)
+    public void SacrificePlayer(Player p)
     {
-        playersSacrificed.add(p);
-        amountToSacrifice--;
-
-        if (ChallengeComplete())
+        if (!playersSacrificed.contains(p))
         {
-            Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
+            playersSacrificed.add(p);
+            amountToSacrifice--;
+            p.setHealth(0.0);
+
+            if (ChallengeComplete())
+            {
+                Bukkit.getPluginManager()
+                        .callEvent(new ChallengeComplete(this));
+            }
+        }
+        else
+        {
+            p.sendMessage("You cannot sacrifice yourself again");
         }
     }
 

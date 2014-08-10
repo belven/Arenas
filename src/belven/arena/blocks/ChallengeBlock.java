@@ -1,7 +1,9 @@
 package belven.arena.blocks;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -12,10 +14,18 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 import resources.Gear;
 import belven.arena.ArenaManager;
 import belven.arena.challengeclasses.ChallengeType;
+import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.challengeclasses.Kills;
+import belven.arena.challengeclasses.PlayerSacrifice;
 import belven.arena.rewardclasses.BossReward;
 import belven.arena.rewardclasses.ExperienceReward;
 import belven.arena.rewardclasses.ItemReward;
@@ -30,6 +40,7 @@ public class ChallengeBlock
     public ChallengeType challengeType = null;
     public Block challengeBlock;
     public BlockState challengeBlockState;
+    public UUID ID;
 
     public ArenaManager plugin;
     public List<Player> players;
@@ -38,6 +49,7 @@ public class ChallengeBlock
     public ChallengeBlock(ArenaManager instance, Block b, Reward r,
             ChallengeType ct)
     {
+        ID = UUID.randomUUID();
         challengeReward = r;
         challengeType = ct;
         challengeBlock = b;
@@ -45,6 +57,49 @@ public class ChallengeBlock
         plugin.challengeBlocks.add(this);
         challengeBlockState = b.getState();
         b.setType(Material.DIAMOND_BLOCK);
+        b.setMetadata("Challenge Block", new FixedMetadataValue(plugin, this));
+    }
+
+    public void SetPlayersScoreboard()
+    {
+        List<Player> tempPlayers = ab != null ? ab.arenaPlayers : players;
+
+        for (Player p : tempPlayers)
+        {
+            p.setScoreboard(SetChallengeScoreboard(challengeType));
+        }
+
+    }
+
+    public static Scoreboard SetChallengeScoreboard(ChallengeType ct)
+    {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        Scoreboard sb = manager.getNewScoreboard();
+
+        if (ct.type == ChallengeTypes.Kills)
+        {
+            Kills kills = (Kills) ct;
+            Objective objective = sb.registerNewObjective("test", "dummy");
+            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+            objective.setDisplayName("Kill Challenge");
+
+            for (EntityType et : kills.entitiesToKill.keySet())
+            {
+                Score score = objective.getScore(et.name());
+                score.setScore(kills.entitiesToKill.get(et));
+            }
+        }
+        else if (ct.type == ChallengeTypes.PlayerSacrifice)
+        {
+            PlayerSacrifice ps = (PlayerSacrifice) ct;
+            Objective objective = sb.registerNewObjective("test", "dummy");
+            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+            objective.setDisplayName("Sacrifice Challenge");
+            Score score = objective.getScore("Amount to Sacrifice: ");
+            score.setScore(ps.amountToSacrifice);
+        }
+        return sb;
     }
 
     public ChallengeBlock(ArenaManager instance, Block b, Reward r,
@@ -52,6 +107,7 @@ public class ChallengeBlock
     {
         this(instance, b, r, ct);
         players = playersToAdd;
+        SetPlayersScoreboard();
     }
 
     public ChallengeBlock(ArenaManager instance, Block b, Reward r,
@@ -60,7 +116,8 @@ public class ChallengeBlock
         this(instance, b, r, ct);
         ab = arenaBlock;
         new MessageTimer(ab.arenaPlayers, "A challenge of type "
-                + ct.challengeType.name() + " has begun").run();
+                + ct.type.name() + " has begun").run();
+        SetPlayersScoreboard();
     }
 
     public void GiveRewards()
@@ -74,22 +131,28 @@ public class ChallengeBlock
                             + challengeReward.rewardType.name()).run();
         }
 
-        if (challengeReward.rewardType == RewardType.Experience)
+        if (challengeReward.rewardType != RewardType.Boss)
         {
-            int exp = ((ExperienceReward) challengeReward).experience;
             for (Player p : players)
             {
-                p.giveExp(exp);
-            }
-        }
-        else if (challengeReward.rewardType == RewardType.Items)
-        {
-            List<ItemStack> items = ((ItemReward) challengeReward).rewards;
-            for (Player p : players)
-            {
-                for (ItemStack is : items)
+                p.setScoreboard(Bukkit.getScoreboardManager()
+                        .getNewScoreboard());
+
+                if (challengeReward.rewardType == RewardType.Experience)
                 {
-                    p.getInventory().addItem(is);
+                    int exp = ((ExperienceReward) challengeReward).experience;
+
+                    p.giveExp(exp);
+
+                }
+                else if (challengeReward.rewardType == RewardType.Items)
+                {
+                    List<ItemStack> items = ((ItemReward) challengeReward).rewards;
+
+                    for (ItemStack is : items)
+                    {
+                        p.getInventory().addItem(is);
+                    }
                 }
             }
         }
@@ -123,8 +186,7 @@ public class ChallengeBlock
             ArenaBlock ab)
     {
         ChallengeBlock cb = null;
-        Block b = ArenaBlock.GetRandomArenaSpawnBlock(ab).getRelative(
-                BlockFace.UP);
+        Block b = ArenaBlock.GetRandomArenaSpawnBlock(ab);
         Reward r = Reward.GetRandomReward();
         ChallengeType ct = ChallengeType.GetRandomChallengeType(ab);
         cb = new ChallengeBlock(instance, b, r, ct, ab);

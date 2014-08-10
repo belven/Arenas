@@ -1,5 +1,6 @@
 package belven.arena.blocks;
 
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -42,6 +43,7 @@ public class StandardArenaBlock extends ArenaBlock
         {
             arenaRunID = UUID.randomUUID();
             isActive = true;
+            ChallengeBlockWave = new Random().nextInt(maxRunTimes - 1) + 1;
             RemoveMobs();
             ArenaEntities.clear();
             GetArenaArea();
@@ -73,6 +75,12 @@ public class StandardArenaBlock extends ArenaBlock
             {
                 new MessageTimer(arenaPlayers, ArenaName() + " has Started!!")
                         .run();
+            }
+
+            if (currentRunTimes == ChallengeBlockWave)
+            {
+                currentChallengeBlock = ChallengeBlock.RandomChallengeBlock(
+                        plugin, this);
             }
 
             new MessageTimer(arenaPlayers, ArenaName() + " Wave: "

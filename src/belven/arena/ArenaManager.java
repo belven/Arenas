@@ -923,14 +923,14 @@ public class ArenaManager extends JavaPlugin
                 Location min = sel.getMinimumPoint();
                 Location max = sel.getMaximumPoint();
 
-                String ArenaName = args[0];
-                int Radius = Integer.valueOf(args[1]);
+                String ArenaName = args[1];
+                int Radius = Integer.valueOf(args[2]);
                 MobToMaterialCollecton mobs = MatToMob(Material
-                        .getMaterial(args[2]));
+                        .getMaterial(args[3]));
 
                 StandardArenaBlock newArenaBlock = new StandardArenaBlock(min,
                         max, ArenaName, Radius, mobs, this,
-                        Functions.SecondsToTicks(Integer.valueOf(args[3])));
+                        Functions.SecondsToTicks(Integer.valueOf(args[4])));
 
                 SelectedArenaBlocks.put(p, newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);
@@ -1211,12 +1211,17 @@ public class ArenaManager extends JavaPlugin
     private void RecreateArenasFromConfig()
     {
         String currentPath = "Arenas.";
-        Set<String> arenas = getConfig().getConfigurationSection(currentPath)
-                .getKeys(false);
+        ConfigurationSection tempArenas = getConfig().getConfigurationSection(
+                currentPath);
 
-        for (String ArenaName : arenas)
+        if (tempArenas != null)
         {
-            ReloadArenaFromConfig(ArenaName);
+            Set<String> arenas = tempArenas.getKeys(false);
+
+            for (String ArenaName : arenas)
+            {
+                ReloadArenaFromConfig(ArenaName);
+            }
         }
     }
 
