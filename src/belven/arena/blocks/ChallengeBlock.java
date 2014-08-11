@@ -79,25 +79,33 @@ public class ChallengeBlock
         if (ct.type == ChallengeTypes.Kills)
         {
             Kills kills = (Kills) ct;
-            Objective objective = sb.registerNewObjective("test", "dummy");
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-            objective.setDisplayName("Kill Challenge");
-
-            for (EntityType et : kills.entitiesToKill.keySet())
+            if (!kills.ChallengeComplete())
             {
-                Score score = objective.getScore(et.name());
-                score.setScore(kills.entitiesToKill.get(et));
+                Objective objective = sb.registerNewObjective("test", "dummy");
+                objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+                objective.setDisplayName("Kill Challenge");
+
+                for (EntityType et : kills.entitiesToKill.keySet())
+                {
+                    Score score = objective.getScore(et.name());
+                    score.setScore(kills.entitiesToKill.get(et));
+                }
             }
         }
         else if (ct.type == ChallengeTypes.PlayerSacrifice)
         {
             PlayerSacrifice ps = (PlayerSacrifice) ct;
-            Objective objective = sb.registerNewObjective("test", "dummy");
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-            objective.setDisplayName("Sacrifice Challenge");
-            Score score = objective.getScore("Amount to Sacrifice: ");
-            score.setScore(ps.amountToSacrifice);
+
+            if (!ps.ChallengeComplete())
+            {
+                Objective objective = sb.registerNewObjective("test", "dummy");
+                objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+                objective.setDisplayName("Sacrifice Challenge");
+                Score score = objective.getScore("Amount Left: ");
+                score.setScore(ps.amountToSacrifice);
+            }
         }
         return sb;
     }
@@ -140,10 +148,9 @@ public class ChallengeBlock
 
                 if (challengeReward.rewardType == RewardType.Experience)
                 {
-                    int exp = ((ExperienceReward) challengeReward).experience;
-
-                    p.giveExp(exp);
-
+                    double exp = ((ExperienceReward) challengeReward).experience;
+                    int expToGive = (int) (p.getExp() * exp);
+                    p.giveExp(expToGive);
                 }
                 else if (challengeReward.rewardType == RewardType.Items)
                 {

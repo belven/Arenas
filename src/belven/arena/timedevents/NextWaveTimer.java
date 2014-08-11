@@ -39,10 +39,10 @@ public class NextWaveTimer extends BukkitRunnable
         arenaBlock.currentRunTimes++;
         if (arenaBlock.currentRunTimes == 1)
         {
-            new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.arenaName
+            new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name
                     + " has Started!!").run();
         }
-        new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.arenaName
+        new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name
                 + " Wave: " + String.valueOf(arenaBlock.currentRunTimes)).run();
 
         new Wave(arenaBlock);

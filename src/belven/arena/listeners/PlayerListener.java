@@ -200,11 +200,17 @@ public class PlayerListener implements Listener
             playerDeathProtection.add(currentPlayer.getName());
         }
 
-        currentPlayer.getInventory().setContents(
-                playerInventories.get(currentPlayer.getName()));
+        if (playerInventories.containsKey(currentPlayer.getName()))
+        {
+            currentPlayer.getInventory().setContents(
+                    playerInventories.get(currentPlayer.getName()));
+        }
 
-        currentPlayer.getInventory().setArmorContents(
-                playerArmour.get(currentPlayer.getName()));
+        if (playerArmour.containsKey(currentPlayer.getName()))
+        {
+            currentPlayer.getInventory().setArmorContents(
+                    playerArmour.get(currentPlayer.getName()));
+        }
     }
 
     @EventHandler

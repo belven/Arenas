@@ -1,6 +1,5 @@
 package belven.arena.listeners;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -43,26 +42,27 @@ public class MobListener implements Listener
     @EventHandler
     public void onEntityDeathEvent(EntityDeathEvent event)
     {
-        Entity currentEntity = event.getEntity();
-        // int currentRand = randomGenerator.nextInt(2);
+        Entity e = event.getEntity();
 
-        if (currentEntity.hasMetadata("ArenaMob"))
+        if (e.hasMetadata("ArenaMob"))
         {
-            List<MetadataValue> currentMetaData = currentEntity
-                    .getMetadata("ArenaMob");
+            List<MetadataValue> currentMetaData = e.getMetadata("ArenaMob");
 
             if (currentMetaData.size() == 0)
             {
                 return;
             }
 
-            List<String> arena = Arrays.asList(currentMetaData.get(0)
-                    .asString().split(" "));
+            String arena = currentMetaData.get(0).asString();
 
-            if (arena.get(0) != null)
+            if (arena != null)
             {
-                ArenaBlock ab = plugin.getArenaBlock(arena.get(0));
-                ab.ArenaEntities.remove(currentEntity);
+                ArenaBlock ab = plugin.getArenaBlock(arena);
+
+                if (ab == null)
+                    return;
+
+                ab.ArenaEntities.remove(e);
 
                 if (ab.ArenaEntities.size() <= 0
                         && ab.currentRunTimes <= ab.maxRunTimes)
@@ -83,14 +83,13 @@ public class MobListener implements Listener
                             && cb.challengeType.type == ChallengeTypes.Kills)
                     {
                         Kills ct = (Kills) cb.challengeType;
-                        ct.EntityKilled(currentEntity.getType());
+                        ct.EntityKilled(e.getType());
                         cb.SetPlayersScoreboard();
                     }
                 }
             }
+            event.setDroppedExp(0);
+            event.getDrops().clear();
         }
-        event.setDroppedExp(0);
-        event.getDrops().clear();
     }
-
 }

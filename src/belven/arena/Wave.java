@@ -18,7 +18,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import resources.EntityFunctions;
-import resources.Functions;
 import resources.Gear;
 import resources.MaterialFunctions;
 import belven.arena.blocks.ArenaBlock;
@@ -27,12 +26,12 @@ import belven.arena.timedevents.MessageTimer;
 
 public class Wave
 {
-    private ArenaBlock arenaBlock;
+    private ArenaBlock ab;
     Random randomGenerator = new Random();
 
     public Wave(ArenaBlock arenaBlock)
     {
-        this.arenaBlock = arenaBlock;
+        this.ab = arenaBlock;
         SpawnMobs();
         renewPlayerWeapons();
 
@@ -41,22 +40,17 @@ public class Wave
 
     public void SpawnMobs()
     {
-        new MessageTimer(arenaBlock.arenaPlayers, ChatColor.RED
-                + "Mobs Spawning: " + ChatColor.WHITE
-                + String.valueOf(arenaBlock.maxMobCounter)).run();
+        new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Mobs Spawning: "
+                + ChatColor.WHITE + String.valueOf(ab.maxMobCounter)).run();
 
-        if (arenaBlock.spawnArea.size() > 0)
+        if (ab.spawnArea.size() > 0)
         {
-            for (int mobCounter = 0; mobCounter < arenaBlock.maxMobCounter; mobCounter++)
+            for (int mobCounter = 0; mobCounter < ab.maxMobCounter; mobCounter++)
             {
-                int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea
-                        .size());
-                Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-                        .getLocation();
-                MobToSpawn(spawnLocation);
+                MobToSpawn(ArenaBlock.GetRandomArenaSpawnLocation(ab));
             }
 
-            if (arenaBlock.currentRunTimes == arenaBlock.maxRunTimes)
+            if (ab.currentRunTimes == ab.maxRunTimes)
             {
                 SpawnBoss();
             }
@@ -65,7 +59,7 @@ public class Wave
 
     public void renewPlayerWeapons()
     {
-        for (Player p : arenaBlock.arenaPlayers)
+        for (Player p : ab.arenaPlayers)
         {
             boolean needsWeapon = true;
 
@@ -88,31 +82,31 @@ public class Wave
 
     public void SpawnBoss()
     {
-        int randomInt = randomGenerator.nextInt(arenaBlock.spawnArea.size());
-        Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-                .getLocation();
+        int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
+        Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 
-        LivingEntity currentEntity = arenaBlock.bm.SpawnBoss(spawnLocation);
+        LivingEntity le = ab.bm.SpawnBoss(spawnLocation);
 
-        new MessageTimer(arenaBlock.arenaPlayers, "A "
-                + arenaBlock.bm.BossType.name() + " boss has Spawned!!").run();
+        Gear bossGear = ArenaManager.scalingGear.get(ab.arenaPlayers.size());
+        le.getEquipment().setHelmet(bossGear.h);
+        le.getEquipment().setChestplate(bossGear.c);
+        le.getEquipment().setLeggings(bossGear.l);
+        le.getEquipment().setBoots(bossGear.b);
+        le.getEquipment().setItemInHand(bossGear.w);
 
-        // ScaleBossHealth(currentEntity);
+        new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name()
+                + " boss has Spawned!!").run();
 
-        currentEntity.setMetadata("ArenaBoss", new FixedMetadataValue(
-                arenaBlock.plugin, arenaBlock.arenaName));
-
-        arenaBlock.ArenaEntities.add(currentEntity);
+        le.setMetadata("ArenaBoss", new FixedMetadataValue(ab.plugin, ab.name));
+        ab.ArenaEntities.add(le);
     }
 
     public void MobToSpawn(Location spawnLocation)
     {
-        spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
-
         Block blockBelow = spawnLocation.getBlock().getRelative(BlockFace.DOWN);
         List<EntityType> et = new ArrayList<EntityType>();
 
-        for (MobToMaterial mtm : arenaBlock.MobToMat.MobToMaterials)
+        for (MobToMaterial mtm : ab.MobToMat.MobToMaterials)
         {
             if (blockBelow.getType() == mtm.m)
             {
@@ -120,20 +114,20 @@ public class Wave
             }
         }
 
-        if (et.size() < 0)
-        {
+        if (et.size() == 0)
             return;
-        }
 
-        Random randomGenerator = new Random();
-        int randomInt = randomGenerator.nextInt(et.size());
+        int rand = new Random().nextInt(et.size());
+
+        if (rand > 0)
+            rand--;
 
         LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
-                .spawnEntity(spawnLocation, et.get(randomInt));
+                .spawnEntity(spawnLocation, et.get(rand));
 
-        if (arenaBlock.currentRunTimes > 0 && arenaBlock.eliteWave > 0)
+        if (ab.currentRunTimes > 0 && ab.eliteWave > 0)
         {
-            if (arenaBlock.currentRunTimes % arenaBlock.eliteWave == 0)
+            if (ab.currentRunTimes % ab.eliteWave == 0)
             {
                 EliteMob(currentEntity);
             }
@@ -144,19 +138,16 @@ public class Wave
                     new ItemStack(Material.BOW));
         }
 
-        // ScaleMobHealth(currentEntity);
-
-        currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(
-                arenaBlock.plugin, arenaBlock.arenaName));
-
-        arenaBlock.ArenaEntities.add(currentEntity);
+        currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(ab.plugin,
+                ab.name));
+        ab.ArenaEntities.add(currentEntity);
     }
 
     public void EliteMob(LivingEntity currentEntity)
     {
-        if (arenaBlock.emc.Contains(currentEntity.getType()))
+        if (ab.emc.Contains(currentEntity.getType()))
         {
-            Gear gear = arenaBlock.emc.Get(currentEntity.getType()).armor;
+            Gear gear = ab.emc.Get(currentEntity.getType()).armor;
             EntityEquipment ee = currentEntity.getEquipment();
             ee.setChestplate(gear.c);
             ee.setHelmet(gear.h);
@@ -174,7 +165,7 @@ public class Wave
     public void ScaleMobHealth(LivingEntity currentEntity)
     {
         double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
-                + (arenaBlock.averageLevel * 1.2);
+                + (ab.averageLevel * 1.2);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);
     }
@@ -182,7 +173,7 @@ public class Wave
     public void ScaleBossHealth(LivingEntity currentEntity)
     {
         double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
-                + (arenaBlock.averageLevel * 3);
+                + (ab.averageLevel * 3);
         currentEntity.setMaxHealth(heathToscaleTo);
         currentEntity.setHealth(heathToscaleTo);
     }

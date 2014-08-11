@@ -20,7 +20,7 @@ import belven.arena.events.ArenaSuccessful;
 
 public class ArenaTimer extends BukkitRunnable
 {
-    private ArenaBlock arenaBlock;
+    private ArenaBlock ab;
 
     public UUID arenaRunID;
     public int nextWave = 0;
@@ -29,7 +29,7 @@ public class ArenaTimer extends BukkitRunnable
 
     public ArenaTimer(ArenaBlock arenaBlock)
     {
-        this.arenaBlock = arenaBlock;
+        ab = arenaBlock;
         arenaRunID = arenaBlock.arenaRunID;
         nextWave = arenaBlock.currentRunTimes;
     }
@@ -37,39 +37,37 @@ public class ArenaTimer extends BukkitRunnable
     @Override
     public void run()
     {
-        if (arenaRunID != arenaBlock.arenaRunID
-                || nextWave < arenaBlock.currentRunTimes)
+        if (arenaRunID != ab.arenaRunID || nextWave < ab.currentRunTimes)
         {
             this.cancel();
         }
 
         CleanUpEntites();
 
-        if (arenaBlock.arenaArea.size() == 0
-                || arenaBlock.arenaPlayers.size() == 0)
+        if (ab.arenaArea.size() == 0 || ab.arenaPlayers.size() == 0)
         {
             EndArena();
         }
-        else if (!arenaBlock.isActive)
+        else if (!ab.isActive)
         {
-            arenaBlock.RemoveMobs();
+            ab.RemoveMobs();
             this.cancel();
         }
         // arena beyond last wave
-        else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes)
+        else if (ab.currentRunTimes >= ab.maxRunTimes)
         {
             // we have exceeded the amount of times the arena can run for
-            if (arenaBlock.ArenaEntities.size() == 0)
+            if (ab.ArenaEntities.size() == 0)
             {
                 ArenaSuccessfull();
             }
-            else if (arenaBlock.currentRunTimes >= arenaBlock.maxRunTimes
-                    && arenaBlock.currentRunTimes % 10 == 0)
+            else if (ab.currentRunTimes >= ab.maxRunTimes
+                    && ab.currentRunTimes % 7 == 0)
             {
                 SpreadEntities();
                 ArenaHasEntitiesLeft();
             }
-            else if (arenaBlock.ArenaEntities.size() > 0)
+            else if (ab.ArenaEntities.size() > 0)
             {
                 ArenaHasEntitiesLeft();
             }
@@ -78,22 +76,19 @@ public class ArenaTimer extends BukkitRunnable
                 ArenaSuccessfull();
             }
         }
-        else if (arenaBlock.spawnArea.size() > 0
-                && arenaBlock.currentRunTimes < arenaBlock.maxRunTimes)
+        else if (ab.spawnArea.size() > 0 && ab.currentRunTimes < ab.maxRunTimes)
         {
-            arenaBlock.GoToNextWave();
+            ab.GoToNextWave();
             this.cancel();
         }
     }
 
     private void SpreadEntities()
     {
-        for (LivingEntity le : arenaBlock.ArenaEntities)
+        for (LivingEntity le : ab.ArenaEntities)
         {
-            int randomInt = randomGenerator
-                    .nextInt(arenaBlock.spawnArea.size());
-            Location spawnLocation = arenaBlock.spawnArea.get(randomInt)
-                    .getLocation();
+            int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
+            Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 
             if (spawnLocation != null)
             {
@@ -104,31 +99,25 @@ public class ArenaTimer extends BukkitRunnable
             }
         }
 
-        new MessageTimer(arenaBlock.arenaPlayers, ChatColor.RED
-                + "Scrambling Mobs").run();
+        new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Scrambling Mobs")
+                .run();
     }
 
     private void ArenaHasEntitiesLeft()
     {
-        arenaBlock.GetPlayersAverageLevel();
+        ab.GetPlayersAverageLevel();
+        ab.currentRunTimes++;
+        new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName() + " has "
+                + String.valueOf(ab.ArenaEntities.size()) + " mobs left").run();
 
-        arenaBlock.currentRunTimes++;
-
-        new MessageTimer(arenaBlock.arenaPlayers, "Arena "
-                + arenaBlock.ArenaName() + " has "
-                + String.valueOf(arenaBlock.ArenaEntities.size())
-                + " mobs left").run();
-
-        new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
-                Functions.SecondsToTicks(10));
-
+        int delay = Functions.SecondsToTicks(10);
+        new ArenaTimer(ab).runTaskLater(ab.plugin, delay);
         this.cancel();
     }
 
     private void CleanUpEntites()
     {
-        Iterator<LivingEntity> ArenaEntities = arenaBlock.ArenaEntities
-                .iterator();
+        Iterator<LivingEntity> ArenaEntities = ab.ArenaEntities.iterator();
 
         while (ArenaEntities.hasNext())
         {
@@ -137,7 +126,7 @@ public class ArenaTimer extends BukkitRunnable
             {
                 if (le.hasMetadata("ArenaMob"))
                 {
-                    le.removeMetadata("ArenaMob", arenaBlock.plugin);
+                    le.removeMetadata("ArenaMob", ab.plugin);
                 }
                 ArenaEntities.remove();
             }
@@ -146,51 +135,44 @@ public class ArenaTimer extends BukkitRunnable
 
     public void ArenaSuccessfull()
     {
-        new BlockRestorer(Material.REDSTONE_BLOCK, arenaBlock.deactivateBlock)
-                .runTaskLater(arenaBlock.plugin, Functions.SecondsToTicks(1));
+        new BlockRestorer(Material.REDSTONE_BLOCK, ab.deactivateBlock)
+                .runTaskLater(ab.plugin, Functions.SecondsToTicks(1));
         // Give arena rewards
-        arenaBlock.GiveRewards();
+        ab.GiveRewards();
 
         // check to see if we need to run other linked arenas
-        if (arenaBlock.linkedArenas.size() > 0)
+        if (ab.linkedArenas.size() > 0)
         {
-            for (ArenaBlock lab : arenaBlock.linkedArenas)
+            for (ArenaBlock lab : ab.linkedArenas)
             {
                 if (lab != null && !lab.isActive)
                 {
-                    new LinkedArenaTimer(arenaBlock, lab)
-                            .runTaskLater(
-                                    arenaBlock.plugin,
-                                    Functions
-                                            .SecondsToTicks(arenaBlock.linkedArenaDelay));
+                    new LinkedArenaTimer(ab, lab).runTaskLater(ab.plugin,
+                            Functions.SecondsToTicks(ab.linkedArenaDelay));
                 }
             }
         }
 
-        Bukkit.getPluginManager().callEvent(new ArenaSuccessful(arenaBlock));
-
+        Bukkit.getPluginManager().callEvent(new ArenaSuccessful(ab));
         EndArena();
     }
 
     public void EndArena()
     {
-        new MessageTimer(arenaBlock.arenaPlayers, "Arena "
-                + arenaBlock.ArenaName() + " has ended!!").run();
-        arenaBlock.RemoveMobs();
-        arenaBlock.isActive = false;
+        new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName()
+                + " has ended!!").run();
+        ab.RemoveMobs();
+        ab.isActive = false;
 
-        if (arenaBlock.linkedArenas.size() == 0)
+        if (ab.linkedArenas.size() == 0)
         {
             List<Player> ArenaPlayers = new ArrayList<Player>();
-            ArenaPlayers.addAll(arenaBlock.arenaPlayers);
-
+            ArenaPlayers.addAll(ab.arenaPlayers);
             for (Player p : ArenaPlayers)
             {
-                arenaBlock.plugin.LeaveArena(p);
+                ab.plugin.LeaveArena(p);
             }
-
         }
         this.cancel();
     }
-
 }

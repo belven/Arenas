@@ -105,7 +105,7 @@ public class Kills extends ChallengeType
                 .spawnEntity(spawnLocation, et);
 
         currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(ab.plugin,
-                ab.arenaName));
+                ab.name));
 
         ab.ArenaEntities.add(currentEntity);
     }

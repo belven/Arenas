@@ -57,7 +57,7 @@ public class ArenaManager extends JavaPlugin
     public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
     public HashMap<Player, ArenaBlock> SelectedArenaBlocks = new HashMap<Player, ArenaBlock>();
 
-    private HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
+    public HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
     public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
     public static HashMap<String, String> commandPerms = new HashMap<String, String>();
     private static List<String> arenaPaths = new ArrayList<String>();
@@ -226,7 +226,7 @@ public class ArenaManager extends JavaPlugin
         if (HasArenaBlockSelected(p))
         {
             ArenaBlock ab = GetSelectedArenaBlock(p);
-            ReloadArenaFromConfig(ab.arenaName);
+            ReloadArenaFromConfig(ab.name);
             p.sendMessage("Arena " + ab.ArenaName() + " has been reloaded");
         }
     }
@@ -444,8 +444,8 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock selectedAB = GetSelectedArenaBlock(player);
             selectedAB.linkedArenaDelay = Integer.valueOf(delay);
-            player.sendMessage(selectedAB.arenaName
-                    + "s Linked Arena Delay is now " + delay);
+            player.sendMessage(selectedAB.name + "s Linked Arena Delay is now "
+                    + delay);
         }
     }
 
@@ -455,7 +455,7 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = GetSelectedArenaBlock(player);
             SaveArenaToConfig(ab);
-            player.sendMessage("Arena " + ab.arenaName + " was saved");
+            player.sendMessage("Arena " + ab.name + " was saved");
         }
     }
 
@@ -472,7 +472,7 @@ public class ArenaManager extends JavaPlugin
                 {
                     ab.linkedArenas.remove(getArenaBlock(arenaToRemove));
                     player.sendMessage(arenaToRemove + " was removed from "
-                            + ab.arenaName);
+                            + ab.name);
                 }
                 else
                 {
@@ -488,7 +488,6 @@ public class ArenaManager extends JavaPlugin
         if (HasArenaBlockSelected(player))
         {
             ArenaBlock selectedAB = GetSelectedArenaBlock(player);
-
             ArenaBlock arenaToLink = getArenaBlock(arenaToAdd);
 
             if (arenaToLink != null)
@@ -496,9 +495,8 @@ public class ArenaManager extends JavaPlugin
                 if (arenaToLink != selectedAB)
                 {
                     selectedAB.linkedArenas.add(arenaToLink);
-
                     player.sendMessage(arenaToAdd + " was added to "
-                            + selectedAB.arenaName);
+                            + selectedAB.name);
                 }
                 else
                 {
@@ -510,7 +508,6 @@ public class ArenaManager extends JavaPlugin
                 player.sendMessage("Can't find arena " + arenaToAdd);
             }
         }
-
     }
 
     public ArenaBlock GetSelectedArenaBlock(Player p)
@@ -541,7 +538,7 @@ public class ArenaManager extends JavaPlugin
                 }
             }
 
-            player.sendMessage("Arena " + ab.arenaName
+            player.sendMessage("Arena " + ab.name
                     + " rewards have been set to your invetory.");
         }
     }
@@ -576,7 +573,7 @@ public class ArenaManager extends JavaPlugin
                     ab.spawnAreaStartLocation = min;
                     ab.spawnAreaEndLocation = max;
 
-                    player.sendMessage("Arena " + ab.arenaName
+                    player.sendMessage("Arena " + ab.name
                             + "s region has been updated!!");
                 }
             }
@@ -600,12 +597,12 @@ public class ArenaManager extends JavaPlugin
             {
                 player.teleport(warpLocations.get(player));
                 warpLocations.put(player.getName(), null);
-                player.sendMessage("You left the arena " + ab.arenaName
+                player.sendMessage("You left the arena " + ab.name
                         + " and have been returned to your last warp");
                 return;
             }
 
-            player.sendMessage("You left the arena " + ab.arenaName);
+            player.sendMessage("You left the arena " + ab.name);
         }
     }
 
@@ -615,7 +612,7 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = GetSelectedArenaBlock(player);
             ab.deactivateBlock = player.getLocation().getBlock();
-            player.sendMessage("Arena " + ab.arenaName
+            player.sendMessage("Arena " + ab.name
                     + " deactivate block has moved!!");
         }
     }
@@ -667,7 +664,7 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = GetSelectedArenaBlock(player);
             ab.Deactivate();
-            player.sendMessage("Arena " + ab.arenaName + " has been cleared");
+            player.sendMessage("Arena " + ab.name + " has been cleared");
         }
     }
 
@@ -683,8 +680,7 @@ public class ArenaManager extends JavaPlugin
             ab.bm.gear.add(pi.getLeggings());
             ab.bm.gear.add(pi.getBoots());
             ab.bm.gear.add(player.getItemInHand());
-            player.sendMessage("Arena " + ab.arenaName + " boss is now "
-                    + bossType);
+            player.sendMessage("Arena " + ab.name + " boss is now " + bossType);
         }
     }
 
@@ -694,8 +690,7 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = GetSelectedArenaBlock(player);
             ab.eliteWave = Integer.valueOf(ew);
-            player.sendMessage("Arena " + ab.arenaName + " elite wave is now "
-                    + ew);
+            player.sendMessage("Arena " + ab.name + " elite wave is now " + ew);
         }
     }
 
@@ -705,8 +700,7 @@ public class ArenaManager extends JavaPlugin
         {
             ArenaBlock ab = GetSelectedArenaBlock(player);
             ab.radius = Integer.valueOf(radius);
-            player.sendMessage("Arena " + ab.arenaName + " radius is now "
-                    + radius);
+            player.sendMessage("Arena " + ab.name + " radius is now " + radius);
         }
     }
 
@@ -734,7 +728,7 @@ public class ArenaManager extends JavaPlugin
         {
             for (ArenaBlock lab : GetSelectedArenaBlock(p).linkedArenas)
             {
-                p.sendMessage(lab.arenaName);
+                p.sendMessage(lab.name);
             }
         }
     }
@@ -759,7 +753,7 @@ public class ArenaManager extends JavaPlugin
     {
         for (ArenaBlock ab : currentArenaBlocks)
         {
-            player.sendMessage(ab.arenaName);
+            player.sendMessage(ab.name);
         }
     }
 
@@ -768,7 +762,7 @@ public class ArenaManager extends JavaPlugin
         if (HasArenaBlockSelected(p))
         {
             GetSelectedArenaBlock(p).maxRunTimes = Integer.valueOf(runtimes);
-            p.sendMessage(GetSelectedArenaBlock(p).arenaName + " waves set to "
+            p.sendMessage(GetSelectedArenaBlock(p).name + " waves set to "
                     + runtimes);
         }
     }
@@ -800,18 +794,18 @@ public class ArenaManager extends JavaPlugin
                 player.teleport(Functions.offsetLocation(
                         ab.arenaWarp.getLocation(), 0.5, 0, 0.5));
 
-                player.sendMessage("You teleported to arena " + ab.arenaName);
+                player.sendMessage("You teleported to arena " + ab.name);
             }
             else
             {
-                player.sendMessage("You were added to arena " + ab.arenaName);
+                player.sendMessage("You were added to arena " + ab.name);
             }
         }
         else
         {
             warpLocations.put(player.getName(), player.getLocation());
             player.teleport(ab.arenaWarp.getLocation());
-            player.sendMessage("You teleported to arena " + ab.arenaName);
+            player.sendMessage("You teleported to arena " + ab.name);
         }
     }
 
@@ -820,8 +814,7 @@ public class ArenaManager extends JavaPlugin
         if (HasArenaBlockSelected(p))
         {
             GetSelectedArenaBlock(p).arenaWarp = p.getLocation().getBlock();
-            p.sendMessage(GetSelectedArenaBlock(p).arenaName
-                    + " warp block set!!");
+            p.sendMessage(GetSelectedArenaBlock(p).name + " warp block set!!");
         }
     }
 
@@ -829,10 +822,10 @@ public class ArenaManager extends JavaPlugin
     {
         if (HasArenaBlockSelected(p))
         {
-            String arenaName = GetSelectedArenaBlock(p).arenaName;
+            String arenaName = GetSelectedArenaBlock(p).name;
             Block ab = GetSelectedArenaBlock(p).blockToActivate;
             ab.removeMetadata("ArenaBlock", this);
-            String path = "Arenas." + GetSelectedArenaBlock(p).arenaName;
+            String path = "Arenas." + GetSelectedArenaBlock(p).name;
             getConfig().set(path, null);
             currentArenaBlocks.remove(GetSelectedArenaBlock(p));
             SelectedArenaBlocks.remove(GetSelectedArenaBlock(p));
@@ -847,7 +840,7 @@ public class ArenaManager extends JavaPlugin
         if (HasArenaBlockSelected(p))
         {
             GetSelectedArenaBlock(p).timerPeriod = period;
-            p.sendMessage(GetSelectedArenaBlock(p).arenaName
+            p.sendMessage(GetSelectedArenaBlock(p).name
                     + " mobs now spawn every " + newPeriod);
         }
     }
@@ -858,7 +851,7 @@ public class ArenaManager extends JavaPlugin
         {
             GetSelectedArenaBlock(p).LocationToCheckForPlayers = p
                     .getLocation();
-            p.sendMessage(GetSelectedArenaBlock(p).arenaName
+            p.sendMessage(GetSelectedArenaBlock(p).name
                     + " player block has moved!");
         }
     }
@@ -874,7 +867,7 @@ public class ArenaManager extends JavaPlugin
             tempBlock.setMetadata("ArenaBlock", new FixedMetadataValue(this,
                     "Something"));
             GetSelectedArenaBlock(p).blockToActivate = tempBlock;
-            p.sendMessage(GetSelectedArenaBlock(p).arenaName
+            p.sendMessage(GetSelectedArenaBlock(p).name
                     + " active block has moved!");
         }
     }
@@ -898,7 +891,7 @@ public class ArenaManager extends JavaPlugin
         ArenaBlock tempArenaBlock = null;
         for (ArenaBlock ab : currentArenaBlocks)
         {
-            if (ab.arenaName.contains(arenaToSelect))
+            if (ab.name.equalsIgnoreCase(arenaToSelect))
             {
                 tempArenaBlock = ab;
                 break;
@@ -934,8 +927,7 @@ public class ArenaManager extends JavaPlugin
 
                 SelectedArenaBlocks.put(p, newArenaBlock);
                 currentArenaBlocks.add(newArenaBlock);
-                p.sendMessage("Arena " + newArenaBlock.arenaName
-                        + " was created");
+                p.sendMessage("Arena " + newArenaBlock.name + " was created");
             }
         }
         else
@@ -962,7 +954,7 @@ public class ArenaManager extends JavaPlugin
 
     private void SaveArenaToConfig(ArenaBlock ab)
     {
-        String path = ArenaPath(ab.arenaName);
+        String path = ArenaPath(ab.name);
         getConfig().set(path, null);
         getConfig().set(path + arenaPaths.get(0), ab.radius);
         getConfig().set(path + arenaPaths.get(1), ab.timerPeriod);
@@ -994,14 +986,31 @@ public class ArenaManager extends JavaPlugin
 
         SaveArenaEliteMobs(ab);
         SaveArenaMobs(ab);
+        SaveLinkedArenas(ab);
         SaveArenaRewards(ab);
         getConfig().set(path + ".Boss.Type", ab.bm.BossType.toString());
         saveConfig();
     }
 
+    private void SaveLinkedArenas(ArenaBlock ab)
+    {
+        if (ab.linkedArenas.size() > 0)
+        {
+            String path = "Arenas." + ab.name + ".Linked Arenas";
+            String sb = "";
+
+            for (ArenaBlock lab : ab.linkedArenas)
+            {
+                sb += lab.name + ", ";
+            }
+
+            getConfig().set(path, sb);
+        }
+    }
+
     private void SaveArenaEliteMobs(ArenaBlock ab)
     {
-        String path = "Arenas." + ab.arenaName + ".EliteMobs.";
+        String path = "Arenas." + ab.name + ".EliteMobs.";
 
         for (EliteMob em : ab.emc.ems)
         {
@@ -1037,7 +1046,7 @@ public class ArenaManager extends JavaPlugin
 
     private void SaveArenaMobs(ArenaBlock ab)
     {
-        String path = "Arenas." + ab.arenaName;
+        String path = "Arenas." + ab.name;
 
         for (Material m : ab.MobToMat.Materials())
         {
@@ -1055,7 +1064,7 @@ public class ArenaManager extends JavaPlugin
 
     private void SaveArenaRewards(ArenaBlock ab)
     {
-        String path = ArenaRewardsPath(ab.arenaName);
+        String path = ArenaRewardsPath(ab.name);
 
         for (ItemStack is : ab.arenaRewards)
         {
@@ -1137,6 +1146,11 @@ public class ArenaManager extends JavaPlugin
 
     private void ReloadArenaFromConfig(String ArenaName)
     {
+        if (getArenaBlock(ArenaName) != null)
+        {
+            return;
+        }
+
         String currentPath = "Arenas.";
         String path = currentPath + ArenaName;
 
@@ -1198,6 +1212,7 @@ public class ArenaManager extends JavaPlugin
 
         newArenaBlock.arenaWarp = arenaWarp;
         newArenaBlock.arenaRewards = GetArenaRewards(ArenaName, path);
+        newArenaBlock.linkedArenas = GetArenaLinkedArenas(ArenaName);
         newArenaBlock.blockToActivate = blockToActivate;
         newArenaBlock.LocationToCheckForPlayers = LocationToCheckForPlayers;
         newArenaBlock.deactivateBlock = deactivateBlock;
@@ -1206,6 +1221,38 @@ public class ArenaManager extends JavaPlugin
         newArenaBlock.eliteWave = eliteWave;
         currentArenaBlocks.add(newArenaBlock);
         getLogger().info(ArenaName + " has been created");
+    }
+
+    private List<ArenaBlock> GetArenaLinkedArenas(String arenaName)
+    {
+        List<ArenaBlock> tempArenas = new ArrayList<ArenaBlock>();
+
+        String path = "Arenas." + arenaName + ".Linked Arenas";
+
+        if (!getConfig().contains(path))
+        {
+            return tempArenas;
+        }
+
+        for (String lab : getConfig().getString(path).split(", "))
+        {
+            ArenaBlock ab = getArenaBlock(lab);
+            if (ab != null)
+            {
+                tempArenas.add(ab);
+            }
+            else
+            {
+                ReloadArenaFromConfig(lab);
+                ab = getArenaBlock(lab);
+                if (ab != null)
+                {
+                    tempArenas.add(ab);
+                }
+            }
+        }
+
+        return tempArenas;
     }
 
     private void RecreateArenasFromConfig()

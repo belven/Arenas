@@ -3,6 +3,7 @@ package belven.arena.blocks;
 import java.util.Random;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -47,7 +48,11 @@ public class TempArenaBlock extends ArenaBlock
         {
             arenaRunID = UUID.randomUUID();
             isActive = true;
-            ChallengeBlockWave = new Random().nextInt(maxRunTimes - 1) + 1;
+            ChallengeBlockWave = new Random().nextInt(maxRunTimes);
+
+            if (ChallengeBlockWave <= 0)
+                ChallengeBlockWave = 1;
+
             RemoveMobs();
             ArenaEntities.clear();
             GetArenaArea();
@@ -64,6 +69,12 @@ public class TempArenaBlock extends ArenaBlock
         RemoveMobs();
         ArenaEntities.clear();
         plugin.currentArenaBlocks.remove(this);
+        currentChallengeBlock.challengeBlockState.update(true);
+
+        for (Player p : arenaPlayers)
+        {
+            p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        }
     }
 
     public void GoToNextWave()
@@ -75,7 +86,7 @@ public class TempArenaBlock extends ArenaBlock
 
             if (currentRunTimes == 1)
             {
-                new MessageTimer(arenaPlayers, ChatColor.RED + arenaName
+                new MessageTimer(arenaPlayers, ChatColor.RED + name
                         + ChatColor.WHITE + " has Started!!").run();
             }
 
@@ -85,7 +96,7 @@ public class TempArenaBlock extends ArenaBlock
                         plugin, this);
             }
 
-            new MessageTimer(arenaPlayers, ChatColor.RED + arenaName
+            new MessageTimer(arenaPlayers, ChatColor.RED + name
                     + ChatColor.WHITE + " Wave: "
                     + String.valueOf(currentRunTimes)).run();
 

@@ -27,15 +27,13 @@ public abstract class ArenaBlock
     public ArenaManager plugin;
     public boolean isActive = false;
 
-    public String arenaName;
+    public String name;
     public Block blockToActivate, deactivateBlock, arenaWarp;
     public ChallengeBlock currentChallengeBlock = null;
     public int ChallengeBlockWave = 1;
 
     public List<Block> arenaArea = new ArrayList<Block>();
     public List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
-    // public List<Team> arenaTeams = new ArrayList<Team>();
-
     public List<Player> arenaPlayers = new ArrayList<Player>();
     public List<Block> spawnArea = new ArrayList<Block>();
     public List<ArenaBlock> linkedArenas = new ArrayList<ArenaBlock>();
@@ -51,20 +49,15 @@ public abstract class ArenaBlock
     public MobToMaterialCollecton MobToMat;
     public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
     public EliteMobCollection emc = new EliteMobCollection(this);
-
     public UUID arenaRunID = null;
 
     public ArenaBlock(Location startLocation, Location endLocation,
             String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
             ArenaManager Plugin, int TimerPeriod)
     {
-        spawnAreaStartLocation = Functions.offsetLocation(startLocation, 0, -1,
-                0);
-
+        spawnAreaStartLocation = startLocation;
         spawnAreaEndLocation = endLocation;
-
         blockToActivate = startLocation.getBlock();
-
         deactivateBlock = Functions.offsetLocation(startLocation, 0, 2, 0)
                 .getBlock();
 
@@ -73,14 +66,14 @@ public abstract class ArenaBlock
         radius = Radius;
         MobToMat = mobToMat;
         timerPeriod = TimerPeriod;
-        arenaName = ArenaName;
+        name = ArenaName;
         plugin = Plugin;
         maxRunTimes = 5;
     }
 
     public String ArenaName()
     {
-        return ChatColor.RED + arenaName + ChatColor.WHITE;
+        return ChatColor.RED + name + ChatColor.WHITE;
     }
 
     public abstract void Activate();
@@ -221,6 +214,12 @@ public abstract class ArenaBlock
         Block b;
         b = ab.spawnArea.get(new Random().nextInt(ab.spawnArea.size()));
         return b;
+    }
+
+    public static Location GetRandomArenaSpawnLocation(ArenaBlock ab)
+    {
+        return Functions.offsetLocation(GetRandomArenaSpawnBlock(ab)
+                .getLocation(), 0.5, 0, 0.5);
     }
 
 }
