@@ -58,7 +58,10 @@ public class StandardArenaBlock extends ArenaBlock {
 		isActive = false;
 		RemoveMobs();
 		ArenaEntities.clear();
-		currentChallengeBlock.challengeBlockState.update(true);
+
+		if (currentChallengeBlock != null) {
+			currentChallengeBlock.challengeBlockState.update(true);
+		}
 
 		for (Player p : arenaPlayers) {
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());

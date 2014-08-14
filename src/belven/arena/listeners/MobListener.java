@@ -46,7 +46,8 @@ public class MobListener implements Listener {
 	public void onEntityCombustEvent(ProjectileHitEvent event) {
 		if (event.getEntityType() == EntityType.ARROW) {
 			Arrow a = (Arrow) event.getEntity();
-			if (a.getShooter().getType() == EntityType.SKELETON) {
+			if (a.getShooter() != null
+					&& a.getShooter().getType() == EntityType.SKELETON) {
 				LivingEntity le = a.getShooter();
 				if (le.hasMetadata("ArenaMob")) {
 					a.remove();
@@ -56,10 +57,15 @@ public class MobListener implements Listener {
 	}
 
 	@EventHandler
-	public void onEntityCombustEvent(EntityTargetLivingEntityEvent event) {
-		if (event.getTarget().getType() == EntityType.PLAYER) {
+	public void onEntityTargetLivingEntityEvent(
+			EntityTargetLivingEntityEvent event) {
+		if (event.getTarget() != null
+				&& event.getTarget().getType() == EntityType.PLAYER) {
+
 			Player p = (Player) event.getTarget();
-			if (event.getEntity().hasMetadata("ArenaMob")
+
+			if (event.getEntity() != null
+					&& event.getEntity().hasMetadata("ArenaMob")
 					&& !plugin.IsPlayerInArena(p)) {
 				event.setCancelled(true);
 			} else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
