@@ -4,30 +4,25 @@ import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class ArenaBlockActivatedEvent extends Event
-{
-    private static final HandlerList handlers = new HandlerList();
+public class ArenaBlockActivatedEvent extends Event {
+	private static final HandlerList handlers = new HandlerList();
 
-    private Location blockLocation;
+	private Location blockLocation;
 
-    @Override
-    public HandlerList getHandlers()
-    {
-        return handlers;
-    }
+	@Override
+	public HandlerList getHandlers() {
+		return handlers;
+	}
 
-    public static HandlerList getHandlerList()
-    {
-        return handlers;
-    }
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 
-    public ArenaBlockActivatedEvent(Location blockLocation)
-    {
-        this.blockLocation = blockLocation;
-    }
+	public ArenaBlockActivatedEvent(Location blockLocation) {
+		this.blockLocation = blockLocation;
+	}
 
-    public Location GetBlockLocation()
-    {
-        return blockLocation;
-    }
+	public Location GetBlockLocation() {
+		return blockLocation;
+	}
 }

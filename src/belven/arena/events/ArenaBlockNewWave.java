@@ -5,30 +5,25 @@ import org.bukkit.event.HandlerList;
 
 import belven.arena.Wave;
 
-public class ArenaBlockNewWave extends Event
-{
-    private static final HandlerList handlers = new HandlerList();
+public class ArenaBlockNewWave extends Event {
+	private static final HandlerList handlers = new HandlerList();
 
-    private Wave wave;
+	private Wave wave;
 
-    @Override
-    public HandlerList getHandlers()
-    {
-        return handlers;
-    }
+	@Override
+	public HandlerList getHandlers() {
+		return handlers;
+	}
 
-    public static HandlerList getHandlerList()
-    {
-        return handlers;
-    }
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 
-    public ArenaBlockNewWave(Wave newWave)
-    {
-        this.wave = newWave;
-    }
+	public ArenaBlockNewWave(Wave newWave) {
+		this.wave = newWave;
+	}
 
-    public Wave GetWave()
-    {
-        return wave;
-    }
+	public Wave GetWave() {
+		return wave;
+	}
 }

@@ -5,30 +5,25 @@ import org.bukkit.event.HandlerList;
 
 import belven.arena.blocks.ArenaBlock;
 
-public class ArenaSuccessful extends Event
-{
-    private static final HandlerList handlers = new HandlerList();
+public class ArenaSuccessful extends Event {
+	private static final HandlerList handlers = new HandlerList();
 
-    private ArenaBlock ab;
+	private ArenaBlock ab;
 
-    @Override
-    public HandlerList getHandlers()
-    {
-        return handlers;
-    }
+	@Override
+	public HandlerList getHandlers() {
+		return handlers;
+	}
 
-    public static HandlerList getHandlerList()
-    {
-        return handlers;
-    }
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 
-    public ArenaSuccessful(ArenaBlock arenaBlock)
-    {
-        this.ab = arenaBlock;
-    }
+	public ArenaSuccessful(ArenaBlock arenaBlock) {
+		this.ab = arenaBlock;
+	}
 
-    public ArenaBlock GetArena()
-    {
-        return ab;
-    }
+	public ArenaBlock GetArena() {
+		return ab;
+	}
 }

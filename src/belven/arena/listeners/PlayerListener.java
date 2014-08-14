@@ -17,6 +17,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerChatTabCompleteEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -49,6 +50,18 @@ public class PlayerListener implements Listener
     public PlayerListener(ArenaManager instance)
     {
         plugin = instance;
+    }
+
+    @EventHandler
+    public void onPlayerChatTabCompleteEvent(PlayerChatTabCompleteEvent event)
+    {
+        event.getPlayer().sendMessage(event.getChatMessage());
+        if (event.getChatMessage().contains("ba "))
+        {
+            event.getTabCompletions().clear();
+            event.getTabCompletions()
+                    .addAll(ArenaManager.commandPerms.keySet());
+        }
     }
 
     @EventHandler
@@ -118,7 +131,6 @@ public class PlayerListener implements Listener
                 {
                     // TO DO
                 }
-
             }
             else if (event.getClickedBlock().getType() == Material.SIGN)
             {

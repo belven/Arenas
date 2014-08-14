@@ -15,99 +15,83 @@ import resources.Functions;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.events.ChallengeComplete;
 
-public class Kills extends ChallengeType
-{
-    public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
+public class Kills extends ChallengeType {
+	public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
 
-    public Kills(HashMap<EntityType, Integer> entities)
-    {
-        type = ChallengeTypes.Kills;
-        entitiesToKill = entities;
-    }
+	public Kills(HashMap<EntityType, Integer> entities) {
+		type = ChallengeTypes.Kills;
+		entitiesToKill = entities;
+	}
 
-    public void EntityKilled(EntityType et)
-    {
-        if (!ChallengeComplete())
-        {
-            int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
-                    .get(et) : 0;
+	public void EntityKilled(EntityType et) {
+		if (!ChallengeComplete()) {
+			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
+					.get(et) : 0;
 
-            if (amountLeft > 0)
-            {
-                amountLeft--;
-                entitiesToKill.put(et, amountLeft);
-            }
+			if (amountLeft > 0) {
+				amountLeft--;
+				entitiesToKill.put(et, amountLeft);
+			}
 
-            if (ChallengeComplete())
-            {
-                Bukkit.getPluginManager()
-                        .callEvent(new ChallengeComplete(this));
-            }
-        }
-    }
+			if (ChallengeComplete()) {
+				Bukkit.getPluginManager()
+						.callEvent(new ChallengeComplete(this));
+			}
+		}
+	}
 
-    public List<String> ListRemainingEntities()
-    {
-        List<String> EntitiesLeft = new ArrayList<String>();
-        for (EntityType et : entitiesToKill.keySet())
-        {
-            EntitiesLeft.add(et.name() + ": "
-                    + String.valueOf(entitiesToKill.get(et)));
-        }
-        return EntitiesLeft;
-    }
+	public List<String> ListRemainingEntities() {
+		List<String> EntitiesLeft = new ArrayList<String>();
+		for (EntityType et : entitiesToKill.keySet()) {
+			EntitiesLeft.add(et.name() + ": "
+					+ String.valueOf(entitiesToKill.get(et)));
+		}
+		return EntitiesLeft;
+	}
 
-    @Override
-    public boolean ChallengeComplete()
-    {
-        int enitiesLeft = 0;
+	@Override
+	public boolean ChallengeComplete() {
+		int enitiesLeft = 0;
 
-        for (EntityType et : entitiesToKill.keySet())
-        {
-            enitiesLeft += entitiesToKill.get(et);
-        }
-        return enitiesLeft <= 0;
-    }
+		for (EntityType et : entitiesToKill.keySet()) {
+			enitiesLeft += entitiesToKill.get(et);
+		}
+		return enitiesLeft <= 0;
+	}
 
-    public static HashMap<EntityType, Integer> GetRandomEntities(ArenaBlock ab)
-    {
-        HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
-        int amountOfEntities = new Random().nextInt(10) + 1;
-        List<EntityType> entityTypes = ab.MobToMat.EntityTypes();
+	public static HashMap<EntityType, Integer> GetRandomEntities(ArenaBlock ab) {
+		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
+		int amountOfEntities = new Random().nextInt(10) + 1;
+		List<EntityType> entityTypes = ab.MobToMat.EntityTypes();
 
-        for (int i = 0; i < amountOfEntities; i++)
-        {
-            EntityType et = entityTypes.get(new Random().nextInt(entityTypes
-                    .size()));
-            SpawnEntity(ab, et);
+		for (int i = 0; i < amountOfEntities; i++) {
+			EntityType et = entityTypes.get(new Random().nextInt(entityTypes
+					.size()));
+			SpawnEntity(ab, et);
 
-            if (tempEntities.containsKey(et))
-            {
-                int amount = tempEntities.get(et) + 1;
-                tempEntities.put(et, amount);
-            }
-            else
-            {
-                tempEntities.put(et, 1);
-            }
-        }
+			if (tempEntities.containsKey(et)) {
+				int amount = tempEntities.get(et) + 1;
+				tempEntities.put(et, amount);
+			} else {
+				tempEntities.put(et, 1);
+			}
+		}
 
-        return tempEntities;
-    }
+		return tempEntities;
+	}
 
-    public static void SpawnEntity(ArenaBlock ab, EntityType et)
-    {
-        int randomInt = new Random().nextInt(ab.spawnArea.size());
-        Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
-        spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
+	public static void SpawnEntity(ArenaBlock ab, EntityType et) {
+		int randomInt = new Random().nextInt(ab.spawnArea.size());
+		Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
+		spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
-        LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
-                .spawnEntity(spawnLocation, et);
+		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
+				.spawnEntity(spawnLocation, et);
 
-        currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(ab.plugin,
-                ab.name));
+		currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(ab.plugin,
+				ab.name));
 
-        ab.ArenaEntities.add(currentEntity);
-    }
+		ab.ArenaEntities.add(currentEntity);
+	}
 
 }

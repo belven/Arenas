@@ -5,30 +5,25 @@ import org.bukkit.event.HandlerList;
 
 import belven.arena.challengeclasses.ChallengeType;
 
-public class ChallengeComplete extends Event
-{
-    private static final HandlerList handlers = new HandlerList();
+public class ChallengeComplete extends Event {
+	private static final HandlerList handlers = new HandlerList();
 
-    private ChallengeType ct;
+	private ChallengeType ct;
 
-    @Override
-    public HandlerList getHandlers()
-    {
-        return handlers;
-    }
+	@Override
+	public HandlerList getHandlers() {
+		return handlers;
+	}
 
-    public static HandlerList getHandlerList()
-    {
-        return handlers;
-    }
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 
-    public ChallengeComplete(ChallengeType ct)
-    {
-        this.ct = ct;
-    }
+	public ChallengeComplete(ChallengeType ct) {
+		this.ct = ct;
+	}
 
-    public ChallengeType GetChallengeType()
-    {
-        return ct;
-    }
+	public ChallengeType GetChallengeType() {
+		return ct;
+	}
 }

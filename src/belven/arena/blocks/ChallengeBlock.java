@@ -133,11 +133,9 @@ public class ChallengeBlock
         if (ab != null)
         {
             players = ab.arenaPlayers;
-
-            new MessageTimer(ab.arenaPlayers,
-                    "Challenge has been completed you get "
-                            + challengeReward.rewardType.name()).run();
         }
+
+        String messtext = "Challenge has been completed you get ";
 
         if (challengeReward.rewardType != RewardType.Boss)
         {
@@ -149,8 +147,11 @@ public class ChallengeBlock
                 if (challengeReward.rewardType == RewardType.Experience)
                 {
                     double exp = ((ExperienceReward) challengeReward).experience;
-                    int expToGive = (int) (p.getExp() * exp);
+
+                    int expToGive = (int) (p.getExpToLevel() * exp);
                     p.giveExp(expToGive);
+
+                    messtext += String.valueOf(expToGive) + " ";
                 }
                 else if (challengeReward.rewardType == RewardType.Items)
                 {
@@ -158,6 +159,9 @@ public class ChallengeBlock
 
                     for (ItemStack is : items)
                     {
+                        messtext += is.getType().name() + " "
+                                + String.valueOf(is.getAmount() + " ");
+
                         p.getInventory().addItem(is);
                     }
                 }
@@ -166,6 +170,8 @@ public class ChallengeBlock
         else if (challengeReward.rewardType == RewardType.Boss)
         {
             EntityType et = ((BossReward) challengeReward).boss;
+
+            messtext += " a " + et.name();
 
             Location SpawnLocation = challengeBlock.getRelative(BlockFace.UP)
                     .getLocation();
@@ -183,6 +189,9 @@ public class ChallengeBlock
             le.setMetadata("RewardBoss", new FixedMetadataValue(plugin,
                     new ExperienceReward(30)));
         }
+
+        new MessageTimer(ab.arenaPlayers, messtext
+                + challengeReward.rewardType.name()).run();
 
         plugin.challengeBlocks.remove(this);
         challengeBlockState.update(true);

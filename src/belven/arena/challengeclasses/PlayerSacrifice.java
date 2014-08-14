@@ -8,40 +8,32 @@ import org.bukkit.entity.Player;
 
 import belven.arena.events.ChallengeComplete;
 
-public class PlayerSacrifice extends ChallengeType
-{
-    public List<Player> playersSacrificed = new ArrayList<Player>();
-    public int amountToSacrifice = 1;
+public class PlayerSacrifice extends ChallengeType {
+	public List<Player> playersSacrificed = new ArrayList<Player>();
+	public int amountToSacrifice = 1;
 
-    public PlayerSacrifice(int amount)
-    {
-        type = ChallengeTypes.PlayerSacrifice;
-        amountToSacrifice = amount;
-    }
+	public PlayerSacrifice(int amount) {
+		type = ChallengeTypes.PlayerSacrifice;
+		amountToSacrifice = amount;
+	}
 
-    public void SacrificePlayer(Player p)
-    {
-        if (!playersSacrificed.contains(p))
-        {
-            playersSacrificed.add(p);
-            amountToSacrifice--;
+	public void SacrificePlayer(Player p) {
+		if (!playersSacrificed.contains(p)) {
+			playersSacrificed.add(p);
+			amountToSacrifice--;
 
-            if (ChallengeComplete())
-            {
-                Bukkit.getPluginManager()
-                        .callEvent(new ChallengeComplete(this));
-            }
-            p.setHealth(0.0);
-        }
-        else
-        {
-            p.sendMessage("You cannot sacrifice yourself again");
-        }
-    }
+			if (ChallengeComplete()) {
+				Bukkit.getPluginManager()
+						.callEvent(new ChallengeComplete(this));
+			}
+			p.setHealth(0.0);
+		} else {
+			p.sendMessage("You cannot sacrifice yourself again");
+		}
+	}
 
-    @Override
-    public boolean ChallengeComplete()
-    {
-        return amountToSacrifice <= 0;
-    }
+	@Override
+	public boolean ChallengeComplete() {
+		return amountToSacrifice <= 0;
+	}
 }

@@ -10,26 +10,22 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import belven.arena.ArenaManager;
 import belven.arena.events.ArenaBlockActivatedEvent;
 
-public class BlockListener implements Listener
-{
-    public ArenaManager plugin;
+public class BlockListener implements Listener {
+	public ArenaManager plugin;
 
-    public BlockListener(ArenaManager instance)
-    {
-        plugin = instance;
-    }
+	public BlockListener(ArenaManager instance) {
+		plugin = instance;
+	}
 
-    @EventHandler
-    public void onBlockRedstoneEvent(BlockRedstoneEvent event)
-    {
-        Block tempblock = event.getBlock();
+	@EventHandler
+	public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
+		Block tempblock = event.getBlock();
 
-        Bukkit.getPluginManager().callEvent(
-                new ArenaBlockActivatedEvent(tempblock.getLocation()));
-    }
+		Bukkit.getPluginManager().callEvent(
+				new ArenaBlockActivatedEvent(tempblock.getLocation()));
+	}
 
-    @EventHandler
-    public void onBlockBreakEvent(BlockBreakEvent event)
-    {
-    }
+	@EventHandler
+	public void onBlockBreakEvent(BlockBreakEvent event) {
+	}
 }
