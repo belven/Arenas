@@ -41,6 +41,7 @@ import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
+import belven.arena.rewardclasses.Item.ChanceLevel;
 import belven.teams.TeamManager;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -53,17 +54,24 @@ public class ArenaManager extends JavaPlugin {
 	private final ArenaListener arenaListener = new ArenaListener(this);
 	private final MobListener mobListener = new MobListener(this);
 
+	public static HashMap<String, String> commandPerms = new HashMap<String, String>();
+	public static List<String> arenaPaths = new ArrayList<String>();
+	public static HashMap<Integer, Gear> scalingGear = new HashMap<Integer, Gear>();
+	public static HashMap<Material, ChanceLevel> itemChances = new HashMap<Material, ChanceLevel>();
+
 	public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
 	public HashMap<Player, ArenaBlock> SelectedArenaBlocks = new HashMap<Player, ArenaBlock>();
 
 	public HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
 	public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
-	public static HashMap<String, String> commandPerms = new HashMap<String, String>();
-	public static List<String> arenaPaths = new ArrayList<String>();
 	public List<ChallengeBlock> challengeBlocks = new ArrayList<ChallengeBlock>();
-	public static HashMap<Integer, Gear> scalingGear = new HashMap<Integer, Gear>();
 
 	private static String preFix = "BelvensArenas.";
+
+	static {
+		// Item Chances
+		itemChances.put(Material.DIAMOND, ChanceLevel.Hard);
+	}
 
 	static {
 		String helm = "_HELMET";

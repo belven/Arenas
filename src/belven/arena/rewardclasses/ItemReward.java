@@ -4,19 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 public class ItemReward extends Reward {
-	public List<ItemStack> rewards = new ArrayList<ItemStack>();
+	public List<Item> rewards = new ArrayList<Item>();
 
-	public ItemReward(List<ItemStack> items) {
+	public ItemReward(List<Item> items) {
 		rewardType = RewardType.Items;
 		rewards = items;
 	}
 
-	public static List<ItemStack> RandomItemRewards() {
-		List<ItemStack> items = new ArrayList<ItemStack>();
-		items.add(new ItemStack(Material.DIAMOND));
+	public static List<Item> RandomItemRewards() {
+		List<Item> items = new ArrayList<Item>();
+		items.add(new Item(Material.DIAMOND));
 		return items;
 	}
 }
