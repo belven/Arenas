@@ -57,7 +57,7 @@ public class ArenaManager extends JavaPlugin {
 	public static HashMap<String, String> commandPerms = new HashMap<String, String>();
 	public static List<String> arenaPaths = new ArrayList<String>();
 	public static HashMap<Integer, Gear> scalingGear = new HashMap<Integer, Gear>();
-	public static HashMap<Material, ChanceLevel> itemChances = new HashMap<Material, ChanceLevel>();
+	private static HashMap<Material, ChanceLevel> itemChances = new HashMap<Material, ChanceLevel>();
 
 	public List<ArenaBlock> currentArenaBlocks = new ArrayList<ArenaBlock>();
 	public HashMap<Player, ArenaBlock> SelectedArenaBlocks = new HashMap<Player, ArenaBlock>();
@@ -70,7 +70,43 @@ public class ArenaManager extends JavaPlugin {
 
 	static {
 		// Item Chances
-		itemChances.put(Material.DIAMOND, ChanceLevel.Hard);
+		ChanceLevel cl;
+		// Always = 0 Players
+		cl = ChanceLevel.Always;
+
+		// VeryEasy = 1 Players
+		cl = ChanceLevel.VeryEasy;
+		itemChances.put(Material.COAL, cl);
+		itemChances.put(Material.SUGAR, cl);
+		itemChances.put(Material.SPIDER_EYE, cl);
+		itemChances.put(Material.EGG, cl);
+
+		// Easy = 2 Players
+		cl = ChanceLevel.Easy;
+		itemChances.put(Material.BREAD, cl);
+		itemChances.put(Material.BOOK, cl);
+		itemChances.put(Material.MUSHROOM_SOUP, cl);
+		itemChances.put(Material.IRON_INGOT, cl);
+		itemChances.put(Material.LAPIS_ORE, cl);
+
+		// Medium = 3 Players
+		cl = ChanceLevel.Medium;
+		itemChances.put(Material.BLAZE_POWDER, cl);
+		itemChances.put(Material.SLIME_BALL, cl);
+		itemChances.put(Material.GOLD_INGOT, cl);
+		itemChances.put(Material.GLOWSTONE_DUST, cl);
+		itemChances.put(Material.MAGMA_CREAM, cl);
+
+		// Hard = 4 Players
+		cl = ChanceLevel.Hard;
+		itemChances.put(Material.SADDLE, cl);
+		itemChances.put(Material.EMERALD, cl);
+		itemChances.put(Material.ENDER_PEARL, cl);
+		itemChances.put(Material.NETHER_WARTS, cl);
+
+		// VeryHard = 5 Players
+		cl = ChanceLevel.VeryHard;
+		itemChances.put(Material.DIAMOND, cl);
 	}
 
 	static {
@@ -136,6 +172,24 @@ public class ArenaManager extends JavaPlugin {
 		arenaPaths.add(11, ".Elite Wave");
 		arenaPaths.add(12, ".Start Location");
 		arenaPaths.add(13, ".End Location");
+	}
+
+	public static ChanceLevel getMaterialChance(Material m) {
+		if (itemChances.containsKey(m)) {
+			return itemChances.get(m);
+		} else {
+			return ChanceLevel.Easy;
+		}
+	}
+
+	public static HashMap<Material, ChanceLevel> getItemChances() {
+		return itemChances;
+	}
+
+	public static ArrayList<Material> getItemMaterials() {
+		ArrayList<Material> mats = new ArrayList<Material>();
+		mats.addAll(itemChances.keySet());
+		return mats;
 	}
 
 	public TeamManager teams = (TeamManager) Bukkit.getServer()

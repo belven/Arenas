@@ -28,7 +28,7 @@ public class Item {
 	}
 
 	public Item(Material m) {
-		this(m, 1, ArenaManager.itemChances.get(m));
+		this(m, 1, ArenaManager.getMaterialChance(m));
 	}
 
 	public Item(ItemStack is) {
