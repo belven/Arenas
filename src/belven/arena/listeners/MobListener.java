@@ -36,14 +36,15 @@ public class MobListener implements Listener {
 
 	@EventHandler
 	public void onEntityCombustEvent(EntityCombustEvent event) {
-		if (event.getDuration() == 8) {
+		if (event.getEntity().hasMetadata("ArenaMob")
+				&& event.getDuration() == 8) {
 			event.setCancelled(true);
 		}
 	}
 
 	@SuppressWarnings("deprecation")
 	@EventHandler
-	public void onEntityCombustEvent(ProjectileHitEvent event) {
+	public void onProjectileHitEvent(ProjectileHitEvent event) {
 		if (event.getEntityType() == EntityType.ARROW) {
 			Arrow a = (Arrow) event.getEntity();
 			if (a.getShooter() != null

@@ -132,8 +132,6 @@ public class ArenaTimer extends BukkitRunnable {
 	public void EndArena() {
 		new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName()
 				+ " has ended!!").run();
-		ab.RemoveMobs();
-		ab.isActive = false;
 
 		if (ab.linkedArenas.size() == 0) {
 			List<Player> ArenaPlayers = new ArrayList<Player>();
@@ -144,6 +142,7 @@ public class ArenaTimer extends BukkitRunnable {
 						.getNewScoreboard());
 			}
 		}
+		ab.Deactivate();
 		this.cancel();
 	}
 }

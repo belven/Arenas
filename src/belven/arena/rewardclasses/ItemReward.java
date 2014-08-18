@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import belven.arena.ArenaManager;
 import belven.arena.rewardclasses.Item.ChanceLevel;
@@ -28,6 +29,15 @@ public class ItemReward extends Reward {
 			items.add(new Item(m, amount, cl));
 			amount = 10;
 		}
+		return items;
+	}
+
+	public List<ItemStack> GetItems() {
+		List<ItemStack> items = new ArrayList<ItemStack>();
+		for (Item i : rewards) {
+			items.add(i.getItem());
+		}
+
 		return items;
 	}
 }

@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import resources.EntityFunctions;
 import belven.arena.ArenaManager;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.Wave;
@@ -24,15 +23,16 @@ public class StandardArenaBlock extends ArenaBlock {
 
 	@Override
 	public void Activate() {
-		if (arenaPlayers.size() == 0) {
-			Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(
-					LocationToCheckForPlayers, (radius - 2) + (radius / 2));
-			for (Player p : tempPlayers) {
-				if (!plugin.IsPlayerInArena(p)) {
-					plugin.WarpToArena(p, this);
-				}
-			}
-		}
+		// if (arenaPlayers.size() == 0) {
+		// Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(
+		// LocationToCheckForPlayers, radius);
+		// for (Player p : tempPlayers) {
+		// if (!plugin.IsPlayerInArena(p)) {
+		// plugin.WarpToArena(p, this);
+		// }
+		// }
+		// }
+		SetPlayers();
 
 		if (arenaPlayers.size() != 0) {
 			arenaRunID = UUID.randomUUID();
@@ -44,7 +44,6 @@ public class StandardArenaBlock extends ArenaBlock {
 
 			RemoveMobs();
 			ArenaEntities.clear();
-			GetArenaArea();
 			GetSpawnArea();
 			new ArenaTimer(this).runTaskLater(plugin, 10);
 		}

@@ -15,13 +15,17 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 
+import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.resources.SavedBlock;
+import belven.arena.rewardclasses.Item;
+import belven.arena.rewardclasses.ItemReward;
 
 public abstract class ArenaBlock {
 	public ArenaManager plugin;
@@ -90,10 +94,20 @@ public abstract class ArenaBlock {
 	}
 
 	public void GiveRewards() {
+		int count = arenaPlayers.size();
 		Iterator<Player> ArenaPlayers = arenaPlayers.iterator();
 
 		while (ArenaPlayers.hasNext()) {
 			Player p = ArenaPlayers.next();
+			if (arenaRewards.size() <= 0) {
+				ItemReward ir = new ItemReward(ItemReward.RandomItemRewards());
+				for (Item i : ir.rewards) {
+					if (i.ShouldGive(count)) {
+						p.getInventory().addItem(i.getItem());
+					}
+				}
+			}
+
 			for (ItemStack is : arenaRewards) {
 				if (is != null) {
 					p.getInventory().addItem(is);
@@ -114,12 +128,29 @@ public abstract class ArenaBlock {
 		}
 	}
 
-	public void GetArenaArea() {
-		if (ArenaEndLocation == null) {
-			plugin.getServer().getLogger().info("arenaBlockEndLocation NULL");
-			return;
-		}
+	public void SetPlayers() {
+		Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(
+				LocationToCheckForPlayers, radius);
+		if (tempPlayers.length > 0) {
+			GetArenaArea();
+			for (Player p : tempPlayers) {
+				Block b = p.getLocation().getBlock();
 
+				if (!plugin.IsPlayerInArena(p)
+						&& b.hasMetadata("ArenaAreaBlock")) {
+					MetadataValue data = b.getMetadata("ArenaAreaBlock").get(0);
+					if (data.value() != null) {
+						ArenaBlock ab = (ArenaBlock) data.value();
+						if (data != null && ab == this) {
+							plugin.WarpToArena(p, this);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void GetArenaArea() {
 		arenaArea = Functions.getBlocksBetweenPoints(ArenaStartLocation,
 				ArenaEndLocation);
 

@@ -63,6 +63,7 @@ public class ArenaManager extends JavaPlugin {
 	public HashMap<Player, ArenaBlock> SelectedArenaBlocks = new HashMap<Player, ArenaBlock>();
 
 	public HashMap<Player, ArenaBlock> PlayersInArenas = new HashMap<Player, ArenaBlock>();
+	public List<Player> onlinePlayers = new ArrayList<Player>();
 	public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
 	public List<ChallengeBlock> challengeBlocks = new ArrayList<ChallengeBlock>();
 
@@ -769,29 +770,43 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	public void WarpToArena(Player player, ArenaBlock ab) {
-		if (!ab.arenaPlayers.contains(player)) {
-			ab.arenaPlayers.add(player);
-			PlayersInArenas.put(player, ab);
+	public boolean WarpToArena(Player p, ArenaBlock ab) {
+		if (!ab.arenaPlayers.contains(p)) {
+			ab.arenaPlayers.add(p);
+			PlayersInArenas.put(p, ab);
 		}
 
-		if (player.getLocation().getWorld() == ab.LocationToCheckForPlayers
+		Location tpL = Functions.offsetLocation(ab.arenaWarp.getLocation(),
+				0.5, 0, 0.5);
+		String tpMsg = "You were teleported and added to the arena " + ab.name;
+
+		if (p.getLocation().getWorld() == ab.LocationToCheckForPlayers
 				.getWorld()) {
-			if (player.getLocation().distance(ab.LocationToCheckForPlayers) > ((ab.radius - 2) + (ab.radius / 2))) {
-				warpLocations.put(player.getName(), player.getLocation());
 
-				player.teleport(Functions.offsetLocation(
-						ab.arenaWarp.getLocation(), 0.5, 0, 0.5));
+			if (ab.isActive) {
+				Block b = p.getLocation().getBlock();
 
-				player.sendMessage("You teleported to arena " + ab.name);
+				if (!IsPlayerInArena(p) && !b.hasMetadata("ArenaAreaBlock")) {
+					warpLocations.put(p.getName(), p.getLocation());
+					p.teleport(tpL);
+					p.sendMessage(tpMsg);
+					return true;
+				}
+			} else if (p.getLocation().distance(ab.LocationToCheckForPlayers) > ab.radius) {
+				warpLocations.put(p.getName(), p.getLocation());
+				p.teleport(tpL);
+				p.sendMessage(tpMsg);
+				return true;
 			} else {
-				player.sendMessage("You were added to arena " + ab.name);
+				p.sendMessage("You were added to arena " + ab.name);
+				return true;
 			}
 		} else {
-			warpLocations.put(player.getName(), player.getLocation());
-			player.teleport(ab.arenaWarp.getLocation());
-			player.sendMessage("You teleported to arena " + ab.name);
+			warpLocations.put(p.getName(), p.getLocation());
+			p.teleport(tpL);
+			p.sendMessage(tpMsg);
 		}
+		return false;
 	}
 
 	private void SetWarpBlock(Player p) {
