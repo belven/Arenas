@@ -1225,7 +1225,8 @@ public class ArenaManager extends JavaPlugin {
 
 		BaseArena ab = null;
 
-		if (con.getString(path + arenaPaths.get(14)) == "Standard") {
+		if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase(
+				"standard")) {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
 			int eliteWave = con.getInt(path + arenaPaths.get(11));
 
@@ -1233,7 +1234,8 @@ public class ArenaManager extends JavaPlugin {
 					spawnAreaEndLocation, ArenaName, radius, mobs, this,
 					timerPeriod);
 			ab.eliteWave = eliteWave;
-		} else {
+		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase(
+				"pvp")) {
 			// TODO
 			Material m = Material.GRASS;
 			if (con.contains(path + arenaPaths.get(15))) {
@@ -1248,18 +1250,20 @@ public class ArenaManager extends JavaPlugin {
 		blockToActivate.setMetadata("ArenaBlock", new FixedMetadataValue(this,
 				"Something"));
 
-		ab.arenaWarp = arenaWarp;
-		ab.ArenaStartLocation = AreaStartLocation;
-		ab.ArenaEndLocation = AreaEndLocation;
-		ab.arenaRewards = GetArenaRewards(ArenaName, path);
-		ab.linkedArenas = GetArenaLinkedArenas(ArenaName);
-		ab.blockToActivate = blockToActivate;
-		ab.LocationToCheckForPlayers = LocationToCheckForPlayers;
-		ab.deactivateBlock = deactivateBlock;
-		ab.linkedArenaDelay = linkedArenaDelay;
-		ab.maxRunTimes = maxRunTimes <= 0 ? 1 : maxRunTimes;
-		currentArenaBlocks.add(ab);
-		getLogger().info(ArenaName + " has been created");
+		if (getArenaBlock(ArenaName) != null) {
+			ab = getArenaBlock(ArenaName);
+			ab.arenaWarp = arenaWarp;
+			ab.ArenaStartLocation = AreaStartLocation;
+			ab.ArenaEndLocation = AreaEndLocation;
+			ab.arenaRewards = GetArenaRewards(ArenaName, path);
+			ab.linkedArenas = GetArenaLinkedArenas(ArenaName);
+			ab.blockToActivate = blockToActivate;
+			ab.LocationToCheckForPlayers = LocationToCheckForPlayers;
+			ab.deactivateBlock = deactivateBlock;
+			ab.linkedArenaDelay = linkedArenaDelay;
+			ab.maxRunTimes = maxRunTimes <= 0 ? 1 : maxRunTimes;
+			getLogger().info(ArenaName + " has been created");
+		}
 	}
 
 	private List<BaseArena> GetArenaLinkedArenas(String arenaName) {

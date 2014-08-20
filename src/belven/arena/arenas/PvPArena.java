@@ -44,21 +44,21 @@ public class PvPArena extends BaseArena {
 	@Override
 	public void Activate() {
 		SetPlayers();
-		plugin.getLogger().info(String.valueOf(arenaPlayers.size()));
-
+		Lives.clear();
 		if (arenaPlayers.size() != 0) {
 			for (Player p : arenaPlayers) {
-				if (tm != null && tm.isInATeam(p)) {
+				if (tm != null && tm.isInATeam(p)
+						&& !Lives.containsKey(tm.getTeam(p).teamName)) {
 					Lives.put(tm.getTeam(p).teamName, lives);
-				} else {
+				} else if (!Lives.containsKey(p.getName())) {
 					Lives.put(p.getName(), lives);
 				}
 			}
 
-			SetPlayersScoreBoards();
 			GetSpawnArea();
 			arenaRunID = UUID.randomUUID();
 			isActive = true;
+			SetPlayersScoreBoards();
 		} else {
 			Deactivate();
 		}
@@ -67,15 +67,13 @@ public class PvPArena extends BaseArena {
 	public Scoreboard GetScoreboard() {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard sb = manager.getNewScoreboard();
-		plugin.getLogger().info(String.valueOf(Lives.keySet().size()));
+		Objective objective = sb.registerNewObjective("Lives Left", "dummy");
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		objective.setDisplayName("Lives Left");
 
 		if (Lives.keySet().size() > 0) {
 			for (String s : Lives.keySet()) {
-				plugin.getLogger().info(s);
-				Objective objective = sb.registerNewObjective("test", "dummy");
-				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-				objective.setDisplayName(s);
-				Score score = objective.getScore("Lives Left: ");
+				Score score = objective.getScore(s + ": ");
 				score.setScore(Lives.get(s));
 			}
 		}
@@ -127,22 +125,24 @@ public class PvPArena extends BaseArena {
 
 	public void PlayerKilled(Player p) {
 		String heighestKills = "";
+		String key = "";
 
-		if (tm != null) {
-			String key = "";
-			if (tm.isInATeam(p)) {
-				key = tm.getTeam(p).teamName;
-			} else {
-				key = p.getName();
-			}
-			int newLives = Lives.get(key) - 1;
-			Lives.put(key, newLives);
+		if (tm != null && tm.isInATeam(p)) {
+			key = tm.getTeam(p).teamName;
+		} else {
+			key = p.getName();
 		}
+
+		int newLives = Lives.get(key) - 1;
+		Lives.put(key, newLives);
+
+		SetPlayersScoreBoards();
 
 		for (String s : Lives.keySet()) {
 			if (Lives.get(s) == 0) {
 				new MessageTimer(arenaPlayers, "Arena " + ArenaName()
 						+ " has ended!!").run();
+				Deactivate();
 			}
 
 			if (Lives.get(heighestKills) == null) {
