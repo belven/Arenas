@@ -19,11 +19,11 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffectType;
 
 import belven.arena.ArenaManager;
-import belven.arena.blocks.ArenaBlock;
-import belven.arena.blocks.ChallengeBlock;
-import belven.arena.blocks.StandardArenaBlock;
-import belven.arena.blocks.ArenaBlock.ArenaTypes;
+import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.StandardArena;
+import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.challengeclasses.Kills;
 
 public class MobListener implements Listener {
@@ -91,13 +91,13 @@ public class MobListener implements Listener {
 			String arena = currentMetaData.get(0).asString();
 
 			if (arena != null) {
-				ArenaBlock ab = plugin.getArenaBlock(arena);
+				BaseArena ab = plugin.getArenaBlock(arena);
 
 				if (ab == null)
 					return;
 
 				if (ab.type != ArenaTypes.PvP) {
-					StandardArenaBlock sab = (StandardArenaBlock) ab;
+					StandardArena sab = (StandardArena) ab;
 
 					sab.ArenaEntities.remove(e);
 

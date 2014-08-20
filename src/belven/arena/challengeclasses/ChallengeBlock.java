@@ -1,4 +1,4 @@
-package belven.arena.blocks;
+package belven.arena.challengeclasses;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +21,9 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import resources.Gear;
 import belven.arena.ArenaManager;
-import belven.arena.challengeclasses.ChallengeType;
+import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.StandardArena;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
-import belven.arena.challengeclasses.Kills;
-import belven.arena.challengeclasses.PlayerSacrifice;
 import belven.arena.rewardclasses.BossReward;
 import belven.arena.rewardclasses.ExperienceReward;
 import belven.arena.rewardclasses.Item;
@@ -43,7 +42,7 @@ public class ChallengeBlock {
 
 	public ArenaManager plugin;
 	public List<Player> players;
-	public ArenaBlock ab;
+	public BaseArena ab;
 
 	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
 			ChallengeType ct) {
@@ -107,7 +106,7 @@ public class ChallengeBlock {
 	}
 
 	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
-			ChallengeType ct, ArenaBlock arenaBlock) {
+			ChallengeType ct, BaseArena arenaBlock) {
 		this(instance, b, r, ct);
 		ab = arenaBlock;
 		new MessageTimer(ab.arenaPlayers, "A challenge of type "
@@ -177,9 +176,9 @@ public class ChallengeBlock {
 	}
 
 	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance,
-			StandardArenaBlock ab) {
+			StandardArena ab) {
 		ChallengeBlock cb = null;
-		Block b = ArenaBlock.GetRandomArenaSpawnBlock(ab);
+		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
 		Reward r = Reward.GetRandomReward();
 		ChallengeType ct = ChallengeType.GetRandomChallengeType(ab);
 		cb = new ChallengeBlock(instance, b, r, ct, ab);

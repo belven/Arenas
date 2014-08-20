@@ -15,19 +15,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import resources.Functions;
-import belven.arena.blocks.ArenaBlock;
-import belven.arena.blocks.StandardArenaBlock;
+import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaSuccessful;
 
 public class ArenaTimer extends BukkitRunnable {
-	private StandardArenaBlock ab;
+	private StandardArena ab;
 
 	public UUID arenaRunID;
 	public int nextWave = 0;
 
 	private Random randomGenerator = new Random();
 
-	public ArenaTimer(StandardArenaBlock arenaBlock) {
+	public ArenaTimer(StandardArena arenaBlock) {
 		ab = arenaBlock;
 		arenaRunID = arenaBlock.arenaRunID;
 		nextWave = arenaBlock.currentRunTimes;
@@ -118,7 +118,7 @@ public class ArenaTimer extends BukkitRunnable {
 
 		// check to see if we need to run other linked arenas
 		if (ab.linkedArenas.size() > 0) {
-			for (ArenaBlock lab : ab.linkedArenas) {
+			for (BaseArena lab : ab.linkedArenas) {
 				if (lab != null && !lab.isActive) {
 					new LinkedArenaTimer(ab, lab).runTaskLater(ab.plugin,
 							Functions.SecondsToTicks(ab.linkedArenaDelay));

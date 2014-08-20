@@ -12,7 +12,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import resources.Functions;
-import belven.arena.blocks.StandardArenaBlock;
+import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
 
 public class Kills extends ChallengeType {
@@ -60,7 +60,7 @@ public class Kills extends ChallengeType {
 	}
 
 	public static HashMap<EntityType, Integer> GetRandomEntities(
-			StandardArenaBlock ab) {
+			StandardArena ab) {
 		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
 		int amountOfEntities = new Random().nextInt(10) + 1;
 		List<EntityType> entityTypes = ab.MobToMat.EntityTypes();
@@ -81,7 +81,7 @@ public class Kills extends ChallengeType {
 		return tempEntities;
 	}
 
-	public static void SpawnEntity(StandardArenaBlock ab, EntityType et) {
+	public static void SpawnEntity(StandardArena ab, EntityType et) {
 		int randomInt = new Random().nextInt(ab.spawnArea.size());
 		Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 		spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);

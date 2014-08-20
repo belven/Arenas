@@ -3,12 +3,12 @@ package belven.arena.events;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import belven.arena.blocks.ArenaBlock;
+import belven.arena.arenas.BaseArena;
 
 public class ArenaSuccessful extends Event {
 	private static final HandlerList handlers = new HandlerList();
 
-	private ArenaBlock ab;
+	private BaseArena ab;
 
 	@Override
 	public HandlerList getHandlers() {
@@ -19,11 +19,11 @@ public class ArenaSuccessful extends Event {
 		return handlers;
 	}
 
-	public ArenaSuccessful(ArenaBlock arenaBlock) {
+	public ArenaSuccessful(BaseArena arenaBlock) {
 		this.ab = arenaBlock;
 	}
 
-	public ArenaBlock GetArena() {
+	public BaseArena GetArena() {
 		return ab;
 	}
 }

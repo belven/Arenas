@@ -1,4 +1,4 @@
-package belven.arena.blocks;
+package belven.arena.arenas;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,17 +19,18 @@ import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 import belven.arena.Wave;
+import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.timedevents.ArenaTimer;
 import belven.arena.timedevents.MessageTimer;
 
-public class StandardArenaBlock extends ArenaBlock {
+public class StandardArena extends BaseArena {
 
 	public BossMob bm = new BossMob();
 	public MobToMaterialCollecton MobToMat = new MobToMaterialCollecton();
 	public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
 	public EliteMobCollection emc = new EliteMobCollection(this);
 
-	public StandardArenaBlock(Location startLocation, Location endLocation,
+	public StandardArena(Location startLocation, Location endLocation,
 			String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
 			ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Radius, Plugin,

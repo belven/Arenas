@@ -1,4 +1,4 @@
-package belven.arena.blocks;
+package belven.arena.arenas;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,11 +17,12 @@ import org.bukkit.metadata.MetadataValue;
 import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
+import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
 
-public abstract class ArenaBlock {
+public abstract class BaseArena {
 	public enum ArenaTypes {
 		Standard, PvP, Temp
 	}
@@ -39,7 +40,7 @@ public abstract class ArenaBlock {
 	public List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
 	public List<Player> arenaPlayers = new ArrayList<Player>();
 	public List<Block> spawnArea = new ArrayList<Block>();
-	public List<ArenaBlock> linkedArenas = new ArrayList<ArenaBlock>();
+	public List<BaseArena> linkedArenas = new ArrayList<BaseArena>();
 
 	public Location LocationToCheckForPlayers, spawnArenaStartLocation,
 			spawnArenaEndLocation, ArenaStartLocation, ArenaEndLocation;
@@ -50,7 +51,7 @@ public abstract class ArenaBlock {
 	public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
 	public UUID arenaRunID = null;
 
-	public ArenaBlock(Location startLocation, Location endLocation,
+	public BaseArena(Location startLocation, Location endLocation,
 			String ArenaName, int Radius, ArenaManager Plugin, int TimerPeriod) {
 
 		spawnArenaStartLocation = startLocation;
@@ -124,7 +125,7 @@ public abstract class ArenaBlock {
 						&& b.hasMetadata("ArenaAreaBlock")) {
 					MetadataValue data = b.getMetadata("ArenaAreaBlock").get(0);
 					if (data.value() != null) {
-						ArenaBlock ab = (ArenaBlock) data.value();
+						BaseArena ab = (BaseArena) data.value();
 						if (data != null && ab == this) {
 							plugin.WarpToArena(p, this);
 						}
@@ -173,13 +174,13 @@ public abstract class ArenaBlock {
 		}
 	}
 
-	public static Block GetRandomArenaSpawnBlock(ArenaBlock ab) {
+	public static Block GetRandomArenaSpawnBlock(BaseArena ab) {
 		Block b;
 		b = ab.spawnArea.get(new Random().nextInt(ab.spawnArea.size()));
 		return b;
 	}
 
-	public static Location GetRandomArenaSpawnLocation(ArenaBlock ab) {
+	public static Location GetRandomArenaSpawnLocation(BaseArena ab) {
 		return Functions.offsetLocation(GetRandomArenaSpawnBlock(ab)
 				.getLocation(), 0.5, 0, 0.5);
 	}

@@ -20,16 +20,16 @@ import org.bukkit.metadata.FixedMetadataValue;
 import resources.EntityFunctions;
 import resources.Gear;
 import resources.MaterialFunctions;
-import belven.arena.blocks.ArenaBlock;
-import belven.arena.blocks.StandardArenaBlock;
+import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.timedevents.MessageTimer;
 
 public class Wave {
-	private StandardArenaBlock ab;
+	private StandardArena ab;
 	Random randomGenerator = new Random();
 
-	public Wave(StandardArenaBlock arenaBlock) {
+	public Wave(StandardArena arenaBlock) {
 		this.ab = arenaBlock;
 		SpawnMobs();
 		renewPlayerWeapons();
@@ -43,7 +43,7 @@ public class Wave {
 
 		if (ab.spawnArea.size() > 0) {
 			for (int mobCounter = 0; mobCounter < ab.maxMobCounter; mobCounter++) {
-				MobToSpawn(ArenaBlock.GetRandomArenaSpawnLocation(ab));
+				MobToSpawn(BaseArena.GetRandomArenaSpawnLocation(ab));
 			}
 
 			if (ab.currentRunTimes == ab.maxRunTimes) {

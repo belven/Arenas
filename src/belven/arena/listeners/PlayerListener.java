@@ -31,9 +31,9 @@ import org.bukkit.potion.PotionEffectType;
 
 import resources.Functions;
 import belven.arena.ArenaManager;
-import belven.arena.blocks.ArenaBlock;
-import belven.arena.blocks.ChallengeBlock;
+import belven.arena.arenas.BaseArena;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.challengeclasses.PlayerSacrifice;
 
 public class PlayerListener implements Listener {
@@ -73,7 +73,7 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerMoveEvent(PlayerMoveEvent event) {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
-			ArenaBlock ab = plugin.getArenaInIsPlayer(event.getPlayer());
+			BaseArena ab = plugin.getArenaInIsPlayer(event.getPlayer());
 
 			if (event.getTo().getWorld() == ab.LocationToCheckForPlayers
 					.getWorld()) {
@@ -145,7 +145,7 @@ public class PlayerListener implements Listener {
 		event.setNewLevel(currentPlayer.getLevel());
 
 		if (plugin.IsPlayerInArena(currentPlayer)) {
-			ArenaBlock ab = plugin.getArenaInIsPlayer(currentPlayer);
+			BaseArena ab = plugin.getArenaInIsPlayer(currentPlayer);
 			int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
 			Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 			warpLocations.put(currentPlayer.getName(), spawnLocation);

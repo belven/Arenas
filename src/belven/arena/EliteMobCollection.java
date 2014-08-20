@@ -7,13 +7,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.PlayerInventory;
 
 import resources.Gear;
-import belven.arena.blocks.ArenaBlock;
+import belven.arena.arenas.BaseArena;
 
 public class EliteMobCollection {
-	public ArenaBlock ab;
+	public BaseArena ab;
 	public List<EliteMob> ems = new ArrayList<EliteMob>();
 
-	public EliteMobCollection(ArenaBlock ArenaBlock) {
+	public EliteMobCollection(BaseArena ArenaBlock) {
 		ab = ArenaBlock;
 	}
 

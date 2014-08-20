@@ -5,8 +5,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
 import belven.arena.ArenaManager;
-import belven.arena.blocks.ArenaBlock;
-import belven.arena.blocks.ChallengeBlock;
+import belven.arena.arenas.BaseArena;
+import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.challengeclasses.ChallengeType;
 import belven.arena.events.ArenaBlockActivatedEvent;
 import belven.arena.events.ChallengeComplete;
@@ -21,7 +21,7 @@ public class ArenaListener implements Listener {
 	@EventHandler
 	public void onArenaBlockActivatedEvent(ArenaBlockActivatedEvent event) {
 		if (plugin.currentArenaBlocks.size() > 0) {
-			for (ArenaBlock ab : plugin.currentArenaBlocks) {
+			for (BaseArena ab : plugin.currentArenaBlocks) {
 				if (event.GetBlockLocation().equals(
 						ab.blockToActivate.getLocation())
 						&& !ab.isActive) {

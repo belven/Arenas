@@ -7,13 +7,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import belven.arena.ArenaManager;
-import belven.arena.blocks.ArenaBlock;
+import belven.arena.arenas.BaseArena;
 
 public class LinkedArenaTimer extends BukkitRunnable {
-	ArenaBlock parentArena, childArena;
+	BaseArena parentArena, childArena;
 	ArenaManager plugin;
 
-	public LinkedArenaTimer(ArenaBlock ParentArena, ArenaBlock ChildArena) {
+	public LinkedArenaTimer(BaseArena ParentArena, BaseArena ChildArena) {
 		plugin = ParentArena.plugin;
 		parentArena = ParentArena;
 		childArena = ChildArena;
