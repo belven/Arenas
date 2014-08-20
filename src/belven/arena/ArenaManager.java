@@ -16,6 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -34,9 +35,10 @@ import resources.EntityFunctions;
 import resources.Functions;
 import resources.Gear;
 import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.BaseArena.ArenaTypes;
+import belven.arena.arenas.PvPArena;
 import belven.arena.arenas.StandardArena;
 import belven.arena.arenas.TempArena;
-import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
@@ -175,6 +177,7 @@ public class ArenaManager extends JavaPlugin {
 		arenaPaths.add(12, ".Start Location");
 		arenaPaths.add(13, ".End Location");
 		arenaPaths.add(14, ".Type");
+		arenaPaths.add(15, ".Materials");
 	}
 
 	public static ChanceLevel getMaterialChance(Material m) {
@@ -478,7 +481,14 @@ public class ArenaManager extends JavaPlugin {
 
 		case "createarena":
 			if (args.length >= 4) {
-				ArenaBlockCreated(player, player.getLocation().getBlock(), args);
+				CreateStandardArena(player, player.getLocation().getBlock(),
+						args);
+				return true;
+			}
+
+		case "createpvparena":
+			if (args.length >= 4) {
+				CreatePvPArena(player, player.getLocation().getBlock(), args);
 				return true;
 			}
 		}
@@ -671,8 +681,8 @@ public class ArenaManager extends JavaPlugin {
 			BaseArena ab = GetSelectedArenaBlock(player);
 
 			if (ab.type != ArenaTypes.PvP) {
-				player.sendMessage(((StandardArena) ab).emc
-						.Remove(EntityType.valueOf(et)));
+				player.sendMessage(((StandardArena) ab).emc.Remove(EntityType
+						.valueOf(et)));
 			}
 		}
 	}
@@ -909,7 +919,7 @@ public class ArenaManager extends JavaPlugin {
 		return tempArenaBlock;
 	}
 
-	private void ArenaBlockCreated(Player p, Block block, String[] args) {
+	private void CreateStandardArena(Player p, Block block, String[] args) {
 		block.setMetadata("ArenaBlock", new FixedMetadataValue(this,
 				"Something"));
 
@@ -927,9 +937,40 @@ public class ArenaManager extends JavaPlugin {
 				MobToMaterialCollecton mobs = MatToMob(Material
 						.getMaterial(args[3]));
 
-				StandardArena newArenaBlock = new StandardArena(min,
-						max, ArenaName, Radius, mobs, this,
+				StandardArena newArenaBlock = new StandardArena(min, max,
+						ArenaName, Radius, mobs, this,
 						Functions.SecondsToTicks(Integer.valueOf(args[4])));
+
+				SelectedArenaBlocks.put(p, newArenaBlock);
+				currentArenaBlocks.add(newArenaBlock);
+				p.sendMessage("Arena " + newArenaBlock.name + " was created");
+			}
+		} else {
+			p.sendMessage("Use world edit to select the region");
+		}
+	}
+
+	private void CreatePvPArena(Player p, Block block, String[] args) {
+		block.setMetadata("ArenaBlock", new FixedMetadataValue(this,
+				"Something"));
+
+		WorldEditPlugin worldEdit = (WorldEditPlugin) Bukkit.getServer()
+				.getPluginManager().getPlugin("WorldEdit");
+		Selection sel = worldEdit.getSelection(p);
+
+		if (sel != null) {
+			if (sel instanceof CuboidSelection) {
+				Location min = sel.getMinimumPoint();
+				Location max = sel.getMaximumPoint();
+
+				String ArenaName = args[1];
+				int Radius = Integer.valueOf(args[2]);
+
+				Material m = Material.valueOf(args[3]);
+
+				PvPArena newArenaBlock = new PvPArena(min, max, ArenaName,
+						Radius, this, m, Functions.SecondsToTicks(Integer
+								.valueOf(args[4])));
 
 				SelectedArenaBlocks.put(p, newArenaBlock);
 				currentArenaBlocks.add(newArenaBlock);
@@ -1134,14 +1175,14 @@ public class ArenaManager extends JavaPlugin {
 
 		String currentPath = "Arenas.";
 		String path = currentPath + ArenaName;
+		FileConfiguration con = getConfig();
 
-		int radius = getConfig().getInt(path + arenaPaths.get(0));
-		int timerPeriod = getConfig().getInt(path + arenaPaths.get(1));
-		int maxRunTimes = getConfig().getInt(path + arenaPaths.get(2));
-		int linkedArenaDelay = getConfig().getInt(path + arenaPaths.get(10));
-		int eliteWave = getConfig().getInt(path + arenaPaths.get(11));
+		int radius = con.getInt(path + arenaPaths.get(0));
+		int timerPeriod = con.getInt(path + arenaPaths.get(1));
+		int maxRunTimes = con.getInt(path + arenaPaths.get(2));
+		int linkedArenaDelay = con.getInt(path + arenaPaths.get(10));
 
-		String worldName = getConfig().getString(path + arenaPaths.get(4));
+		String worldName = con.getString(path + arenaPaths.get(4));
 
 		if (worldName == null) {
 			worldName = "world";
@@ -1158,38 +1199,51 @@ public class ArenaManager extends JavaPlugin {
 			}
 		}
 
-		Location LocationToCheckForPlayers = StringToLocation(getConfig()
-				.getString(path + arenaPaths.get(3)), world);
+		Location LocationToCheckForPlayers = StringToLocation(
+				con.getString(path + arenaPaths.get(3)), world);
 
 		Block blockToActivate = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(5)), world)
-				.getBlock();
+				con.getString(path + arenaPaths.get(5)), world).getBlock();
 
 		Block deactivateBlock = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(6)), world)
-				.getBlock();
+				con.getString(path + arenaPaths.get(6)), world).getBlock();
 
 		Block arenaWarp = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(7)), world)
-				.getBlock();
+				con.getString(path + arenaPaths.get(7)), world).getBlock();
 
-		Location spawnAreaStartLocation = StringToLocation(getConfig()
-				.getString(path + arenaPaths.get(8)), world);
+		Location spawnAreaStartLocation = StringToLocation(
+				con.getString(path + arenaPaths.get(8)), world);
 
 		Location spawnAreaEndLocation = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(9)), world);
+				con.getString(path + arenaPaths.get(9)), world);
 
 		Location AreaStartLocation = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(12)), world);
+				con.getString(path + arenaPaths.get(12)), world);
 
 		Location AreaEndLocation = StringToLocation(
-				getConfig().getString(path + arenaPaths.get(13)), world);
+				con.getString(path + arenaPaths.get(13)), world);
 
-		MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
+		BaseArena ab = null;
 
-		StandardArena ab = new StandardArena(spawnAreaStartLocation,
-				spawnAreaEndLocation, ArenaName, radius, mobs, this,
-				timerPeriod);
+		if (con.getString(path + arenaPaths.get(14)) == "Standard") {
+			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
+			int eliteWave = con.getInt(path + arenaPaths.get(11));
+
+			ab = new StandardArena(spawnAreaStartLocation,
+					spawnAreaEndLocation, ArenaName, radius, mobs, this,
+					timerPeriod);
+			ab.eliteWave = eliteWave;
+		} else {
+			// TODO
+			Material m = Material.GRASS;
+			if (con.contains(path + arenaPaths.get(15))) {
+				m = Material.getMaterial(con.getString(path
+						+ arenaPaths.get(15)));
+			}
+
+			ab = new PvPArena(spawnAreaStartLocation, spawnAreaEndLocation,
+					ArenaName, radius, this, m, timerPeriod);
+		}
 
 		blockToActivate.setMetadata("ArenaBlock", new FixedMetadataValue(this,
 				"Something"));
@@ -1204,7 +1258,6 @@ public class ArenaManager extends JavaPlugin {
 		ab.deactivateBlock = deactivateBlock;
 		ab.linkedArenaDelay = linkedArenaDelay;
 		ab.maxRunTimes = maxRunTimes <= 0 ? 1 : maxRunTimes;
-		ab.eliteWave = eliteWave;
 		currentArenaBlocks.add(ab);
 		getLogger().info(ArenaName + " has been created");
 	}

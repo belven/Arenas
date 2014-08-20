@@ -32,6 +32,8 @@ import org.bukkit.potion.PotionEffectType;
 import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.BaseArena.ArenaTypes;
+import belven.arena.arenas.PvPArena;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.challengeclasses.PlayerSacrifice;
@@ -75,16 +77,12 @@ public class PlayerListener implements Listener {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
 			BaseArena ab = plugin.getArenaInIsPlayer(event.getPlayer());
 
-			if (event.getTo().getWorld() == ab.LocationToCheckForPlayers
-					.getWorld()) {
+			if (ab.type != ArenaTypes.Temp
+					&& event.getTo().getWorld() == ab.LocationToCheckForPlayers
+							.getWorld()) {
 				if (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
 					plugin.LeaveArena(event.getPlayer());
 				}
-				// } else if
-				// (event.getTo().distance(ab.LocationToCheckForPlayers) >
-				// ab.radius) {
-				// plugin.LeaveArena(event.getPlayer());
-				// }
 			}
 		}
 	}
@@ -139,24 +137,27 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerDeathEvent(PlayerDeathEvent event) {
-		Player currentPlayer = (Player) event.getEntity();
+		Player p = (Player) event.getEntity();
 		event.getDrops().clear();
 
-		event.setNewLevel(currentPlayer.getLevel());
+		event.setNewLevel(p.getLevel());
 
-		if (plugin.IsPlayerInArena(currentPlayer)) {
-			BaseArena ab = plugin.getArenaInIsPlayer(currentPlayer);
-			int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
-			Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
-			warpLocations.put(currentPlayer.getName(), spawnLocation);
-			playerEffects.put(currentPlayer.getName(),
-					currentPlayer.getActivePotionEffects());
+		if (plugin.IsPlayerInArena(p)) {
+			BaseArena ab = plugin.getArenaInIsPlayer(p);
+
+			if (ab.type == ArenaTypes.PvP) {
+				PvPArena pvpa = (PvPArena) ab;
+				pvpa.PlayerKilled(p);
+			}
+
+			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
+			warpLocations.put(p.getName(), spawnLocation);
+			playerEffects.put(p.getName(), p.getActivePotionEffects());
 		}
 
-		PlayerInventory pi = currentPlayer.getInventory();
-		playerInventories.put(currentPlayer.getName(), pi.getContents());
-		playerArmour.put(currentPlayer.getName(), currentPlayer.getInventory()
-				.getArmorContents());
+		PlayerInventory pi = p.getInventory();
+		playerInventories.put(p.getName(), pi.getContents());
+		playerArmour.put(p.getName(), p.getInventory().getArmorContents());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
