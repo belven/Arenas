@@ -21,6 +21,8 @@ import org.bukkit.potion.PotionEffectType;
 import belven.arena.ArenaManager;
 import belven.arena.blocks.ArenaBlock;
 import belven.arena.blocks.ChallengeBlock;
+import belven.arena.blocks.StandardArenaBlock;
+import belven.arena.blocks.ArenaBlock.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.Kills;
 
@@ -94,11 +96,15 @@ public class MobListener implements Listener {
 				if (ab == null)
 					return;
 
-				ab.ArenaEntities.remove(e);
+				if (ab.type != ArenaTypes.PvP) {
+					StandardArenaBlock sab = (StandardArenaBlock) ab;
 
-				if (ab.ArenaEntities.size() <= 0
-						&& ab.currentRunTimes <= ab.maxRunTimes) {
-					ab.GoToNextWave();
+					sab.ArenaEntities.remove(e);
+
+					if (sab.ArenaEntities.size() <= 0
+							&& sab.currentRunTimes <= sab.maxRunTimes) {
+						sab.GoToNextWave();
+					}
 				}
 
 				for (Player p : ab.arenaPlayers) {

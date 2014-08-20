@@ -177,7 +177,7 @@ public class ChallengeBlock {
 	}
 
 	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance,
-			ArenaBlock ab) {
+			StandardArenaBlock ab) {
 		ChallengeBlock cb = null;
 		Block b = ArenaBlock.GetRandomArenaSpawnBlock(ab);
 		Reward r = Reward.GetRandomReward();

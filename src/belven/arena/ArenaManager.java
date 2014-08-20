@@ -34,6 +34,7 @@ import resources.EntityFunctions;
 import resources.Functions;
 import resources.Gear;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.ArenaBlock.ArenaTypes;
 import belven.arena.blocks.ChallengeBlock;
 import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.blocks.TempArenaBlock;
@@ -173,6 +174,7 @@ public class ArenaManager extends JavaPlugin {
 		arenaPaths.add(11, ".Elite Wave");
 		arenaPaths.add(12, ".Start Location");
 		arenaPaths.add(13, ".End Location");
+		arenaPaths.add(14, ".Type");
 	}
 
 	public static ChanceLevel getMaterialChance(Material m) {
@@ -656,24 +658,35 @@ public class ArenaManager extends JavaPlugin {
 	private void SetEliteMob(Player player, String et) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			player.sendMessage(ab.emc.Set(EntityType.valueOf(et),
-					player.getInventory()));
+			if (ab.type != ArenaTypes.PvP) {
+
+				player.sendMessage(((StandardArenaBlock) ab).emc.Set(
+						EntityType.valueOf(et), player.getInventory()));
+			}
 		}
 	}
 
 	private void RemoveEliteMob(Player player, String et) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			player.sendMessage(ab.emc.Remove(EntityType.valueOf(et)));
+
+			if (ab.type != ArenaTypes.PvP) {
+				player.sendMessage(((StandardArenaBlock) ab).emc
+						.Remove(EntityType.valueOf(et)));
+			}
 		}
 	}
 
 	private void TeleportArenaMobs(Player player) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			for (LivingEntity le : ab.ArenaEntities) {
-				le.teleport(ab.arenaWarp.getLocation());
+			if (ab.type != ArenaTypes.PvP) {
+				StandardArenaBlock sab = (StandardArenaBlock) ab;
+				for (LivingEntity le : sab.ArenaEntities) {
+					le.teleport(ab.arenaWarp.getLocation());
+				}
 			}
+
 		}
 	}
 
@@ -688,14 +701,18 @@ public class ArenaManager extends JavaPlugin {
 	private void SetBoss(Player player, String bossType) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			ab.bm.BossType = EntityType.valueOf(bossType);
-			PlayerInventory pi = player.getInventory();
-			ab.bm.gear.add(pi.getChestplate());
-			ab.bm.gear.add(pi.getHelmet());
-			ab.bm.gear.add(pi.getLeggings());
-			ab.bm.gear.add(pi.getBoots());
-			ab.bm.gear.add(player.getItemInHand());
-			player.sendMessage("Arena " + ab.name + " boss is now " + bossType);
+			if (ab.type != ArenaTypes.PvP) {
+				StandardArenaBlock sab = (StandardArenaBlock) ab;
+				sab.bm.BossType = EntityType.valueOf(bossType);
+				PlayerInventory pi = player.getInventory();
+				sab.bm.gear.add(pi.getChestplate());
+				sab.bm.gear.add(pi.getHelmet());
+				sab.bm.gear.add(pi.getLeggings());
+				sab.bm.gear.add(pi.getBoots());
+				sab.bm.gear.add(player.getItemInHand());
+				player.sendMessage("Arena " + ab.name + " boss is now "
+						+ bossType);
+			}
 		}
 	}
 
@@ -718,14 +735,20 @@ public class ArenaManager extends JavaPlugin {
 	private void RemoveMobToMat(Player player, String et, String m) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			player.sendMessage(ab.MobToMat.Remove(et, m));
+			if (ab.type != ArenaTypes.PvP) {
+				StandardArenaBlock sab = (StandardArenaBlock) ab;
+				player.sendMessage(sab.MobToMat.Remove(et, m));
+			}
 		}
 	}
 
 	private void SetMobToMat(Player player, String et, String m) {
 		if (HasArenaBlockSelected(player)) {
 			ArenaBlock ab = GetSelectedArenaBlock(player);
-			player.sendMessage(ab.MobToMat.Add(et, m));
+			if (ab.type != ArenaTypes.PvP) {
+				StandardArenaBlock sab = (StandardArenaBlock) ab;
+				player.sendMessage(sab.MobToMat.Add(et, m));
+			}
 		}
 	}
 
@@ -742,8 +765,11 @@ public class ArenaManager extends JavaPlugin {
 			ArenaBlock ab = GetSelectedArenaBlock(p);
 
 			if (ab != null) {
-				for (MobToMaterial mtm : ab.MobToMat.MobToMaterials) {
-					p.sendMessage(mtm.et.name() + "," + mtm.m.name());
+				if (ab.type != ArenaTypes.PvP) {
+					StandardArenaBlock sab = (StandardArenaBlock) ab;
+					for (MobToMaterial mtm : sab.MobToMat.MobToMaterials) {
+						p.sendMessage(mtm.et.name() + "," + mtm.m.name());
+					}
 				}
 			}
 		}
@@ -956,7 +982,6 @@ public class ArenaManager extends JavaPlugin {
 				LocationToString(ab.spawnArenaEndLocation));
 
 		getConfig().set(path + arenaPaths.get(10), ab.linkedArenaDelay);
-		getConfig().set(path + arenaPaths.get(11), ab.eliteWave);
 
 		getConfig().set(path + arenaPaths.get(12),
 				LocationToString(ab.ArenaStartLocation));
@@ -964,11 +989,18 @@ public class ArenaManager extends JavaPlugin {
 		getConfig().set(path + arenaPaths.get(13),
 				LocationToString(ab.ArenaEndLocation));
 
-		SaveArenaEliteMobs(ab);
-		SaveArenaMobs(ab);
+		getConfig().set(path + arenaPaths.get(14), ab.type.name());
+
 		SaveLinkedArenas(ab);
 		SaveArenaRewards(ab);
-		getConfig().set(path + ".Boss.Type", ab.bm.BossType.toString());
+
+		if (ab.type != ArenaTypes.PvP) {
+			StandardArenaBlock sab = (StandardArenaBlock) ab;
+			SaveArenaEliteMobs(sab);
+			getConfig().set(path + arenaPaths.get(11), ab.eliteWave);
+			SaveArenaMobs(sab);
+			getConfig().set(path + ".Boss.Type", sab.bm.BossType.toString());
+		}
 		saveConfig();
 	}
 
@@ -985,7 +1017,7 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	private void SaveArenaEliteMobs(ArenaBlock ab) {
+	private void SaveArenaEliteMobs(StandardArenaBlock ab) {
 		String path = "Arenas." + ab.name + ".EliteMobs.";
 
 		for (EliteMob em : ab.emc.ems) {
@@ -1014,7 +1046,7 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	private void SaveArenaMobs(ArenaBlock ab) {
+	private void SaveArenaMobs(StandardArenaBlock ab) {
 		String path = "Arenas." + ab.name;
 
 		for (Material m : ab.MobToMat.Materials()) {

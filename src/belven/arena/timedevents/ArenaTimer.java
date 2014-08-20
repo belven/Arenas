@@ -16,17 +16,18 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import resources.Functions;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.events.ArenaSuccessful;
 
 public class ArenaTimer extends BukkitRunnable {
-	private ArenaBlock ab;
+	private StandardArenaBlock ab;
 
 	public UUID arenaRunID;
 	public int nextWave = 0;
 
 	private Random randomGenerator = new Random();
 
-	public ArenaTimer(ArenaBlock arenaBlock) {
+	public ArenaTimer(StandardArenaBlock arenaBlock) {
 		ab = arenaBlock;
 		arenaRunID = arenaBlock.arenaRunID;
 		nextWave = arenaBlock.currentRunTimes;

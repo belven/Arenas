@@ -3,7 +3,7 @@ package belven.arena.challengeclasses;
 import java.util.Random;
 import java.util.UUID;
 
-import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.StandardArenaBlock;
 
 public abstract class ChallengeType {
 
@@ -16,7 +16,7 @@ public abstract class ChallengeType {
 
 	public abstract boolean ChallengeComplete();
 
-	public static ChallengeType GetRandomChallengeType(ArenaBlock ab) {
+	public static ChallengeType GetRandomChallengeType(StandardArenaBlock ab) {
 		int ran = new Random().nextInt(2);
 		switch (ran) {
 		case 0:

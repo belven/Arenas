@@ -21,14 +21,15 @@ import resources.EntityFunctions;
 import resources.Gear;
 import resources.MaterialFunctions;
 import belven.arena.blocks.ArenaBlock;
+import belven.arena.blocks.StandardArenaBlock;
 import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.timedevents.MessageTimer;
 
 public class Wave {
-	private ArenaBlock ab;
+	private StandardArenaBlock ab;
 	Random randomGenerator = new Random();
 
-	public Wave(ArenaBlock arenaBlock) {
+	public Wave(StandardArenaBlock arenaBlock) {
 		this.ab = arenaBlock;
 		SpawnMobs();
 		renewPlayerWeapons();

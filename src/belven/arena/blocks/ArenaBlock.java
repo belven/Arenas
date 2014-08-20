@@ -8,10 +8,7 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -20,16 +17,18 @@ import org.bukkit.metadata.MetadataValue;
 import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
-import belven.arena.BossMob;
-import belven.arena.EliteMobCollection;
-import belven.arena.MobToMaterialCollecton;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
 
 public abstract class ArenaBlock {
+	public enum ArenaTypes {
+		Standard, PvP, Temp
+	}
+
 	public ArenaManager plugin;
 	public boolean isActive = false;
+	public ArenaTypes type;
 
 	public String name;
 	public Block blockToActivate, deactivateBlock, arenaWarp;
@@ -49,15 +48,10 @@ public abstract class ArenaBlock {
 			maxMobCounter, linkedArenaDelay, currentRunTimes = 0;
 
 	public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
-	public BossMob bm = new BossMob();
-	public MobToMaterialCollecton MobToMat;
-	public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
-	public EliteMobCollection emc = new EliteMobCollection(this);
 	public UUID arenaRunID = null;
 
 	public ArenaBlock(Location startLocation, Location endLocation,
-			String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
-			ArenaManager Plugin, int TimerPeriod) {
+			String ArenaName, int Radius, ArenaManager Plugin, int TimerPeriod) {
 
 		spawnArenaStartLocation = startLocation;
 		spawnArenaEndLocation = endLocation;
@@ -71,11 +65,11 @@ public abstract class ArenaBlock {
 		LocationToCheckForPlayers = blockToActivate.getLocation();
 		arenaWarp = startLocation.getBlock();
 		radius = Radius;
-		MobToMat = mobToMat;
 		timerPeriod = TimerPeriod;
 		name = ArenaName;
 		plugin = Plugin;
 		maxRunTimes = 5;
+		plugin.currentArenaBlocks.add(this);
 	}
 
 	public String ArenaName() {
@@ -118,16 +112,6 @@ public abstract class ArenaBlock {
 
 	public abstract void GoToNextWave();
 
-	public void RemoveMobs() {
-		currentRunTimes = 0;
-		for (LivingEntity le : ArenaEntities) {
-			if (!le.isDead()) {
-				le.removeMetadata("ArenaMob", plugin);
-				le.setHealth(0.0);
-			}
-		}
-	}
-
 	public void SetPlayers() {
 		Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(
 				LocationToCheckForPlayers, radius);
@@ -163,25 +147,6 @@ public abstract class ArenaBlock {
 		}
 	}
 
-	public void GetSpawnArea() {
-		Location spawnLocation;
-		spawnArea.clear();
-
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(
-				spawnArenaStartLocation, spawnArenaEndLocation);
-
-		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
-			for (Block b : tempSpawnArea) {
-				spawnLocation = b.getLocation();
-				spawnLocation = CanSpawnAt(spawnLocation);
-				if (spawnLocation != null && !b.equals(spawnArenaStartLocation)) {
-					Block spawnBlock = spawnLocation.getBlock();
-					spawnArea.add(spawnBlock);
-				}
-			}
-		}
-	}
-
 	public void GetPlayersAverageLevel() {
 		if (arenaPlayers.size() == 0) {
 			return;
@@ -205,20 +170,6 @@ public abstract class ArenaBlock {
 
 		if (maxMobCounter > (arenaPlayers.size() * 15)) {
 			maxMobCounter = arenaPlayers.size() * 15;
-		}
-	}
-
-	private Location CanSpawnAt(Location currentLocation) {
-		Block currentBlock = currentLocation.getBlock();
-		Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
-		Block blockAbove = currentBlock.getRelative(BlockFace.UP);
-
-		if (currentBlock.getType() == Material.AIR
-				&& blockAbove.getType() == Material.AIR
-				&& MobToMat.Contains(blockBelow.getType())) {
-			return currentLocation;
-		} else {
-			return null;
 		}
 	}
 
