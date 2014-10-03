@@ -77,12 +77,13 @@ public class MobToMaterialCollecton {
 
 	public String Remove(String entityType, String material) {
 		String hasRemoved = "Failed to remove";
+
 		EntityType et = EntityType.valueOf(entityType);
 		Material m = Material.valueOf(material);
 		MobToMaterial mtom = new MobToMaterial(et, m);
 
 		for (MobToMaterial mtm : MobToMaterials) {
-			if (mtm.et == mtom.et && mtm.m == mtom.m) {
+			if (mtm.et.equals(mtom.et) && mtm.m.equals(mtom.m)) {
 				MobToMaterials.remove(mtm);
 				if (MobToMaterials.size() <= 0) {
 					return "Removed " + mtom.et + " " + mtom.m

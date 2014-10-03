@@ -23,7 +23,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -1015,7 +1014,7 @@ public class ArenaManager extends JavaPlugin {
 	}
 
 	private void SaveArenaMobs(StandardArena ab) {
-		String path = "Arenas." + ab.ArenaName();
+		String path = ArenaPath(ab.name);
 
 		for (Material m : ab.MobToMat.Materials()) {
 			String entities = "";
@@ -1045,6 +1044,7 @@ public class ArenaManager extends JavaPlugin {
 
 	private void SaveArenaToConfig(BaseArena ab) {
 		String path = ArenaPath(ab.name);
+		getServer().getLogger().info(ab.name + " was saved");
 		getConfig().set(path, null);
 		getConfig().set(path + arenaPaths.get(0), ab.radius);
 		getConfig().set(path + arenaPaths.get(1), ab.timerPeriod);
@@ -1205,12 +1205,7 @@ public class ArenaManager extends JavaPlugin {
 			if (ab.type != ArenaTypes.PvP) {
 				StandardArena sab = (StandardArena) ab;
 				sab.bm.BossType = EntityType.valueOf(bossType);
-				PlayerInventory pi = player.getInventory();
-				sab.bm.gear.add(pi.getChestplate());
-				sab.bm.gear.add(pi.getHelmet());
-				sab.bm.gear.add(pi.getLeggings());
-				sab.bm.gear.add(pi.getBoots());
-				sab.bm.gear.add(player.getItemInHand());
+				sab.bm.gear = new Gear(player);
 				player.sendMessage("Arena " + ab.ArenaName() + " boss is now "
 						+ bossType);
 			}
@@ -1232,7 +1227,7 @@ public class ArenaManager extends JavaPlugin {
 			if (ab.type != ArenaTypes.PvP) {
 
 				player.sendMessage(((StandardArena) ab).emc.Set(
-						EntityType.valueOf(et), player.getInventory()));
+						EntityType.valueOf(et), player));
 			}
 		}
 	}
@@ -1309,13 +1304,15 @@ public class ArenaManager extends JavaPlugin {
 	}
 
 	private Location StringToLocation(String s, World world) {
-		Location tempLoc;
-		String[] strings = s.split(",");
-		int x = Integer.valueOf(strings[0].trim());
-		int y = Integer.valueOf(strings[1].trim());
-		int z = Integer.valueOf(strings[2].trim());
-		tempLoc = new Location(world, x, y, z);
-		return tempLoc;
+		Location tempLoc = null;
+		if (s != null) {
+			String[] strings = s.split(",");
+			int x = Integer.valueOf(strings[0].trim());
+			int y = Integer.valueOf(strings[1].trim());
+			int z = Integer.valueOf(strings[2].trim());
+			tempLoc = new Location(world, x, y, z);
+		}
+		return tempLoc != null ? tempLoc : new Location(world, 0, 0, 0);
 	}
 
 	private void TeleportArenaMobs(Player player) {

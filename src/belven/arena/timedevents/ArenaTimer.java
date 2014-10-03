@@ -3,7 +3,6 @@ package belven.arena.timedevents;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -25,8 +24,6 @@ public class ArenaTimer extends BukkitRunnable {
 	public UUID arenaRunID;
 	public int nextWave = 0;
 
-	private Random randomGenerator = new Random();
-
 	public ArenaTimer(StandardArena arenaBlock) {
 		ab = arenaBlock;
 		arenaRunID = arenaBlock.arenaRunID;
@@ -37,48 +34,40 @@ public class ArenaTimer extends BukkitRunnable {
 	public void run() {
 		if (arenaRunID != ab.arenaRunID || nextWave < ab.currentRunTimes) {
 			this.cancel();
-		}
-
-		CleanUpEntites();
-
-		if (ab.arenaArea.size() == 0 || ab.arenaPlayers.size() == 0) {
-			EndArena();
 		} else if (!ab.isActive) {
 			ab.RemoveMobs();
 			this.cancel();
-		}
-		// arena beyond last wave
-		else if (ab.currentRunTimes >= ab.maxRunTimes) {
-			// we have exceeded the amount of times the arena can run for
-			if (ab.ArenaEntities.size() == 0) {
-				ArenaSuccessfull();
-			} else if (ab.currentRunTimes >= ab.maxRunTimes
-					&& ab.currentRunTimes % 7 == 0) {
-				SpreadEntities();
-				ArenaHasEntitiesLeft();
-			} else if (ab.ArenaEntities.size() > 0) {
-				ArenaHasEntitiesLeft();
+		} else if (ab.arenaArea.size() == 0 || ab.arenaPlayers.size() == 0) {
+			EndArena();
+		} else {
+			CleanUpEntites();
+			if (ab.currentRunTimes >= ab.maxRunTimes) {
+				BeyondLastWave();
 			} else {
-				ArenaSuccessfull();
+				ab.GoToNextWave();
+				this.cancel();
 			}
-		} else if (ab.spawnArea.size() > 0
-				&& ab.currentRunTimes < ab.maxRunTimes) {
-			ab.GoToNextWave();
-			this.cancel();
+		}
+	}
+
+	private void BeyondLastWave() {
+		if (ab.ArenaEntities.size() == 0) {
+			ArenaSuccessfull();
+		} else if (ab.currentRunTimes >= ab.maxRunTimes
+				&& ab.currentRunTimes % 7 == 0) {
+			SpreadEntities();
+			ArenaHasEntitiesLeft();
+		} else if (ab.ArenaEntities.size() > 0) {
+			ArenaHasEntitiesLeft();
+		} else {
+			ArenaSuccessfull();
 		}
 	}
 
 	private void SpreadEntities() {
 		for (LivingEntity le : ab.ArenaEntities) {
-			int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
-			Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
-
-			if (spawnLocation != null) {
-				spawnLocation = new Location(spawnLocation.getWorld(),
-						spawnLocation.getX() + 0.5, spawnLocation.getY(),
-						spawnLocation.getZ() + 0.5);
-				le.teleport(spawnLocation);
-			}
+			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
+			le.teleport(spawnLocation);
 		}
 
 		new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Scrambling Mobs")

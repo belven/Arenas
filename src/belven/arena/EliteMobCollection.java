@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.entity.Player;
 
 import resources.Gear;
 import belven.arena.arenas.BaseArena;
@@ -17,22 +17,16 @@ public class EliteMobCollection {
 		ab = ArenaBlock;
 	}
 
-	public String Set(EntityType et, PlayerInventory pi) {
+	public String Set(EntityType et, Player p) {
 		EliteMob em;
 
 		if (Contains(et)) {
 			em = Get(et);
-			em.armor.Clear();
-			em.armor.h = pi.getHelmet();
-			em.armor.c = pi.getChestplate();
-			em.armor.l = pi.getLeggings();
-			em.armor.b = pi.getBoots();
-			em.armor.w = pi.getItemInHand();
+			em.armor = new Gear(p);
 		} else {
 			em = new EliteMob();
 			em.type = et;
-			em.armor = new Gear(pi.getHelmet(), pi.getChestplate(),
-					pi.getLeggings(), pi.getBoots(), pi.getItemInHand());
+			em.armor = new Gear(p);
 			this.ems.add(em);
 		}
 

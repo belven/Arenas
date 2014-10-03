@@ -117,17 +117,11 @@ public class Wave {
 	}
 
 	public void SpawnBoss() {
-		int randomInt = randomGenerator.nextInt(ab.spawnArea.size());
-		Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 
-		LivingEntity le = ab.bm.SpawnBoss(spawnLocation);
+		LivingEntity le = ab.bm.SpawnBoss(BaseArena
+				.GetRandomArenaSpawnLocation(ab));
 
-		Gear bossGear = ArenaManager.scalingGear.get(ab.arenaPlayers.size());
-		le.getEquipment().setHelmet(bossGear.h);
-		le.getEquipment().setChestplate(bossGear.c);
-		le.getEquipment().setLeggings(bossGear.l);
-		le.getEquipment().setBoots(bossGear.b);
-		le.getEquipment().setItemInHand(bossGear.w);
+		ArenaManager.scalingGear.get(ab.arenaPlayers.size()).SetGear(le);
 
 		new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name()
 				+ " boss has Spawned!!").run();
