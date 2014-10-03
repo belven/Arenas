@@ -17,6 +17,7 @@ import org.bukkit.metadata.MetadataValue;
 import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
+import belven.arena.MDM;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
@@ -120,10 +121,13 @@ public abstract class BaseArena {
 			GetArenaArea();
 			for (Player p : tempPlayers) {
 				Block b = p.getLocation().getBlock();
+				List<MetadataValue> blockData = MDM.getMetaData(
+						MDM.ArenaAreaBlock, b);
 
-				if (!plugin.IsPlayerInArena(p)
-						&& b.hasMetadata("ArenaAreaBlock")) {
-					MetadataValue data = b.getMetadata("ArenaAreaBlock").get(0);
+				if (!plugin.IsPlayerInArena(p) && blockData != null) {
+
+					MetadataValue data = blockData.get(0);
+
 					if (data.value() != null) {
 						BaseArena ab = (BaseArena) data.value();
 						if (data != null && ab == this) {
@@ -143,7 +147,7 @@ public abstract class BaseArena {
 
 		for (Block b : arenaArea) {
 			originalBlocks.add(new SavedBlock(b));
-			b.setMetadata("ArenaAreaBlock",
+			b.setMetadata(MDM.ArenaAreaBlock,
 					new FixedMetadataValue(plugin, this));
 		}
 	}
@@ -165,11 +169,11 @@ public abstract class BaseArena {
 			totalLevels = 1;
 		}
 
-		averageLevel = (int) (totalLevels / arenaPlayers.size());
-		maxMobCounter = (int) (totalLevels / arenaPlayers.size())
-				+ (arenaPlayers.size() * 5);
+		averageLevel = totalLevels / arenaPlayers.size();
+		maxMobCounter = totalLevels / arenaPlayers.size() + arenaPlayers.size()
+				* 5;
 
-		if (maxMobCounter > (arenaPlayers.size() * 15)) {
+		if (maxMobCounter > arenaPlayers.size() * 15) {
 			maxMobCounter = arenaPlayers.size() * 15;
 		}
 	}

@@ -10,55 +10,18 @@ import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 import resources.Functions;
+import belven.arena.MDM;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
 
 public class Kills extends ChallengeType {
-	public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
-
-	public Kills(HashMap<EntityType, Integer> entities) {
-		type = ChallengeTypes.Kills;
-		entitiesToKill = entities;
-	}
-
-	public void EntityKilled(EntityType et) {
-		if (!ChallengeComplete()) {
-			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
-					.get(et) : 0;
-
-			if (amountLeft > 0) {
-				amountLeft--;
-				entitiesToKill.put(et, amountLeft);
-			}
-
-			if (ChallengeComplete()) {
-				Bukkit.getPluginManager()
-						.callEvent(new ChallengeComplete(this));
-			}
-		}
-	}
-
-	public List<String> ListRemainingEntities() {
-		List<String> EntitiesLeft = new ArrayList<String>();
-		for (EntityType et : entitiesToKill.keySet()) {
-			EntitiesLeft.add(et.name() + ": "
-					+ String.valueOf(entitiesToKill.get(et)));
-		}
-		return EntitiesLeft;
-	}
-
-	@Override
-	public boolean ChallengeComplete() {
-		int enitiesLeft = 0;
-
-		for (EntityType et : entitiesToKill.keySet()) {
-			enitiesLeft += entitiesToKill.get(et);
-		}
-		return enitiesLeft <= 0;
-	}
-
 	public static HashMap<EntityType, Integer> GetRandomEntities(
 			StandardArena ab) {
 		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
@@ -89,10 +52,73 @@ public class Kills extends ChallengeType {
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
 				.spawnEntity(spawnLocation, et);
 
-		currentEntity.setMetadata("ArenaMob", new FixedMetadataValue(ab.plugin,
-				ab.name));
+		currentEntity.setMetadata(MDM.ArenaMob,
+				new FixedMetadataValue(ab.plugin, ab.name));
 
 		ab.ArenaEntities.add(currentEntity);
+	}
+
+	public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
+
+	public Kills(HashMap<EntityType, Integer> entities) {
+		type = ChallengeTypes.Kills;
+		entitiesToKill = entities;
+	}
+
+	@Override
+	public boolean ChallengeComplete() {
+		int enitiesLeft = 0;
+
+		for (EntityType et : entitiesToKill.keySet()) {
+			enitiesLeft += entitiesToKill.get(et);
+		}
+		return enitiesLeft <= 0;
+	}
+
+	public void EntityKilled(EntityType et) {
+		if (!ChallengeComplete()) {
+			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
+					.get(et) : 0;
+
+			if (amountLeft > 0) {
+				amountLeft--;
+				entitiesToKill.put(et, amountLeft);
+			}
+
+			if (ChallengeComplete()) {
+				Bukkit.getPluginManager()
+						.callEvent(new ChallengeComplete(this));
+			}
+		}
+	}
+
+	public List<String> ListRemainingEntities() {
+		List<String> EntitiesLeft = new ArrayList<String>();
+		for (EntityType et : entitiesToKill.keySet()) {
+			EntitiesLeft.add(et.name() + ": "
+					+ String.valueOf(entitiesToKill.get(et)));
+		}
+		return EntitiesLeft;
+	}
+
+	@Override
+	public Scoreboard SetChallengeScoreboard(ChallengeType ct) {
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard sb = manager.getNewScoreboard();
+
+		if (!ChallengeComplete()) {
+			Objective objective = sb.registerNewObjective("test", "dummy");
+			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+			objective.setDisplayName("Kill Challenge");
+
+			for (EntityType et : entitiesToKill.keySet()) {
+				Score score = objective.getScore(et.name());
+				score.setScore(entitiesToKill.get(et));
+			}
+		}
+
+		return sb;
 	}
 
 }

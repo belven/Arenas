@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 
 import belven.arena.ArenaManager;
@@ -23,9 +22,5 @@ public class BlockListener implements Listener {
 
 		Bukkit.getPluginManager().callEvent(
 				new ArenaBlockActivatedEvent(tempblock.getLocation()));
-	}
-
-	@EventHandler
-	public void onBlockBreakEvent(BlockBreakEvent event) {
 	}
 }

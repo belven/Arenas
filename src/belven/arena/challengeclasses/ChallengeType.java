@@ -3,6 +3,8 @@ package belven.arena.challengeclasses;
 import java.util.Random;
 import java.util.UUID;
 
+import org.bukkit.scoreboard.Scoreboard;
+
 import belven.arena.arenas.StandardArena;
 
 public abstract class ChallengeType {
@@ -15,6 +17,8 @@ public abstract class ChallengeType {
 	public ChallengeTypes type = ChallengeTypes.Default;
 
 	public abstract boolean ChallengeComplete();
+
+	public abstract Scoreboard SetChallengeScoreboard(ChallengeType ct);
 
 	public static ChallengeType GetRandomChallengeType(StandardArena ab) {
 		int ran = new Random().nextInt(2);

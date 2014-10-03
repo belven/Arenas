@@ -3,45 +3,41 @@ package belven.arena.challengeclasses;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
-import resources.Gear;
 import belven.arena.ArenaManager;
+import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.StandardArena;
-import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
-import belven.arena.rewardclasses.BossReward;
 import belven.arena.rewardclasses.ExperienceReward;
-import belven.arena.rewardclasses.Item;
-import belven.arena.rewardclasses.ItemReward;
 import belven.arena.rewardclasses.Reward;
-import belven.arena.rewardclasses.Reward.RewardType;
 import belven.arena.timedevents.MessageTimer;
 
 public class ChallengeBlock {
+	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance,
+			StandardArena ab) {
+		ChallengeBlock cb = null;
+		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
+		Reward r = Reward.GetRandomReward();
+		ChallengeType ct = ChallengeType.GetRandomChallengeType(ab);
+		cb = new ChallengeBlock(instance, b, r, ct, ab);
+		return cb;
+	}
+
 	public boolean completed = false;
 	public Reward challengeReward = new ExperienceReward(10);
 	public ChallengeType challengeType = null;
 	public Block challengeBlock;
 	public BlockState challengeBlockState;
-	public UUID ID;
 
+	public UUID ID;
 	public ArenaManager plugin;
 	public List<Player> players;
+
 	public BaseArena ab;
 
 	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
@@ -54,55 +50,8 @@ public class ChallengeBlock {
 		plugin.challengeBlocks.add(this);
 		challengeBlockState = b.getState();
 		b.setType(Material.DIAMOND_BLOCK);
-		b.setMetadata("Challenge Block", new FixedMetadataValue(plugin, this));
-	}
-
-	public void SetPlayersScoreboard() {
-		List<Player> tempPlayers = ab != null ? ab.arenaPlayers : players;
-
-		for (Player p : tempPlayers) {
-			p.setScoreboard(SetChallengeScoreboard(challengeType));
-		}
-
-	}
-
-	public static Scoreboard SetChallengeScoreboard(ChallengeType ct) {
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard sb = manager.getNewScoreboard();
-
-		if (ct.type == ChallengeTypes.Kills) {
-			Kills kills = (Kills) ct;
-
-			if (!kills.ChallengeComplete()) {
-				Objective objective = sb.registerNewObjective("test", "dummy");
-				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-				objective.setDisplayName("Kill Challenge");
-
-				for (EntityType et : kills.entitiesToKill.keySet()) {
-					Score score = objective.getScore(et.name());
-					score.setScore(kills.entitiesToKill.get(et));
-				}
-			}
-		} else if (ct.type == ChallengeTypes.PlayerSacrifice) {
-			PlayerSacrifice ps = (PlayerSacrifice) ct;
-
-			if (!ps.ChallengeComplete()) {
-				Objective objective = sb.registerNewObjective("test", "dummy");
-				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-				objective.setDisplayName("Sacrifice Challenge");
-				Score score = objective.getScore("Amount Left: ");
-				score.setScore(ps.amountToSacrifice);
-			}
-		}
-		return sb;
-	}
-
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
-			ChallengeType ct, List<Player> playersToAdd) {
-		this(instance, b, r, ct);
-		players = playersToAdd;
-		SetPlayersScoreboard();
+		b.setMetadata(MDM.ChallengeBlock, new FixedMetadataValue(
+				plugin, this));
 	}
 
 	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
@@ -114,75 +63,26 @@ public class ChallengeBlock {
 		SetPlayersScoreboard();
 	}
 
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
+			ChallengeType ct, List<Player> playersToAdd) {
+		this(instance, b, r, ct);
+		players = playersToAdd;
+		SetPlayersScoreboard();
+	}
+
 	public void GiveRewards() {
-		if (ab != null) {
-			players = ab.arenaPlayers;
-		}
-
-		String messtext = "Challenge has been completed you get ";
-
-		if (challengeReward.rewardType != RewardType.Boss) {
-			for (Player p : players) {
-				p.setScoreboard(Bukkit.getScoreboardManager()
-						.getNewScoreboard());
-
-				if (challengeReward.rewardType == RewardType.Experience) {
-					double exp = ((ExperienceReward) challengeReward).experience;
-
-					int expToGive = (int) (p.getExpToLevel() * exp);
-					p.giveExp(expToGive);
-
-					messtext += String.valueOf(expToGive) + " ";
-				} else if (challengeReward.rewardType == RewardType.Items) {
-					List<Item> items = ((ItemReward) challengeReward).rewards;
-
-					for (Item i : items) {
-						if (i.ShouldGive(players.size())) {
-							messtext += i.getType().name() + " "
-									+ String.valueOf(i.getAmount() + " ");
-							p.getInventory().addItem(i.getItem());
-						}
-					}
-				}
-			}
-		} else if (challengeReward.rewardType == RewardType.Boss) {
-			EntityType et = ((BossReward) challengeReward).boss;
-
-			messtext += " a " + et.name();
-
-			Location SpawnLocation = challengeBlock.getRelative(BlockFace.UP)
-					.getLocation();
-
-			LivingEntity le = (LivingEntity) challengeBlock.getWorld()
-					.spawnEntity(SpawnLocation, et);
-
-			Gear bossGear = ArenaManager.scalingGear.get(players.size());
-			le.getEquipment().setHelmet(bossGear.h);
-			le.getEquipment().setChestplate(bossGear.c);
-			le.getEquipment().setLeggings(bossGear.l);
-			le.getEquipment().setBoots(bossGear.b);
-			le.getEquipment().setItemInHand(bossGear.w);
-
-			le.setMetadata("RewardBoss", new FixedMetadataValue(plugin,
-					new ExperienceReward(30)));
-		}
-
-		new MessageTimer(ab.arenaPlayers, messtext
-				+ challengeReward.rewardType.name()).run();
-
+		challengeReward.GiveRewards(this, ab != null ? ab.arenaPlayers
+				: players);
 		plugin.challengeBlocks.remove(this);
 		challengeBlockState.update(true);
 		completed = true;
 	}
 
-	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance,
-			StandardArena ab) {
-		ChallengeBlock cb = null;
-		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
-		Reward r = Reward.GetRandomReward();
-		ChallengeType ct = ChallengeType.GetRandomChallengeType(ab);
-		cb = new ChallengeBlock(instance, b, r, ct, ab);
-		return cb;
-	}
+	public void SetPlayersScoreboard() {
+		List<Player> tempPlayers = ab != null ? ab.arenaPlayers : players;
 
+		for (Player p : tempPlayers) {
+			p.setScoreboard(challengeType.SetChallengeScoreboard(challengeType));
+		}
+	}
 }

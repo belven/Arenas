@@ -1,5 +1,7 @@
 package belven.arena.challengeclasses;
 
+import org.bukkit.scoreboard.Scoreboard;
+
 public class ItemSacrifice extends ChallengeType {
 	public ItemSacrifice() {
 		type = ChallengeTypes.ItemSacrifice;
@@ -7,7 +9,12 @@ public class ItemSacrifice extends ChallengeType {
 
 	@Override
 	public boolean ChallengeComplete() {
-		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public Scoreboard SetChallengeScoreboard(ChallengeType ct) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

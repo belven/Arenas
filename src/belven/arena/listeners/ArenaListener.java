@@ -34,7 +34,7 @@ public class ArenaListener implements Listener {
 	@EventHandler
 	public void onArenaBlockBreakEvent(BlockBreakEvent event) {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
-			if (plugin.getArenaInIsPlayer(event.getPlayer()).isActive) {
+			if (plugin.getArena(event.getPlayer()).isActive) {
 				event.setCancelled(true);
 			}
 		}

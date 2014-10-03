@@ -3,6 +3,7 @@ package belven.arena.listeners;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Location;
@@ -31,11 +32,12 @@ import org.bukkit.potion.PotionEffectType;
 
 import resources.Functions;
 import belven.arena.ArenaManager;
+import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.PvPArena;
-import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
+import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.PlayerSacrifice;
 
 public class PlayerListener implements Listener {
@@ -67,7 +69,7 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
 		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer())
-				&& plugin.getArenaInIsPlayer(event.getPlayer()).isActive) {
+				&& plugin.getArena(event.getPlayer()).isActive) {
 			event.setCancelled(true);
 		}
 	}
@@ -75,7 +77,7 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerMoveEvent(PlayerMoveEvent event) {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
-			BaseArena ab = plugin.getArenaInIsPlayer(event.getPlayer());
+			BaseArena ab = plugin.getArena(event.getPlayer());
 
 			if (ab.type != ArenaTypes.Temp
 					&& event.getTo().getWorld() == ab.LocationToCheckForPlayers
@@ -98,10 +100,10 @@ public class PlayerListener implements Listener {
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		Sign currentSign;
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (event.getClickedBlock().hasMetadata("Challenge Block")) {
-				MetadataValue data = event.getClickedBlock()
-						.getMetadata("Challenge Block").get(0);
-				ChallengeBlock cb = (ChallengeBlock) data.value();
+			List<MetadataValue> mData = MDM.getMetaData(MDM.ChallengeBlock,
+					event.getClickedBlock());
+			if (mData != null) {
+				ChallengeBlock cb = (ChallengeBlock) mData.get(0).value();
 
 				if (cb.challengeType.type == ChallengeTypes.PlayerSacrifice) {
 					PlayerSacrifice ps = (PlayerSacrifice) cb.challengeType;
@@ -137,13 +139,13 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerDeathEvent(PlayerDeathEvent event) {
-		Player p = (Player) event.getEntity();
+		Player p = event.getEntity();
 		event.getDrops().clear();
 
 		event.setNewLevel(p.getLevel());
 
 		if (plugin.IsPlayerInArena(p)) {
-			BaseArena ab = plugin.getArenaInIsPlayer(p);
+			BaseArena ab = plugin.getArena(p);
 
 			if (ab.type == ArenaTypes.PvP) {
 				PvPArena pvpa = (PvPArena) ab;

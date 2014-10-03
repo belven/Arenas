@@ -19,11 +19,12 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffectType;
 
 import belven.arena.ArenaManager;
+import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
-import belven.arena.arenas.StandardArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
-import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
+import belven.arena.arenas.StandardArena;
 import belven.arena.challengeclasses.ChallengeBlock;
+import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.Kills;
 
 public class MobListener implements Listener {
@@ -80,21 +81,18 @@ public class MobListener implements Listener {
 	@EventHandler
 	public void onEntityDeathEvent(EntityDeathEvent event) {
 		Entity e = event.getEntity();
+		List<MetadataValue> data = MDM.getMetaData(
+				MDM.ArenaMob, e);
 
-		if (e.hasMetadata("ArenaMob")) {
-			List<MetadataValue> currentMetaData = e.getMetadata("ArenaMob");
-
-			if (currentMetaData.size() == 0) {
-				return;
-			}
-
-			String arena = currentMetaData.get(0).asString();
+		if (data != null) {
+			String arena = data.get(0).asString();
 
 			if (arena != null) {
 				BaseArena ab = plugin.getArenaBlock(arena);
 
-				if (ab == null)
+				if (ab == null) {
 					return;
+				}
 
 				if (ab.type != ArenaTypes.PvP) {
 					StandardArena sab = (StandardArena) ab;
