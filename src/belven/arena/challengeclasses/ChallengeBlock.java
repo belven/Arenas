@@ -18,8 +18,7 @@ import belven.arena.rewardclasses.Reward;
 import belven.arena.timedevents.MessageTimer;
 
 public class ChallengeBlock {
-	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance,
-			StandardArena ab) {
+	public static ChallengeBlock RandomChallengeBlock(ArenaManager instance, StandardArena ab) {
 		ChallengeBlock cb = null;
 		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
 		Reward r = Reward.GetRandomReward();
@@ -40,8 +39,7 @@ public class ChallengeBlock {
 
 	public BaseArena ab;
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
-			ChallengeType ct) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct) {
 		ID = UUID.randomUUID();
 		challengeReward = r;
 		challengeType = ct;
@@ -50,29 +48,24 @@ public class ChallengeBlock {
 		plugin.challengeBlocks.add(this);
 		challengeBlockState = b.getState();
 		b.setType(Material.DIAMOND_BLOCK);
-		b.setMetadata(MDM.ChallengeBlock, new FixedMetadataValue(
-				plugin, this));
+		b.setMetadata(MDM.ChallengeBlock, new FixedMetadataValue(plugin, this));
 	}
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
-			ChallengeType ct, BaseArena arenaBlock) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct, BaseArena arenaBlock) {
 		this(instance, b, r, ct);
 		ab = arenaBlock;
-		new MessageTimer(ab.arenaPlayers, "A challenge of type "
-				+ ct.type.name() + " has begun").run();
+		new MessageTimer(ab.arenaPlayers, "A challenge of type " + ct.type.name() + " has begun").run();
 		SetPlayersScoreboard();
 	}
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r,
-			ChallengeType ct, List<Player> playersToAdd) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct, List<Player> playersToAdd) {
 		this(instance, b, r, ct);
 		players = playersToAdd;
 		SetPlayersScoreboard();
 	}
 
 	public void GiveRewards() {
-		challengeReward.GiveRewards(this, ab != null ? ab.arenaPlayers
-				: players);
+		challengeReward.GiveRewards(this, ab != null ? ab.arenaPlayers : players);
 		plugin.challengeBlocks.remove(this);
 		challengeBlockState.update(true);
 		completed = true;

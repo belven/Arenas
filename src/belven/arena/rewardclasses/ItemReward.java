@@ -57,8 +57,7 @@ public class ItemReward extends Reward {
 
 			for (Item i : items) {
 				if (i.ShouldGive(players.size())) {
-					messtext += i.getType().name() + " "
-							+ String.valueOf(i.getAmount() + " ");
+					messtext += i.getType().name() + " " + String.valueOf(i.getAmount() + " ");
 					p.getInventory().addItem(i.getItem());
 				}
 			}

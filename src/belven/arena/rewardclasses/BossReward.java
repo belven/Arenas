@@ -32,17 +32,14 @@ public class BossReward extends Reward {
 
 		messtext += " a " + et.name();
 
-		Location SpawnLocation = cb.challengeBlock.getRelative(BlockFace.UP)
-				.getLocation();
+		Location SpawnLocation = cb.challengeBlock.getRelative(BlockFace.UP).getLocation();
 
-		LivingEntity le = (LivingEntity) cb.challengeBlock.getWorld()
-				.spawnEntity(SpawnLocation, et);
+		LivingEntity le = (LivingEntity) cb.challengeBlock.getWorld().spawnEntity(SpawnLocation, et);
 
 		Gear bossGear = ArenaManager.scalingGear.get(players.size());
 		bossGear.SetGear(le);
 
-		le.setMetadata(MDM.RewardBoss, new FixedMetadataValue(cb.plugin,
-				new ExperienceReward(30)));
+		le.setMetadata(MDM.RewardBoss, new FixedMetadataValue(cb.plugin, new ExperienceReward(30)));
 
 		new MessageTimer(players, messtext + rewardType.name()).run();
 	}

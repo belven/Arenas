@@ -30,11 +30,9 @@ public class PvPArena extends BaseArena {
 	public List<Material> spawnMats = new ArrayList<Material>();
 	public int lives = 0;
 
-	public PvPArena(Location startLocation, Location endLocation,
-			String ArenaName, int Radius, ArenaManager Plugin, Material m,
-			int TimerPeriod) {
-		super(startLocation, endLocation, ArenaName, Radius, Plugin,
-				TimerPeriod);
+	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
+			Material m, int TimerPeriod) {
+		super(startLocation, endLocation, ArenaName, Radius, Plugin, TimerPeriod);
 		tm = plugin.teams;
 		spawnMats.add(m);
 		type = ArenaTypes.PvP;
@@ -47,8 +45,7 @@ public class PvPArena extends BaseArena {
 		Lives.clear();
 		if (arenaPlayers.size() != 0) {
 			for (Player p : arenaPlayers) {
-				if (tm != null && tm.isInATeam(p)
-						&& !Lives.containsKey(tm.getTeam(p).teamName)) {
+				if (tm != null && tm.isInATeam(p) && !Lives.containsKey(tm.getTeam(p).teamName)) {
 					Lives.put(tm.getTeam(p).teamName, lives);
 				} else if (!Lives.containsKey(p.getName())) {
 					Lives.put(p.getName(), lives);
@@ -85,8 +82,7 @@ public class PvPArena extends BaseArena {
 		Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
 		Block blockAbove = currentBlock.getRelative(BlockFace.UP);
 
-		if (currentBlock.getType() == Material.AIR
-				&& blockAbove.getType() == Material.AIR
+		if (currentBlock.getType() == Material.AIR && blockAbove.getType() == Material.AIR
 				&& spawnMats.contains(blockBelow.getType())) {
 			return currentLocation;
 		} else {
@@ -98,8 +94,7 @@ public class PvPArena extends BaseArena {
 		Location spawnLocation;
 		spawnArea.clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(
-				spawnArenaStartLocation, spawnArenaEndLocation);
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(spawnArenaStartLocation, spawnArenaEndLocation);
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
@@ -140,8 +135,7 @@ public class PvPArena extends BaseArena {
 
 		for (String s : Lives.keySet()) {
 			if (Lives.get(s) == 0) {
-				new MessageTimer(arenaPlayers, "Arena " + ArenaName()
-						+ " has ended!!").run();
+				new MessageTimer(arenaPlayers, "Arena " + ArenaName() + " has ended!!").run();
 				Deactivate();
 			}
 
@@ -165,8 +159,7 @@ public class PvPArena extends BaseArena {
 			currentRunTimes++;
 
 			if (currentRunTimes == 1) {
-				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!")
-						.run();
+				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!").run();
 			}
 			new PvPArenaTimer(this).runTaskLater(plugin, timerPeriod);
 		} else {

@@ -20,7 +20,6 @@ public class BlockListener implements Listener {
 	public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
 		Block tempblock = event.getBlock();
 
-		Bukkit.getPluginManager().callEvent(
-				new ArenaBlockActivatedEvent(tempblock.getLocation()));
+		Bukkit.getPluginManager().callEvent(new ArenaBlockActivatedEvent(tempblock.getLocation()));
 	}
 }

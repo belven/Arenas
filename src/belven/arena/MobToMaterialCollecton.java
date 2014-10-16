@@ -19,8 +19,7 @@ public class MobToMaterialCollecton {
 	}
 
 	public String Add(String et, String m) {
-		this.MobToMaterials.add(new MobToMaterial(EntityType.valueOf(et),
-				Material.valueOf(m)));
+		this.MobToMaterials.add(new MobToMaterial(EntityType.valueOf(et), Material.valueOf(m)));
 		return et + " will now spawn on " + m;
 	}
 
@@ -86,8 +85,7 @@ public class MobToMaterialCollecton {
 			if (mtm.et.equals(mtom.et) && mtm.m.equals(mtom.m)) {
 				MobToMaterials.remove(mtm);
 				if (MobToMaterials.size() <= 0) {
-					return "Removed " + mtom.et + " " + mtom.m
-							+ " no mobs left to spawn";
+					return "Removed " + mtom.et + " " + mtom.m + " no mobs left to spawn";
 				} else {
 					hasRemoved = "Removed " + mtom.et + " " + mtom.m;
 				}

@@ -13,8 +13,7 @@ public class BossMob {
 	public Gear gear;
 
 	public LivingEntity SpawnBoss(Location spawnLocation) {
-		le = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation,
-				BossType);
+		le = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, BossType);
 		EntityEquipment ee = le.getEquipment();
 
 		if (gear != null) {

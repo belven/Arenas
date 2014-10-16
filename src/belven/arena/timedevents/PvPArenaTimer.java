@@ -26,8 +26,7 @@ public class PvPArenaTimer extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		if (arenaRunID != ab.arenaRunID || nextWave < ab.currentRunTimes
-				|| !ab.isActive) {
+		if (arenaRunID != ab.arenaRunID || nextWave < ab.currentRunTimes || !ab.isActive) {
 			this.cancel();
 		} else if (ab.arenaArea.size() == 0 || ab.arenaPlayers.size() == 0) {
 			EndArena();
@@ -44,8 +43,8 @@ public class PvPArenaTimer extends BukkitRunnable {
 		if (ab.linkedArenas.size() > 0) {
 			for (BaseArena lab : ab.linkedArenas) {
 				if (lab != null && !lab.isActive) {
-					new LinkedArenaTimer(ab, lab).runTaskLater(ab.plugin,
-							Functions.SecondsToTicks(ab.linkedArenaDelay));
+					new LinkedArenaTimer(ab, lab)
+							.runTaskLater(ab.plugin, Functions.SecondsToTicks(ab.linkedArenaDelay));
 				}
 			}
 		}
@@ -55,16 +54,14 @@ public class PvPArenaTimer extends BukkitRunnable {
 	}
 
 	public void EndArena() {
-		new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName()
-				+ " has ended!!").run();
+		new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName() + " has ended!!").run();
 
 		if (ab.linkedArenas.size() == 0) {
 			List<Player> ArenaPlayers = new ArrayList<Player>();
 			ArenaPlayers.addAll(ab.arenaPlayers);
 			for (Player p : ArenaPlayers) {
 				ab.plugin.LeaveArena(p);
-				p.setScoreboard(Bukkit.getScoreboardManager()
-						.getNewScoreboard());
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			}
 		}
 		ab.Deactivate();

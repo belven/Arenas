@@ -33,8 +33,7 @@ public class PlayerSacrifice extends ChallengeType {
 			amountToSacrifice--;
 
 			if (ChallengeComplete()) {
-				Bukkit.getPluginManager()
-						.callEvent(new ChallengeComplete(this));
+				Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
 			}
 			p.setHealth(0.0);
 		} else {

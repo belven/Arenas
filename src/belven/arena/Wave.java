@@ -42,8 +42,7 @@ public class Wave {
 			currentEntity.getEquipment();
 			gear.SetGear(currentEntity);
 		} else if (currentEntity.getType() == EntityType.SKELETON) {
-			currentEntity.getEquipment().setItemInHand(
-					new ItemStack(Material.BOW));
+			currentEntity.getEquipment().setItemInHand(new ItemStack(Material.BOW));
 		}
 	}
 
@@ -67,8 +66,7 @@ public class Wave {
 			rand--;
 		}
 
-		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
-				.spawnEntity(spawnLocation, et.get(rand));
+		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
 
 		rand = new Random().nextInt(ArenaManager.scalingGear.size());
 
@@ -89,12 +87,10 @@ public class Wave {
 				EliteMob(currentEntity);
 			}
 		} else if (currentEntity.getType() == EntityType.SKELETON) {
-			currentEntity.getEquipment().setItemInHand(
-					new ItemStack(Material.BOW));
+			currentEntity.getEquipment().setItemInHand(new ItemStack(Material.BOW));
 		}
 
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(
-				ab.plugin, ab));
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.plugin, ab));
 		ab.ArenaEntities.add(currentEntity);
 	}
 
@@ -110,30 +106,26 @@ public class Wave {
 			}
 
 			if (needsWeapon) {
-				p.getInventory()
-						.addItem(new ItemStack(Material.STONE_SWORD, 1));
+				p.getInventory().addItem(new ItemStack(Material.STONE_SWORD, 1));
 			}
 		}
 	}
 
 	public void ScaleBossHealth(LivingEntity currentEntity) {
-		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
-				+ ab.averageLevel * 3;
+		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.averageLevel * 3;
 		currentEntity.setMaxHealth(heathToscaleTo);
 		currentEntity.setHealth(heathToscaleTo);
 	}
 
 	public void ScaleMobHealth(LivingEntity currentEntity) {
-		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity)
-				+ ab.averageLevel * 1.2;
+		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.averageLevel * 1.2;
 		currentEntity.setMaxHealth(heathToscaleTo);
 		currentEntity.setHealth(heathToscaleTo);
 	}
 
 	public void SpawnBoss() {
 
-		LivingEntity le = ab.bm.SpawnBoss(BaseArena
-				.GetRandomArenaSpawnLocation(ab));
+		LivingEntity le = ab.bm.SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
 
 		Gear gear = ArenaManager.scalingGear.get(ab.arenaPlayers.size());
 
@@ -141,16 +133,15 @@ public class Wave {
 			gear.SetGear(le);
 		}
 
-		new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name()
-				+ " boss has Spawned!!").run();
+		new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name() + " boss has Spawned!!").run();
 
 		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.plugin, ab));
 		ab.ArenaEntities.add(le);
 	}
 
 	public void SpawnMobs() {
-		new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Mobs Spawning: "
-				+ ChatColor.WHITE + String.valueOf(ab.maxMobCounter)).run();
+		new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
+				+ String.valueOf(ab.maxMobCounter)).run();
 
 		if (ab.spawnArea.size() > 0) {
 			for (int mobCounter = 0; mobCounter < ab.maxMobCounter; mobCounter++) {

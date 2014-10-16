@@ -39,8 +39,7 @@ public class MobListener implements Listener {
 
 	@EventHandler
 	public void onEntityCombustEvent(EntityCombustEvent event) {
-		if (event.getEntity().hasMetadata("ArenaMob")
-				&& event.getDuration() == 8) {
+		if (event.getEntity().hasMetadata("ArenaMob") && event.getDuration() == 8) {
 			event.setCancelled(true);
 		}
 	}
@@ -54,52 +53,22 @@ public class MobListener implements Listener {
 
 		if (event.getEntityType() == EntityType.ARROW) {
 			Arrow a = (Arrow) event.getEntity();
-			if (a.getShooter() != null
-					&& a.getShooter().getType() == EntityType.SKELETON) {
+			if (a.getShooter() != null && a.getShooter().getType() == EntityType.SKELETON) {
 				LivingEntity le = a.getShooter();
 				if (le.hasMetadata("ArenaMob")) {
 					a.remove();
 				}
 			}
 		}
-		// else if (event.getEntityType() == EntityType.EGG) {
-		// event.getEntity()
-		// .getLocation()
-		// .getWorld()
-		// .playEffect(event.getEntity().getLocation(), Effect.SMOKE,
-		// 4);
-		// for (Entity e : event.getEntity().getNearbyEntities(5, 5, 5)) {
-		// if (e != null && e instanceof LivingEntity) {
-		// LivingEntity le = (LivingEntity) e;
-		// le.damage(10.0);
-		// AOEDamage(le);
-		// }
-		// }
-		// }
-	}
-
-	public void AOEDamage(LivingEntity cle) {
-		for (Entity e : cle.getNearbyEntities(5, 5, 5)) {
-			if (e != null && e instanceof LivingEntity) {
-				LivingEntity le = (LivingEntity) e;
-				if (le != null) {
-					le.damage(10.0);
-				}
-			}
-		}
 	}
 
 	@EventHandler
-	public void onEntityTargetLivingEntityEvent(
-			EntityTargetLivingEntityEvent event) {
-		if (event.getTarget() != null
-				&& event.getTarget().getType() == EntityType.PLAYER) {
+	public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent event) {
+		if (event.getTarget() != null && event.getTarget().getType() == EntityType.PLAYER) {
 
 			Player p = (Player) event.getTarget();
 
-			if (event.getEntity() != null
-					&& event.getEntity().hasMetadata("ArenaMob")
-					&& !plugin.IsPlayerInArena(p)) {
+			if (event.getEntity() != null && event.getEntity().hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
 				event.setCancelled(true);
 			} else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 				event.setCancelled(true);
@@ -124,8 +93,7 @@ public class MobListener implements Listener {
 
 				sab.ArenaEntities.remove(e);
 
-				if (sab.ArenaEntities.size() <= 0
-						&& sab.currentRunTimes <= sab.maxRunTimes) {
+				if (sab.ArenaEntities.size() <= 0 && sab.currentRunTimes <= sab.maxRunTimes) {
 					sab.GoToNextWave();
 				}
 			}
@@ -137,8 +105,7 @@ public class MobListener implements Listener {
 			if (ab.currentChallengeBlock != null) {
 				ChallengeBlock cb = ab.currentChallengeBlock;
 
-				if (!cb.completed
-						&& cb.challengeType.type == ChallengeTypes.Kills) {
+				if (!cb.completed && cb.challengeType.type == ChallengeTypes.Kills) {
 					Kills ct = (Kills) cb.challengeType;
 					ct.EntityKilled(e.getType());
 					cb.SetPlayersScoreboard();

@@ -41,8 +41,7 @@ public class EliteMobCollection {
 			this.ems.remove(em);
 
 			if (ems.size() == 0) {
-				return "Elite mob " + et.name()
-						+ " was removed. No elite mobs left!!";
+				return "Elite mob " + et.name() + " was removed. No elite mobs left!!";
 			} else {
 				return "Elite mob " + et.name() + " was removed.";
 			}

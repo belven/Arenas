@@ -68,8 +68,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
-		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer())
-				&& plugin.getArena(event.getPlayer()).isActive) {
+		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer()) && plugin.getArena(event.getPlayer()).isActive) {
 			event.setCancelled(true);
 		}
 	}
@@ -79,9 +78,7 @@ public class PlayerListener implements Listener {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
 			BaseArena ab = plugin.getArena(event.getPlayer());
 
-			if (ab.type != ArenaTypes.Temp
-					&& event.getTo().getWorld() == ab.LocationToCheckForPlayers
-							.getWorld()) {
+			if (ab.type != ArenaTypes.Temp && event.getTo().getWorld() == ab.LocationToCheckForPlayers.getWorld()) {
 				if (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
 					plugin.LeaveArena(event.getPlayer());
 				}
@@ -100,8 +97,7 @@ public class PlayerListener implements Listener {
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		Sign currentSign;
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			List<MetadataValue> mData = MDM.getMetaData(MDM.ChallengeBlock,
-					event.getClickedBlock());
+			List<MetadataValue> mData = MDM.getMetaData(MDM.ChallengeBlock, event.getClickedBlock());
 			if (mData != null) {
 				ChallengeBlock cb = (ChallengeBlock) mData.get(0).value();
 
@@ -114,23 +110,17 @@ public class PlayerListener implements Listener {
 			} else if (event.getClickedBlock().getType() == Material.SIGN) {
 				currentSign = (Sign) event.getClickedBlock();
 
-				if (currentSign.getLine(0) != null
-						&& currentSign.getLine(0).contentEquals("[Arena]")) {
-					plugin.WarpToArena(event.getPlayer(),
-							currentSign.getLine(1));
-				} else if (currentSign.getLine(0) != null
-						&& currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
+				if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[Arena]")) {
+					plugin.WarpToArena(event.getPlayer(), currentSign.getLine(1));
+				} else if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
 					plugin.LeaveArena(event.getPlayer());
 				}
 			} else if (event.getClickedBlock().getType() == Material.WALL_SIGN) {
 				currentSign = (Sign) event.getClickedBlock().getState();
 
-				if (currentSign.getLine(0) != null
-						&& currentSign.getLine(0).contentEquals("[Arena]")) {
-					plugin.WarpToArena(event.getPlayer(),
-							currentSign.getLine(1));
-				} else if (currentSign.getLine(0) != null
-						&& currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
+				if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[Arena]")) {
+					plugin.WarpToArena(event.getPlayer(), currentSign.getLine(1));
+				} else if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
 					plugin.LeaveArena(event.getPlayer());
 				}
 			}
@@ -170,8 +160,7 @@ public class PlayerListener implements Listener {
 			Location spawnLocation = warpLocations.get(currentPlayer.getName());
 
 			if (spawnLocation != null) {
-				spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0,
-						0.5);
+				spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
 				event.setRespawnLocation(spawnLocation);
 			}
@@ -181,13 +170,11 @@ public class PlayerListener implements Listener {
 		}
 
 		if (playerInventories.containsKey(currentPlayer.getName())) {
-			currentPlayer.getInventory().setContents(
-					playerInventories.get(currentPlayer.getName()));
+			currentPlayer.getInventory().setContents(playerInventories.get(currentPlayer.getName()));
 		}
 
 		if (playerArmour.containsKey(currentPlayer.getName())) {
-			currentPlayer.getInventory().setArmorContents(
-					playerArmour.get(currentPlayer.getName()));
+			currentPlayer.getInventory().setArmorContents(playerArmour.get(currentPlayer.getName()));
 		}
 	}
 
@@ -204,12 +191,10 @@ public class PlayerListener implements Listener {
 		if (playerDeathProtection.contains(damagedPlayer.getName())) {
 			event.setDamage(0.0);
 
-			damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer
-					.getName()));
+			damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer.getName()));
 
 			damagedPlayer.addPotionEffect(
-					new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
-							Functions.SecondsToTicks(3), 4), true);
+					new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Functions.SecondsToTicks(3), 4), true);
 			playerDeathProtection.remove(damagedPlayer.getName());
 		}
 	}

@@ -4,9 +4,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
 public class Shrine {
-	Block center, bottomCenter, bottomNorth, bottomSouth, bottomEast,
-			bottomWest, bottomNorthEast, bottomNorthWest, bottomSouthWest,
-			bottomSouthEast, top;
+	Block center, bottomCenter, bottomNorth, bottomSouth, bottomEast, bottomWest, bottomNorthEast, bottomNorthWest,
+			bottomSouthWest, bottomSouthEast, top;
 
 	public Shrine(Block b) {
 		top = b;

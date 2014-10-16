@@ -20,8 +20,7 @@ public class NextWaveTimer extends BukkitRunnable {
 		CleanUpEntites();
 		if (arenaBlock.arenaPlayers.size() == 0 || !arenaBlock.isActive) {
 			this.cancel();
-		} else if (arenaBlock.ArenaEntities.size() == 0
-				&& arenaBlock.currentRunTimes < arenaBlock.maxRunTimes) {
+		} else if (arenaBlock.ArenaEntities.size() == 0 && arenaBlock.currentRunTimes < arenaBlock.maxRunTimes) {
 			GoToNextWave();
 		}
 	}
@@ -30,21 +29,18 @@ public class NextWaveTimer extends BukkitRunnable {
 		arenaBlock.GetPlayersAverageLevel();
 		arenaBlock.currentRunTimes++;
 		if (arenaBlock.currentRunTimes == 1) {
-			new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name
-					+ " has Started!!").run();
+			new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name + " has Started!!").run();
 		}
 		new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name + " Wave: "
 				+ String.valueOf(arenaBlock.currentRunTimes)).run();
 
 		new Wave(arenaBlock);
-		new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin,
-				arenaBlock.timerPeriod);
+		new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin, arenaBlock.timerPeriod);
 		this.cancel();
 	}
 
 	private void CleanUpEntites() {
-		Iterator<LivingEntity> ArenaEntities = arenaBlock.ArenaEntities
-				.iterator();
+		Iterator<LivingEntity> ArenaEntities = arenaBlock.ArenaEntities.iterator();
 
 		while (ArenaEntities.hasNext()) {
 			LivingEntity le = ArenaEntities.next();

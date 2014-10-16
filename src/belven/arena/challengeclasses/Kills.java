@@ -22,15 +22,13 @@ import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
 
 public class Kills extends ChallengeType {
-	public static HashMap<EntityType, Integer> GetRandomEntities(
-			StandardArena ab) {
+	public static HashMap<EntityType, Integer> GetRandomEntities(StandardArena ab) {
 		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
 		int amountOfEntities = new Random().nextInt(10) + 1;
 		List<EntityType> entityTypes = ab.MobToMat.EntityTypes();
 
 		for (int i = 0; i < amountOfEntities; i++) {
-			EntityType et = entityTypes.get(new Random().nextInt(entityTypes
-					.size()));
+			EntityType et = entityTypes.get(new Random().nextInt(entityTypes.size()));
 			SpawnEntity(ab, et);
 
 			if (tempEntities.containsKey(et)) {
@@ -49,11 +47,9 @@ public class Kills extends ChallengeType {
 		Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
 		spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
-		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
-				.spawnEntity(spawnLocation, et);
+		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et);
 
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(
-				ab.plugin, ab));
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.plugin, ab));
 
 		ab.ArenaEntities.add(currentEntity);
 	}
@@ -77,8 +73,7 @@ public class Kills extends ChallengeType {
 
 	public void EntityKilled(EntityType et) {
 		if (!ChallengeComplete()) {
-			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill
-					.get(et) : 0;
+			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill.get(et) : 0;
 
 			if (amountLeft > 0) {
 				amountLeft--;
@@ -86,8 +81,7 @@ public class Kills extends ChallengeType {
 			}
 
 			if (ChallengeComplete()) {
-				Bukkit.getPluginManager()
-						.callEvent(new ChallengeComplete(this));
+				Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
 			}
 		}
 	}
@@ -95,8 +89,7 @@ public class Kills extends ChallengeType {
 	public List<String> ListRemainingEntities() {
 		List<String> EntitiesLeft = new ArrayList<String>();
 		for (EntityType et : entitiesToKill.keySet()) {
-			EntitiesLeft.add(et.name() + ": "
-					+ String.valueOf(entitiesToKill.get(et)));
+			EntitiesLeft.add(et.name() + ": " + String.valueOf(entitiesToKill.get(et)));
 		}
 		return EntitiesLeft;
 	}

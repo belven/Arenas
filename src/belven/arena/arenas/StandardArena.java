@@ -30,11 +30,9 @@ public class StandardArena extends BaseArena {
 	public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
 	public EliteMobCollection emc = new EliteMobCollection(this);
 
-	public StandardArena(Location startLocation, Location endLocation,
-			String ArenaName, int Radius, MobToMaterialCollecton mobToMat,
-			ArenaManager Plugin, int TimerPeriod) {
-		super(startLocation, endLocation, ArenaName, Radius, Plugin,
-				TimerPeriod);
+	public StandardArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
+			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
+		super(startLocation, endLocation, ArenaName, Radius, Plugin, TimerPeriod);
 		MobToMat = mobToMat;
 		type = ArenaTypes.Standard;
 	}
@@ -43,8 +41,7 @@ public class StandardArena extends BaseArena {
 		Location spawnLocation;
 		spawnArea.clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(
-				spawnArenaStartLocation, spawnArenaEndLocation);
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(spawnArenaStartLocation, spawnArenaEndLocation);
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
@@ -82,8 +79,7 @@ public class StandardArena extends BaseArena {
 		Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
 		Block blockAbove = currentBlock.getRelative(BlockFace.UP);
 
-		if (currentBlock.getType() == Material.AIR
-				&& blockAbove.getType() == Material.AIR
+		if (currentBlock.getType() == Material.AIR && blockAbove.getType() == Material.AIR
 				&& MobToMat.Contains(blockBelow.getType())) {
 			return currentLocation;
 		} else {
@@ -125,17 +121,14 @@ public class StandardArena extends BaseArena {
 			currentRunTimes++;
 
 			if (currentRunTimes == 1) {
-				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!")
-						.run();
+				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!").run();
 			}
 
 			if (currentRunTimes == ChallengeBlockWave) {
-				currentChallengeBlock = ChallengeBlock.RandomChallengeBlock(
-						plugin, this);
+				currentChallengeBlock = ChallengeBlock.RandomChallengeBlock(plugin, this);
 			}
 
-			new MessageTimer(arenaPlayers, ArenaName() + " Wave: "
-					+ String.valueOf(currentRunTimes)).run();
+			new MessageTimer(arenaPlayers, ArenaName() + " Wave: " + String.valueOf(currentRunTimes)).run();
 			new Wave(this);
 			new ArenaTimer(this).runTaskLater(plugin, timerPeriod);
 		}
