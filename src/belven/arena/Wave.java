@@ -76,6 +76,7 @@ public class Wave {
 			rand++;
 		}
 
+		// Some random, Change
 		Gear gear = ArenaManager.scalingGear.get(rand);
 
 		if (gear != null && currentEntity != null) {
