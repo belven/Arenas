@@ -264,10 +264,8 @@ public class ArenaManager extends JavaPlugin {
 			if (sel instanceof CuboidSelection) {
 				Location min = sel.getMinimumPoint();
 				Location max = sel.getMaximumPoint();
-
 				String ArenaName = args[1];
 				int Radius = Integer.valueOf(args[2]);
-
 				Material m = Material.valueOf(args[3]);
 
 				PvPArena newArenaBlock = new PvPArena(min, max, ArenaName,
@@ -529,7 +527,6 @@ public class ArenaManager extends JavaPlugin {
 				}
 			}
 		}
-
 		return tempArenas;
 	}
 
@@ -985,7 +982,7 @@ public class ArenaManager extends JavaPlugin {
 	}
 
 	private void SaveArenaEliteMobs(StandardArena ab) {
-		String path = "Arenas." + ab.ArenaName() + ".EliteMobs.";
+		String path = ArenaPath(ab.name) + ".EliteMobs.";
 
 		for (EliteMob em : ab.emc.ems) {
 			String typePath = path + em.type.name();

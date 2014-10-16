@@ -48,6 +48,10 @@ public class MobListener implements Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onProjectileHitEvent(ProjectileHitEvent event) {
+		if (event.getEntity() == null) {
+			return;
+		}
+
 		if (event.getEntityType() == EntityType.ARROW) {
 			Arrow a = (Arrow) event.getEntity();
 			if (a.getShooter() != null
@@ -55,6 +59,31 @@ public class MobListener implements Listener {
 				LivingEntity le = a.getShooter();
 				if (le.hasMetadata("ArenaMob")) {
 					a.remove();
+				}
+			}
+		}
+		// else if (event.getEntityType() == EntityType.EGG) {
+		// event.getEntity()
+		// .getLocation()
+		// .getWorld()
+		// .playEffect(event.getEntity().getLocation(), Effect.SMOKE,
+		// 4);
+		// for (Entity e : event.getEntity().getNearbyEntities(5, 5, 5)) {
+		// if (e != null && e instanceof LivingEntity) {
+		// LivingEntity le = (LivingEntity) e;
+		// le.damage(10.0);
+		// AOEDamage(le);
+		// }
+		// }
+		// }
+	}
+
+	public void AOEDamage(LivingEntity cle) {
+		for (Entity e : cle.getNearbyEntities(5, 5, 5)) {
+			if (e != null && e instanceof LivingEntity) {
+				LivingEntity le = (LivingEntity) e;
+				if (le != null) {
+					le.damage(10.0);
 				}
 			}
 		}
@@ -81,47 +110,42 @@ public class MobListener implements Listener {
 	@EventHandler
 	public void onEntityDeathEvent(EntityDeathEvent event) {
 		Entity e = event.getEntity();
-		List<MetadataValue> data = MDM.getMetaData(
-				MDM.ArenaMob, e);
+		List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, e);
 
 		if (data != null) {
-			String arena = data.get(0).asString();
+			BaseArena ab = (BaseArena) data.get(0).value();
 
-			if (arena != null) {
-				BaseArena ab = plugin.getArenaBlock(arena);
+			if (ab == null) {
+				return;
+			}
 
-				if (ab == null) {
-					return;
-				}
+			if (ab.type != ArenaTypes.PvP) {
+				StandardArena sab = (StandardArena) ab;
 
-				if (ab.type != ArenaTypes.PvP) {
-					StandardArena sab = (StandardArena) ab;
+				sab.ArenaEntities.remove(e);
 
-					sab.ArenaEntities.remove(e);
-
-					if (sab.ArenaEntities.size() <= 0
-							&& sab.currentRunTimes <= sab.maxRunTimes) {
-						sab.GoToNextWave();
-					}
-				}
-
-				for (Player p : ab.arenaPlayers) {
-					p.giveExp(event.getDroppedExp());
-				}
-
-				if (ab.currentChallengeBlock != null) {
-					ChallengeBlock cb = ab.currentChallengeBlock;
-
-					if (!cb.completed
-							&& cb.challengeType.type == ChallengeTypes.Kills) {
-						Kills ct = (Kills) cb.challengeType;
-						ct.EntityKilled(e.getType());
-						cb.SetPlayersScoreboard();
-					}
+				if (sab.ArenaEntities.size() <= 0
+						&& sab.currentRunTimes <= sab.maxRunTimes) {
+					sab.GoToNextWave();
 				}
 			}
-			event.setDroppedExp(0);
-			event.getDrops().clear();
+
+			for (Player p : ab.arenaPlayers) {
+				p.giveExp(event.getDroppedExp());
+			}
+
+			if (ab.currentChallengeBlock != null) {
+				ChallengeBlock cb = ab.currentChallengeBlock;
+
+				if (!cb.completed
+						&& cb.challengeType.type == ChallengeTypes.Kills) {
+					Kills ct = (Kills) cb.challengeType;
+					ct.EntityKilled(e.getType());
+					cb.SetPlayersScoreboard();
+				}
+			}
 		}
+		event.setDroppedExp(0);
+		event.getDrops().clear();
 	}
 }

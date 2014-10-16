@@ -70,6 +70,20 @@ public class Wave {
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
 				.spawnEntity(spawnLocation, et.get(rand));
 
+		rand = new Random().nextInt(ArenaManager.scalingGear.size());
+
+		if (rand >= ArenaManager.scalingGear.size()) {
+			rand--;
+		} else if (rand < 0) {
+			rand++;
+		}
+
+		Gear gear = ArenaManager.scalingGear.get(rand);
+
+		if (gear != null && currentEntity != null) {
+			gear.SetGear(currentEntity);
+		}
+
 		if (ab.currentRunTimes > 0 && ab.eliteWave > 0) {
 			if (ab.currentRunTimes % ab.eliteWave == 0) {
 				EliteMob(currentEntity);
@@ -80,7 +94,7 @@ public class Wave {
 		}
 
 		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(
-				ab.plugin, ab.name));
+				ab.plugin, ab));
 		ab.ArenaEntities.add(currentEntity);
 	}
 
@@ -121,13 +135,16 @@ public class Wave {
 		LivingEntity le = ab.bm.SpawnBoss(BaseArena
 				.GetRandomArenaSpawnLocation(ab));
 
-		ArenaManager.scalingGear.get(ab.arenaPlayers.size()).SetGear(le);
+		Gear gear = ArenaManager.scalingGear.get(ab.arenaPlayers.size());
+
+		if (gear != null && le != null) {
+			gear.SetGear(le);
+		}
 
 		new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name()
 				+ " boss has Spawned!!").run();
 
-		le.setMetadata(MDM.ArenaBoss,
-				new FixedMetadataValue(ab.plugin, ab.name));
+		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.plugin, ab));
 		ab.ArenaEntities.add(le);
 	}
 

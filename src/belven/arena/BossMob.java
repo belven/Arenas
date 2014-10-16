@@ -16,7 +16,10 @@ public class BossMob {
 		le = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation,
 				BossType);
 		EntityEquipment ee = le.getEquipment();
-		gear.SetGear(le);
+
+		if (gear != null) {
+			gear.SetGear(le);
+		}
 
 		ee.setBootsDropChance(1F);
 		ee.setChestplateDropChance(1F);

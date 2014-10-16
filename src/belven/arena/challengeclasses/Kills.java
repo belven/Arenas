@@ -52,8 +52,8 @@ public class Kills extends ChallengeType {
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld()
 				.spawnEntity(spawnLocation, et);
 
-		currentEntity.setMetadata(MDM.ArenaMob,
-				new FixedMetadataValue(ab.plugin, ab.name));
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(
+				ab.plugin, ab));
 
 		ab.ArenaEntities.add(currentEntity);
 	}
