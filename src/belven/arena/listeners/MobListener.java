@@ -10,7 +10,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
@@ -73,6 +75,13 @@ public class MobListener implements Listener {
 			} else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 				event.setCancelled(true);
 			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
+		if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
+			event.setCancelled(false);
 		}
 	}
 
