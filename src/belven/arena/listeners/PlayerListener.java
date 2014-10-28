@@ -9,7 +9,9 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,6 +32,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
@@ -52,6 +55,36 @@ public class PlayerListener implements Listener {
 
 	public PlayerListener(ArenaManager instance) {
 		plugin = instance;
+	}
+
+	@EventHandler
+	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+		Entity e = event.getEntity();
+		LivingEntity le = EntityFunctions.GetDamager(event);
+
+		if (le != null && le.getType() == EntityType.PLAYER) {
+			Player p = (Player) le;
+
+			List<MetadataValue> currentMetaData = MDM.getMetaData(MDM.ArenaMob, e);
+
+			if (!plugin.IsPlayerInArena(p)) {
+				// Is entity a mob?
+				if (currentMetaData != null) {
+					BaseArena currentArena = (BaseArena) currentMetaData.get(0).value();
+
+					plugin.WarpToArena(p, currentArena);
+					// Is it a player?
+				} else if (e.getType() == EntityType.PLAYER) {
+					Player pOther = (Player) e;
+
+					// Is the other player in an arena?
+					if (plugin.IsPlayerInArena(pOther)) {
+						BaseArena currentArena = plugin.getArena(pOther);
+						plugin.WarpToArena(p, currentArena);
+					}
+				}
+			}
+		}
 	}
 
 	@EventHandler

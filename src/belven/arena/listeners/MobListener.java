@@ -120,8 +120,8 @@ public class MobListener implements Listener {
 					cb.SetPlayersScoreboard();
 				}
 			}
+			event.setDroppedExp(0);
+			event.getDrops().clear();
 		}
-		event.setDroppedExp(0);
-		event.getDrops().clear();
 	}
 }

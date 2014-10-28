@@ -128,7 +128,8 @@ public abstract class BaseArena {
 					if (data.value() != null) {
 						BaseArena ab = (BaseArena) data.value();
 						if (data != null && ab == this) {
-							plugin.WarpToArena(p, this);
+							ab.arenaPlayers.add(p);
+							plugin.PlayersInArenas.put(p, ab);
 						}
 					}
 				}

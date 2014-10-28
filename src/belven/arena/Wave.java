@@ -68,21 +68,6 @@ public class Wave {
 
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
 
-		rand = new Random().nextInt(ArenaManager.scalingGear.size());
-
-		if (rand >= ArenaManager.scalingGear.size()) {
-			rand--;
-		} else if (rand < 0) {
-			rand++;
-		}
-
-		// Some random, Change
-		Gear gear = ArenaManager.scalingGear.get(rand);
-
-		if (gear != null && currentEntity != null) {
-			gear.SetGear(currentEntity);
-		}
-
 		if (ab.currentRunTimes > 0 && ab.eliteWave > 0) {
 			if (ab.currentRunTimes % ab.eliteWave == 0) {
 				EliteMob(currentEntity);

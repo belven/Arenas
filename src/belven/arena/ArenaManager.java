@@ -22,6 +22,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
@@ -1301,38 +1302,31 @@ public class ArenaManager extends JavaPlugin {
 	}
 
 	public boolean WarpToArena(Player p, BaseArena ab) {
-		if (!ab.arenaPlayers.contains(p)) {
-			ab.arenaPlayers.add(p);
-			PlayersInArenas.put(p, ab);
-		}
 
 		Location tpL = Functions.offsetLocation(ab.arenaWarp.getLocation(), 0.5, 0, 0.5);
 		String tpMsg = "You were teleported and added to the arena " + ab.ArenaName();
 
-		if (p.getLocation().getWorld() == ab.LocationToCheckForPlayers.getWorld()) {
+		if (ab.isActive) {
 
-			if (ab.isActive) {
-				Block b = p.getLocation().getBlock();
+			Block b = p.getLocation().getBlock();
 
-				if (!IsPlayerInArena(p) && !b.hasMetadata("ArenaAreaBlock")) {
-					warpLocations.put(p.getName(), p.getLocation());
-					p.teleport(tpL);
-					p.sendMessage(tpMsg);
-					return true;
+			if (!b.hasMetadata("ArenaAreaBlock")) {
+
+				if (!IsPlayerInArena(p) && !ab.arenaPlayers.contains(p)) {
+					ab.arenaPlayers.add(p);
+					PlayersInArenas.put(p, ab);
 				}
-			} else if (p.getLocation().distance(ab.LocationToCheckForPlayers) > ab.radius) {
+
 				warpLocations.put(p.getName(), p.getLocation());
-				p.teleport(tpL);
+				p.teleport(tpL, TeleportCause.COMMAND);
 				p.sendMessage(tpMsg);
-				return true;
-			} else {
-				p.sendMessage("You were added to arena " + ab.ArenaName());
 				return true;
 			}
 		} else {
 			warpLocations.put(p.getName(), p.getLocation());
-			p.teleport(tpL);
+			p.teleport(tpL, TeleportCause.COMMAND);
 			p.sendMessage(tpMsg);
+			return true;
 		}
 		return false;
 	}
