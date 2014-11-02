@@ -1,6 +1,7 @@
 package belven.arena.arenas;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,31 +18,31 @@ import belven.arena.resources.SavedBlock;
 
 public class BaseArenaData {
 	protected ArenaManager plugin;
-	protected boolean isActive;
+	protected boolean isActive = false;
 	protected ArenaTypes type;
-	protected String name;
+	protected String name = "";
 	protected Block blockToActivate;
 	protected Block deactivateBlock;
 	protected Block arenaWarp;
 	protected ChallengeBlock currentChallengeBlock;
 	protected int ChallengeBlockWave;
-	protected List<Block> arenaArea;
-	protected List<SavedBlock> originalBlocks;
-	protected List<Player> arenaPlayers;
-	protected List<Block> spawnArea;
-	protected List<BaseArena> linkedArenas;
+	protected List<Block> arenaArea = new ArrayList<Block>();
+	protected List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
+	protected List<Player> arenaPlayers = new ArrayList<Player>();
+	protected List<Block> spawnArea = new ArrayList<Block>();
+	protected List<BaseArena> linkedArenas = new ArrayList<BaseArena>();
 	protected Location spawnArenaStartLocation;
 	protected Location spawnArenaEndLocation;
 	protected Location ArenaStartLocation;
 	protected Location ArenaEndLocation;
-	protected int maxRunTimes;
-	protected int timerPeriod;
-	protected int eliteWave;
-	protected int averageLevel;
-	protected int maxMobCounter;
-	protected int linkedArenaDelay;
-	protected int currentRunTimes;
-	protected List<ItemStack> arenaRewards;
+	protected int maxRunTimes = 0;
+	protected int timerPeriod = 0;
+	protected int eliteWave = 0;
+	protected int averageLevel = 0;
+	protected int maxMobCounter = 0;
+	protected int linkedArenaDelay = 0;
+	protected int currentRunTimes = 0;
+	protected List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
 	protected UUID arenaRunID;
 
 	public BaseArenaData(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
