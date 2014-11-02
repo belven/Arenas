@@ -1,6 +1,8 @@
 package belven.arena.rewardclasses;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -21,7 +23,7 @@ public class ItemReward extends Reward {
 		for (Material m : ArenaManager.getItemMaterials()) {
 			ChanceLevel cl = ArenaManager.getMaterialChance(m);
 			amount = amount - cl.ordinal();
-			if (amount >= 0) {
+			if (amount <= 0) {
 				amount = 1;
 			}
 			items.add(new Item(m, amount, cl));
@@ -49,16 +51,37 @@ public class ItemReward extends Reward {
 	@Override
 	public void GiveRewards(ChallengeBlock cb, List<Player> players) {
 		String messtext = "Challenge has been completed you get ";
+		int amountOfPlayers = players.size();
+
+		Collections.sort(rewards, new Comparator<Item>() {
+			@Override
+			public int compare(Item i1, Item i2) {
+				if (i1.getItemChance().ordinal() > i2.getItemChance().ordinal()) {
+					return 1;
+				} else if (i1.getItemChance().ordinal() < i2.getItemChance().ordinal()) {
+					return -1;
+				} else {
+					return 0;
+				}
+			}
+		});
 
 		for (Player p : players) {
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			int count = 0;
 
-			List<Item> items = rewards;
-
-			for (Item i : items) {
+			for (Item i : rewards) {
 				if (i.ShouldGive(players.size())) {
+					count++;
+					int amountToGive = amountOfPlayers * 2 - i.getItemChance().ordinal();
+					i.getItem().setAmount(amountToGive);
+
 					messtext += i.getType().name() + " " + String.valueOf(i.getAmount() + " ");
 					p.getInventory().addItem(i.getItem());
+				}
+
+				if (count >= amountOfPlayers) {
+					break;
 				}
 			}
 		}

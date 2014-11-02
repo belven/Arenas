@@ -12,11 +12,12 @@ public class TempArena extends StandardArena {
 		super(startLocation, endLocation, ArenaName, Radius, mobToMat, Plugin, TimerPeriod);
 
 		Activate();
-		type = ArenaTypes.Temp;
+		setType(ArenaTypes.Temp);
 	}
 
+	@Override
 	public void Deactivate() {
 		super.Deactivate();
-		plugin.currentArenaBlocks.remove(this);
+		getPlugin().currentArenaBlocks.remove(this);
 	}
 }

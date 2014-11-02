@@ -54,7 +54,7 @@ public class ChallengeBlock {
 	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct, BaseArena arenaBlock) {
 		this(instance, b, r, ct);
 		ab = arenaBlock;
-		new MessageTimer(ab.arenaPlayers, "A challenge of type " + ct.type.name() + " has begun").run();
+		new MessageTimer(ab.getArenaPlayers(), "A challenge of type " + ct.type.name() + " has begun").run();
 		SetPlayersScoreboard();
 	}
 
@@ -65,14 +65,14 @@ public class ChallengeBlock {
 	}
 
 	public void GiveRewards() {
-		challengeReward.GiveRewards(this, ab != null ? ab.arenaPlayers : players);
+		challengeReward.GiveRewards(this, ab != null ? ab.getArenaPlayers() : players);
 		plugin.challengeBlocks.remove(this);
 		challengeBlockState.update(true);
 		completed = true;
 	}
 
 	public void SetPlayersScoreboard() {
-		List<Player> tempPlayers = ab != null ? ab.arenaPlayers : players;
+		List<Player> tempPlayers = ab != null ? ab.getArenaPlayers() : players;
 
 		for (Player p : tempPlayers) {
 			p.setScoreboard(challengeType.SetChallengeScoreboard(challengeType));

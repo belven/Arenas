@@ -25,31 +25,32 @@ import belven.arena.timedevents.MessageTimer;
 
 public class StandardArena extends BaseArena {
 
-	public BossMob bm = new BossMob();
-	public MobToMaterialCollecton MobToMat = new MobToMaterialCollecton();
-	public List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
-	public EliteMobCollection emc = new EliteMobCollection(this);
+	protected BossMob bm = new BossMob();
+	protected MobToMaterialCollecton MobToMat = new MobToMaterialCollecton();
+	protected List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
+	protected EliteMobCollection emc = new EliteMobCollection(this);
 
 	public StandardArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
 			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
-		super(startLocation, endLocation, ArenaName, Radius, Plugin, TimerPeriod);
+		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		MobToMat = mobToMat;
-		type = ArenaTypes.Standard;
+		setType(ArenaTypes.Standard);
 	}
 
 	public void GetSpawnArea() {
 		Location spawnLocation;
-		spawnArea.clear();
+		getSpawnArea().clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(spawnArenaStartLocation, spawnArenaEndLocation);
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(),
+				getSpawnArenaEndLocation());
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
 				spawnLocation = b.getLocation();
 				spawnLocation = CanSpawnAt(spawnLocation);
-				if (spawnLocation != null && !b.equals(spawnArenaStartLocation)) {
+				if (spawnLocation != null && !b.equals(getSpawnArenaStartLocation())) {
 					Block spawnBlock = spawnLocation.getBlock();
-					spawnArea.add(spawnBlock);
+					getSpawnArea().add(spawnBlock);
 				}
 			}
 		}
@@ -59,19 +60,52 @@ public class StandardArena extends BaseArena {
 	public void Activate() {
 		SetPlayers();
 
-		if (arenaPlayers.size() != 0) {
-			arenaRunID = UUID.randomUUID();
-			isActive = true;
-			ChallengeBlockWave = new Random().nextInt(maxRunTimes);
+		if (getArenaPlayers().size() != 0) {
+			setArenaRunID(UUID.randomUUID());
+			setActive(true);
+			setChallengeBlockWave(new Random().nextInt(getMaxRunTimes()));
 
-			if (ChallengeBlockWave <= 0)
-				ChallengeBlockWave = 1;
+			if (getChallengeBlockWave() <= 0) {
+				setChallengeBlockWave(1);
+			}
 
 			RemoveMobs();
 			ArenaEntities.clear();
 			GetSpawnArea();
-			new ArenaTimer(this).runTaskLater(plugin, 10);
+			new ArenaTimer(this).runTaskLater(getPlugin(), 10);
 		}
+	}
+
+	public BossMob getBossMob() {
+		return bm;
+	}
+
+	public void setBossMob(BossMob bm) {
+		this.bm = bm;
+	}
+
+	public MobToMaterialCollecton getMobToMat() {
+		return MobToMat;
+	}
+
+	public void setMobToMat(MobToMaterialCollecton mobToMat) {
+		MobToMat = mobToMat;
+	}
+
+	public List<LivingEntity> getArenaEntities() {
+		return ArenaEntities;
+	}
+
+	public void setArenaEntities(List<LivingEntity> arenaEntities) {
+		ArenaEntities = arenaEntities;
+	}
+
+	public EliteMobCollection getEliteMobCollection() {
+		return emc;
+	}
+
+	public void setEliteMobCollection(EliteMobCollection emc) {
+		this.emc = emc;
 	}
 
 	private Location CanSpawnAt(Location currentLocation) {
@@ -88,10 +122,10 @@ public class StandardArena extends BaseArena {
 	}
 
 	public void RemoveMobs() {
-		currentRunTimes = 0;
+		setCurrentRunTimes(0);
 		for (LivingEntity le : ArenaEntities) {
 			if (!le.isDead()) {
-				le.removeMetadata("ArenaMob", plugin);
+				le.removeMetadata("ArenaMob", getPlugin());
 				le.setHealth(0.0);
 			}
 		}
@@ -99,38 +133,38 @@ public class StandardArena extends BaseArena {
 
 	@Override
 	public void Deactivate() {
-		arenaRunID = null;
+		setArenaRunID(null);
 		RestoreArena();
-		isActive = false;
+		setActive(false);
 		RemoveMobs();
 		ArenaEntities.clear();
 
-		if (currentChallengeBlock != null) {
-			currentChallengeBlock.challengeBlockState.update(true);
+		if (getCurrentChallengeBlock() != null) {
+			getCurrentChallengeBlock().challengeBlockState.update(true);
 		}
 
-		for (Player p : arenaPlayers) {
+		for (Player p : getArenaPlayers()) {
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		}
 	}
 
 	@Override
 	public void GoToNextWave() {
-		if (arenaPlayers.size() > 0) {
+		if (getArenaPlayers().size() > 0) {
 			GetPlayersAverageLevel();
-			currentRunTimes++;
+			setCurrentRunTimes(getCurrentRunTimes() + 1);
 
-			if (currentRunTimes == 1) {
-				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!").run();
+			if (getCurrentRunTimes() == 1) {
+				new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
 			}
 
-			if (currentRunTimes == ChallengeBlockWave) {
-				currentChallengeBlock = ChallengeBlock.RandomChallengeBlock(plugin, this);
+			if (getCurrentRunTimes() == getChallengeBlockWave()) {
+				setCurrentChallengeBlock(ChallengeBlock.RandomChallengeBlock(getPlugin(), this));
 			}
 
-			new MessageTimer(arenaPlayers, ArenaName() + " Wave: " + String.valueOf(currentRunTimes)).run();
+			new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes())).run();
 			new Wave(this);
-			new ArenaTimer(this).runTaskLater(plugin, timerPeriod);
+			new ArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
 		}
 	}
 }

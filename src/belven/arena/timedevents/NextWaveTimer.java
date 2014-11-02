@@ -18,35 +18,36 @@ public class NextWaveTimer extends BukkitRunnable {
 	@Override
 	public void run() {
 		CleanUpEntites();
-		if (arenaBlock.arenaPlayers.size() == 0 || !arenaBlock.isActive) {
+		if (arenaBlock.getArenaPlayers().size() == 0 || !arenaBlock.isActive()) {
 			this.cancel();
-		} else if (arenaBlock.ArenaEntities.size() == 0 && arenaBlock.currentRunTimes < arenaBlock.maxRunTimes) {
+		} else if (arenaBlock.getArenaEntities().size() == 0
+				&& arenaBlock.getCurrentRunTimes() < arenaBlock.getMaxRunTimes()) {
 			GoToNextWave();
 		}
 	}
 
 	private void GoToNextWave() {
 		arenaBlock.GetPlayersAverageLevel();
-		arenaBlock.currentRunTimes++;
-		if (arenaBlock.currentRunTimes == 1) {
-			new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name + " has Started!!").run();
+		arenaBlock.setCurrentRunTimes(arenaBlock.getCurrentRunTimes() + 1);
+		if (arenaBlock.getCurrentRunTimes() == 1) {
+			new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " has Started!!").run();
 		}
-		new MessageTimer(arenaBlock.arenaPlayers, arenaBlock.name + " Wave: "
-				+ String.valueOf(arenaBlock.currentRunTimes)).run();
+		new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " Wave: "
+				+ String.valueOf(arenaBlock.getCurrentRunTimes())).run();
 
 		new Wave(arenaBlock);
-		new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.plugin, arenaBlock.timerPeriod);
+		new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.getPlugin(), arenaBlock.getTimerPeriod());
 		this.cancel();
 	}
 
 	private void CleanUpEntites() {
-		Iterator<LivingEntity> ArenaEntities = arenaBlock.ArenaEntities.iterator();
+		Iterator<LivingEntity> ArenaEntities = arenaBlock.getArenaEntities().iterator();
 
 		while (ArenaEntities.hasNext()) {
 			LivingEntity le = ArenaEntities.next();
 			if (le != null && le.isDead()) {
 				if (le.hasMetadata("ArenaMob")) {
-					le.removeMetadata("ArenaMob", arenaBlock.plugin);
+					le.removeMetadata("ArenaMob", arenaBlock.getPlugin());
 				}
 				ArenaEntities.remove();
 			}

@@ -85,7 +85,7 @@ public class MobListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDeathEvent(EntityDeathEvent event) {
 		Entity e = event.getEntity();
 		List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, e);
@@ -97,22 +97,22 @@ public class MobListener implements Listener {
 				return;
 			}
 
-			if (ab.type != ArenaTypes.PvP) {
+			if (ab.getType() != ArenaTypes.PvP) {
 				StandardArena sab = (StandardArena) ab;
 
-				sab.ArenaEntities.remove(e);
+				sab.getArenaEntities().remove(e);
 
-				if (sab.ArenaEntities.size() <= 0 && sab.currentRunTimes <= sab.maxRunTimes) {
+				if (sab.getArenaEntities().size() <= 0 && sab.getCurrentRunTimes() <= sab.getMaxRunTimes()) {
 					sab.GoToNextWave();
 				}
 			}
 
-			for (Player p : ab.arenaPlayers) {
+			for (Player p : ab.getArenaPlayers()) {
 				p.giveExp(event.getDroppedExp());
 			}
 
-			if (ab.currentChallengeBlock != null) {
-				ChallengeBlock cb = ab.currentChallengeBlock;
+			if (ab.getCurrentChallengeBlock() != null) {
+				ChallengeBlock cb = ab.getCurrentChallengeBlock();
 
 				if (!cb.completed && cb.challengeType.type == ChallengeTypes.Kills) {
 					Kills ct = (Kills) cb.challengeType;

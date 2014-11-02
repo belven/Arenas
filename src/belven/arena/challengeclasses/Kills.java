@@ -25,7 +25,7 @@ public class Kills extends ChallengeType {
 	public static HashMap<EntityType, Integer> GetRandomEntities(StandardArena ab) {
 		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
 		int amountOfEntities = new Random().nextInt(10) + 1;
-		List<EntityType> entityTypes = ab.MobToMat.EntityTypes();
+		List<EntityType> entityTypes = ab.getMobToMat().EntityTypes();
 
 		for (int i = 0; i < amountOfEntities; i++) {
 			EntityType et = entityTypes.get(new Random().nextInt(entityTypes.size()));
@@ -43,15 +43,15 @@ public class Kills extends ChallengeType {
 	}
 
 	public static void SpawnEntity(StandardArena ab, EntityType et) {
-		int randomInt = new Random().nextInt(ab.spawnArea.size());
-		Location spawnLocation = ab.spawnArea.get(randomInt).getLocation();
+		int randomInt = new Random().nextInt(ab.getSpawnArea().size());
+		Location spawnLocation = ab.getSpawnArea().get(randomInt).getLocation();
 		spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
 
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et);
 
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.plugin, ab));
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
 
-		ab.ArenaEntities.add(currentEntity);
+		ab.getArenaEntities().add(currentEntity);
 	}
 
 	public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();

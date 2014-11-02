@@ -101,7 +101,8 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
-		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer()) && plugin.getArena(event.getPlayer()).isActive) {
+		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer())
+				&& plugin.getArena(event.getPlayer()).isActive()) {
 			event.setCancelled(true);
 		}
 	}
@@ -111,7 +112,7 @@ public class PlayerListener implements Listener {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
 			BaseArena ab = plugin.getArena(event.getPlayer());
 
-			if (ab.type != ArenaTypes.Temp && event.getTo().getWorld() == ab.LocationToCheckForPlayers.getWorld()) {
+			if (ab.getType() != ArenaTypes.Temp && event.getTo().getWorld() == ab.getArenaWarp().getWorld()) {
 				if (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
 					plugin.LeaveArena(event.getPlayer());
 				}
@@ -170,7 +171,7 @@ public class PlayerListener implements Listener {
 		if (plugin.IsPlayerInArena(p)) {
 			BaseArena ab = plugin.getArena(p);
 
-			if (ab.type == ArenaTypes.PvP) {
+			if (ab.getType() == ArenaTypes.PvP) {
 				PvPArena pvpa = (PvPArena) ab;
 				pvpa.PlayerKilled(p);
 			}

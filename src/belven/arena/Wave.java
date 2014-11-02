@@ -37,8 +37,8 @@ public class Wave {
 	}
 
 	public void EliteMob(LivingEntity currentEntity) {
-		if (ab.emc.Contains(currentEntity.getType())) {
-			Gear gear = ab.emc.Get(currentEntity.getType()).armor;
+		if (ab.getEliteMobCollection().Contains(currentEntity.getType())) {
+			Gear gear = ab.getEliteMobCollection().Get(currentEntity.getType()).armor;
 			currentEntity.getEquipment();
 			gear.SetGear(currentEntity);
 		} else if (currentEntity.getType() == EntityType.SKELETON) {
@@ -50,7 +50,7 @@ public class Wave {
 		Block blockBelow = spawnLocation.getBlock().getRelative(BlockFace.DOWN);
 		List<EntityType> et = new ArrayList<EntityType>();
 
-		for (MobToMaterial mtm : ab.MobToMat.MobToMaterials) {
+		for (MobToMaterial mtm : ab.getMobToMat().MobToMaterials) {
 			if (blockBelow.getType() == mtm.m) {
 				et.add(mtm.et);
 			}
@@ -68,20 +68,20 @@ public class Wave {
 
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
 
-		if (ab.currentRunTimes > 0 && ab.eliteWave > 0) {
-			if (ab.currentRunTimes % ab.eliteWave == 0) {
+		if (ab.getCurrentRunTimes() > 0 && ab.getEliteWave() > 0) {
+			if (ab.getCurrentRunTimes() % ab.getEliteWave() == 0) {
 				EliteMob(currentEntity);
 			}
 		} else if (currentEntity.getType() == EntityType.SKELETON) {
 			currentEntity.getEquipment().setItemInHand(new ItemStack(Material.BOW));
 		}
 
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.plugin, ab));
-		ab.ArenaEntities.add(currentEntity);
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
+		ab.getArenaEntities().add(currentEntity);
 	}
 
 	public void renewPlayerWeapons() {
-		for (Player p : ab.arenaPlayers) {
+		for (Player p : ab.getArenaPlayers()) {
 			boolean needsWeapon = true;
 
 			for (ItemStack is : MaterialFunctions.getAllMeeleWeapons()) {
@@ -98,43 +98,43 @@ public class Wave {
 	}
 
 	public void ScaleBossHealth(LivingEntity currentEntity) {
-		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.averageLevel * 3;
+		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.getAverageLevel() * 3;
 		currentEntity.setMaxHealth(heathToscaleTo);
 		currentEntity.setHealth(heathToscaleTo);
 	}
 
 	public void ScaleMobHealth(LivingEntity currentEntity) {
-		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.averageLevel * 1.2;
+		double heathToscaleTo = EntityFunctions.MobMaxHealth(currentEntity) + ab.getAverageLevel() * 1.2;
 		currentEntity.setMaxHealth(heathToscaleTo);
 		currentEntity.setHealth(heathToscaleTo);
 	}
 
 	public void SpawnBoss() {
 
-		LivingEntity le = ab.bm.SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
+		LivingEntity le = ab.getBossMob().SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
 
-		Gear gear = ArenaManager.scalingGear.get(ab.arenaPlayers.size());
+		Gear gear = ArenaManager.scalingGear.get(ab.getArenaPlayers().size());
 
 		if (gear != null && le != null) {
 			gear.SetGear(le);
 		}
 
-		new MessageTimer(ab.arenaPlayers, "A " + ab.bm.BossType.name() + " boss has Spawned!!").run();
+		new MessageTimer(ab.getArenaPlayers(), "A " + ab.getBossMob().BossType.name() + " boss has Spawned!!").run();
 
-		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.plugin, ab));
-		ab.ArenaEntities.add(le);
+		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.getPlugin(), ab));
+		ab.getArenaEntities().add(le);
 	}
 
 	public void SpawnMobs() {
-		new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
-				+ String.valueOf(ab.maxMobCounter)).run();
+		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
+				+ String.valueOf(ab.getMaxMobCounter())).run();
 
-		if (ab.spawnArea.size() > 0) {
-			for (int mobCounter = 0; mobCounter < ab.maxMobCounter; mobCounter++) {
+		if (ab.getSpawnArea().size() > 0) {
+			for (int mobCounter = 0; mobCounter < ab.getMaxMobCounter(); mobCounter++) {
 				MobToSpawn(BaseArena.GetRandomArenaSpawnLocation(ab));
 			}
 
-			if (ab.currentRunTimes == ab.maxRunTimes) {
+			if (ab.getCurrentRunTimes() == ab.getMaxRunTimes()) {
 				SpawnBoss();
 			}
 		}

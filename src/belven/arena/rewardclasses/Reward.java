@@ -14,7 +14,7 @@ public abstract class Reward {
 		Default, Items, Experience, Boss
 	}
 
-	private final static List<Double> expRewards = Arrays.asList(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
+	private final static List<Double> expRewards = Arrays.asList(0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
 
 	public static Reward GetRandomReward() {
 		int ran = new Random().nextInt(2);

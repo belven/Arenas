@@ -1,10 +1,8 @@
 package belven.arena.arenas;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,67 +12,30 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
-import resources.EntityFunctions;
 import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
-import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
 
-public abstract class BaseArena {
+public abstract class BaseArena extends BaseArenaData {
 	public enum ArenaTypes {
 		Standard, PvP, Temp
 	}
 
-	public ArenaManager plugin;
-	public boolean isActive = false;
-	public ArenaTypes type;
-
-	public String name;
-	public Block blockToActivate, deactivateBlock, arenaWarp;
-	public ChallengeBlock currentChallengeBlock = null;
-	public int ChallengeBlockWave = 1;
-
-	public List<Block> arenaArea = new ArrayList<Block>();
-	public List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
-	public List<Player> arenaPlayers = new ArrayList<Player>();
-	public List<Block> spawnArea = new ArrayList<Block>();
-	public List<BaseArena> linkedArenas = new ArrayList<BaseArena>();
-
-	public Location LocationToCheckForPlayers, spawnArenaStartLocation, spawnArenaEndLocation, ArenaStartLocation,
-			ArenaEndLocation;
-
-	public int radius, maxRunTimes, timerPeriod, eliteWave, averageLevel, maxMobCounter, linkedArenaDelay,
-			currentRunTimes = 0;
-
-	public List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
-	public UUID arenaRunID = null;
-
-	public BaseArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
+	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
+		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
+		getPlugin().currentArenaBlocks.add(this);
+	}
 
-		spawnArenaStartLocation = startLocation;
-		spawnArenaEndLocation = endLocation;
-		ArenaStartLocation = startLocation;
-		ArenaEndLocation = endLocation;
-
-		blockToActivate = startLocation.getBlock();
-		deactivateBlock = Functions.offsetLocation(startLocation, 0, 2, 0).getBlock();
-
-		LocationToCheckForPlayers = blockToActivate.getLocation();
-		arenaWarp = startLocation.getBlock();
-		radius = Radius;
-		timerPeriod = TimerPeriod;
-		name = ArenaName;
-		plugin = Plugin;
-		maxRunTimes = 5;
-		plugin.currentArenaBlocks.add(this);
+	public BaseArena(BaseArenaData bad) {
+		super(bad);
 	}
 
 	public String ArenaName() {
-		return ChatColor.RED + name + ChatColor.WHITE;
+		return ChatColor.RED + getName() + ChatColor.WHITE;
 	}
 
 	public abstract void Activate();
@@ -82,19 +43,19 @@ public abstract class BaseArena {
 	public abstract void Deactivate();
 
 	public void RestoreArena() {
-		for (SavedBlock sb : originalBlocks) {
+		for (SavedBlock sb : getOriginalBlocks()) {
 			sb.bs.update(true);
-			sb.bs.removeMetadata("ArenaAreaBlock", plugin);
+			sb.bs.removeMetadata("ArenaAreaBlock", getPlugin());
 		}
 	}
 
 	public void GiveRewards() {
-		int count = arenaPlayers.size();
-		Iterator<Player> ArenaPlayers = arenaPlayers.iterator();
+		int count = getArenaPlayers().size();
+		Iterator<Player> ArenaPlayers = getArenaPlayers().iterator();
 
 		while (ArenaPlayers.hasNext()) {
 			Player p = ArenaPlayers.next();
-			if (arenaRewards.size() <= 0) {
+			if (getArenaRewards().size() <= 0) {
 				ItemReward ir = new ItemReward(ItemReward.RandomItemRewards());
 				for (Item i : ir.rewards) {
 					if (i.ShouldGive(count)) {
@@ -103,7 +64,7 @@ public abstract class BaseArena {
 				}
 			}
 
-			for (ItemStack is : arenaRewards) {
+			for (ItemStack is : getArenaRewards()) {
 				if (is != null) {
 					p.getInventory().addItem(is);
 				}
@@ -114,23 +75,21 @@ public abstract class BaseArena {
 	public abstract void GoToNextWave();
 
 	public void SetPlayers() {
-		Player[] tempPlayers = EntityFunctions.getNearbyPlayersNew(LocationToCheckForPlayers, radius);
-		if (tempPlayers.length > 0) {
-			GetArenaArea();
-			for (Player p : tempPlayers) {
-				Block b = p.getLocation().getBlock();
-				List<MetadataValue> blockData = MDM.getMetaData(MDM.ArenaAreaBlock, b);
+		GetArenaArea();
 
-				if (!plugin.IsPlayerInArena(p) && blockData != null) {
+		for (Player p : getPlugin().onlinePlayers) {
+			Block b = p.getLocation().getBlock();
+			List<MetadataValue> blockData = MDM.getMetaData(MDM.ArenaAreaBlock, b);
 
-					MetadataValue data = blockData.get(0);
+			if (!getPlugin().IsPlayerInArena(p) && blockData != null) {
 
-					if (data.value() != null) {
-						BaseArena ab = (BaseArena) data.value();
-						if (data != null && ab == this) {
-							ab.arenaPlayers.add(p);
-							plugin.PlayersInArenas.put(p, ab);
-						}
+				MetadataValue data = blockData.get(0);
+
+				if (data.value() != null) {
+					BaseArena ab = (BaseArena) data.value();
+					if (data != null && ab == this) {
+						ab.getArenaPlayers().add(p);
+						getPlugin().PlayersInArenas.put(p, ab);
 					}
 				}
 			}
@@ -138,26 +97,26 @@ public abstract class BaseArena {
 	}
 
 	public void GetArenaArea() {
-		arenaArea = Functions.getBlocksBetweenPoints(ArenaStartLocation, ArenaEndLocation);
+		setArenaArea(Functions.getBlocksBetweenPoints(getArenaStartLocation(), getArenaEndLocation()));
 
-		originalBlocks.clear();
+		getOriginalBlocks().clear();
 
-		for (Block b : arenaArea) {
-			originalBlocks.add(new SavedBlock(b));
-			b.setMetadata(MDM.ArenaAreaBlock, new FixedMetadataValue(plugin, this));
+		for (Block b : getArenaArea()) {
+			getOriginalBlocks().add(new SavedBlock(b));
+			b.setMetadata(MDM.ArenaAreaBlock, new FixedMetadataValue(getPlugin(), this));
 		}
 	}
 
 	public void GetPlayersAverageLevel() {
-		if (arenaPlayers.size() == 0) {
+		if (getArenaPlayers().size() == 0) {
 			return;
 		}
 
 		int totalLevels = 0;
-		averageLevel = 0;
-		maxMobCounter = 0;
+		setAverageLevel(0);
+		setMaxMobCounter(0);
 
-		for (Player p : arenaPlayers) {
+		for (Player p : getArenaPlayers()) {
 			totalLevels += p.getLevel();
 		}
 
@@ -165,17 +124,17 @@ public abstract class BaseArena {
 			totalLevels = 1;
 		}
 
-		averageLevel = totalLevels / arenaPlayers.size();
-		maxMobCounter = totalLevels / arenaPlayers.size() + arenaPlayers.size() * 5;
+		setAverageLevel(totalLevels / getArenaPlayers().size());
+		setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
 
-		if (maxMobCounter > arenaPlayers.size() * 15) {
-			maxMobCounter = arenaPlayers.size() * 15;
+		if (getMaxMobCounter() > getArenaPlayers().size() * 15) {
+			setMaxMobCounter(getArenaPlayers().size() * 15);
 		}
 	}
 
 	public static Block GetRandomArenaSpawnBlock(BaseArena ab) {
 		Block b;
-		b = ab.spawnArea.get(new Random().nextInt(ab.spawnArea.size()));
+		b = ab.getSpawnArea().get(new Random().nextInt(ab.getSpawnArea().size()));
 		return b;
 	}
 

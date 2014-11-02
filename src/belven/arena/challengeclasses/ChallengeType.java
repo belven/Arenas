@@ -26,7 +26,7 @@ public abstract class ChallengeType {
 		case 0:
 			return new Kills(Kills.GetRandomEntities(ab));
 		case 1:
-			return new PlayerSacrifice(ab.arenaPlayers.size());
+			return new PlayerSacrifice(ab.getArenaPlayers().size());
 		default:
 			return new Kills(Kills.GetRandomEntities(ab));
 		}

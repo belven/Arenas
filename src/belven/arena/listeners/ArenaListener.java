@@ -22,7 +22,7 @@ public class ArenaListener implements Listener {
 	public void onArenaBlockActivatedEvent(ArenaBlockActivatedEvent event) {
 		if (plugin.currentArenaBlocks.size() > 0) {
 			for (BaseArena ab : plugin.currentArenaBlocks) {
-				if (event.GetBlockLocation().equals(ab.blockToActivate.getLocation()) && !ab.isActive) {
+				if (event.GetBlockLocation().equals(ab.getBlockToActivate().getLocation()) && !ab.isActive()) {
 					ab.Activate();
 				}
 			}
@@ -32,7 +32,7 @@ public class ArenaListener implements Listener {
 	@EventHandler
 	public void onArenaBlockBreakEvent(BlockBreakEvent event) {
 		if (plugin.IsPlayerInArena(event.getPlayer())) {
-			if (plugin.getArena(event.getPlayer()).isActive) {
+			if (plugin.getArena(event.getPlayer()).isActive()) {
 				event.setCancelled(true);
 			}
 		}

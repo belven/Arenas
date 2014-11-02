@@ -32,10 +32,10 @@ public class PvPArena extends BaseArena {
 
 	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
 			Material m, int TimerPeriod) {
-		super(startLocation, endLocation, ArenaName, Radius, Plugin, TimerPeriod);
-		tm = plugin.teams;
+		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
+		tm = getPlugin().teams;
 		spawnMats.add(m);
-		type = ArenaTypes.PvP;
+		setType(ArenaTypes.PvP);
 		lives = 10;
 	}
 
@@ -43,8 +43,8 @@ public class PvPArena extends BaseArena {
 	public void Activate() {
 		SetPlayers();
 		Lives.clear();
-		if (arenaPlayers.size() != 0) {
-			for (Player p : arenaPlayers) {
+		if (getArenaPlayers().size() != 0) {
+			for (Player p : getArenaPlayers()) {
 				if (tm != null && tm.isInATeam(p) && !Lives.containsKey(tm.getTeam(p).teamName)) {
 					Lives.put(tm.getTeam(p).teamName, lives);
 				} else if (!Lives.containsKey(p.getName())) {
@@ -53,8 +53,8 @@ public class PvPArena extends BaseArena {
 			}
 
 			GetSpawnArea();
-			arenaRunID = UUID.randomUUID();
-			isActive = true;
+			setArenaRunID(UUID.randomUUID());
+			setActive(true);
 			SetPlayersScoreBoards();
 		} else {
 			Deactivate();
@@ -92,17 +92,18 @@ public class PvPArena extends BaseArena {
 
 	public void GetSpawnArea() {
 		Location spawnLocation;
-		spawnArea.clear();
+		getSpawnArea().clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(spawnArenaStartLocation, spawnArenaEndLocation);
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(),
+				getSpawnArenaEndLocation());
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
 				spawnLocation = b.getLocation();
 				spawnLocation = CanSpawnAt(spawnLocation);
-				if (spawnLocation != null && !b.equals(spawnArenaStartLocation)) {
+				if (spawnLocation != null && !b.equals(getSpawnArenaStartLocation())) {
 					Block spawnBlock = spawnLocation.getBlock();
-					spawnArea.add(spawnBlock);
+					getSpawnArea().add(spawnBlock);
 				}
 			}
 		}
@@ -110,10 +111,10 @@ public class PvPArena extends BaseArena {
 
 	@Override
 	public void Deactivate() {
-		arenaRunID = null;
+		setArenaRunID(null);
 		RestoreArena();
-		isActive = false;
-		for (Player p : arenaPlayers) {
+		setActive(false);
+		for (Player p : getArenaPlayers()) {
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		}
 	}
@@ -135,7 +136,7 @@ public class PvPArena extends BaseArena {
 
 		for (String s : Lives.keySet()) {
 			if (Lives.get(s) == 0) {
-				new MessageTimer(arenaPlayers, "Arena " + ArenaName() + " has ended!!").run();
+				new MessageTimer(getArenaPlayers(), "Arena " + ArenaName() + " has ended!!").run();
 				Deactivate();
 			}
 
@@ -148,20 +149,20 @@ public class PvPArena extends BaseArena {
 	}
 
 	public void SetPlayersScoreBoards() {
-		for (Player p : arenaPlayers) {
+		for (Player p : getArenaPlayers()) {
 			p.setScoreboard(GetScoreboard());
 		}
 	}
 
 	@Override
 	public void GoToNextWave() {
-		if (arenaPlayers.size() > 0) {
-			currentRunTimes++;
+		if (getArenaPlayers().size() > 0) {
+			setCurrentRunTimes(getCurrentRunTimes() + 1);
 
-			if (currentRunTimes == 1) {
-				new MessageTimer(arenaPlayers, ArenaName() + " has Started!!").run();
+			if (getCurrentRunTimes() == 1) {
+				new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
 			}
-			new PvPArenaTimer(this).runTaskLater(plugin, timerPeriod);
+			new PvPArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
 		} else {
 			Deactivate();
 		}

@@ -1,6 +1,5 @@
 package belven.arena.timedevents;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -26,22 +25,22 @@ public class ArenaTimer extends BukkitRunnable {
 
 	public ArenaTimer(StandardArena arenaBlock) {
 		ab = arenaBlock;
-		arenaRunID = arenaBlock.arenaRunID;
-		nextWave = arenaBlock.currentRunTimes;
+		arenaRunID = arenaBlock.getArenaRunID();
+		nextWave = arenaBlock.getCurrentRunTimes();
 	}
 
 	@Override
 	public void run() {
-		if (arenaRunID != ab.arenaRunID || nextWave < ab.currentRunTimes) {
+		if (arenaRunID != ab.getArenaRunID() || nextWave < ab.getCurrentRunTimes()) {
 			this.cancel();
-		} else if (!ab.isActive) {
+		} else if (!ab.isActive()) {
 			ab.RemoveMobs();
 			this.cancel();
-		} else if (ab.arenaArea.size() == 0 || ab.arenaPlayers.size() == 0) {
+		} else if (ab.getArenaArea().size() == 0 || ab.getArenaPlayers().size() == 0) {
 			EndArena();
 		} else {
 			CleanUpEntites();
-			if (ab.currentRunTimes >= ab.maxRunTimes) {
+			if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes()) {
 				BeyondLastWave();
 			} else {
 				ab.GoToNextWave();
@@ -51,12 +50,12 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	private void BeyondLastWave() {
-		if (ab.ArenaEntities.size() == 0) {
+		if (ab.getArenaEntities().size() == 0) {
 			ArenaSuccessfull();
-		} else if (ab.currentRunTimes >= ab.maxRunTimes && ab.currentRunTimes % 7 == 0) {
+		} else if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes() && ab.getCurrentRunTimes() % 7 == 0) {
 			SpreadEntities();
 			ArenaHasEntitiesLeft();
-		} else if (ab.ArenaEntities.size() > 0) {
+		} else if (ab.getArenaEntities().size() > 0) {
 			ArenaHasEntitiesLeft();
 		} else {
 			ArenaSuccessfull();
@@ -64,33 +63,33 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	private void SpreadEntities() {
-		for (LivingEntity le : ab.ArenaEntities) {
+		for (LivingEntity le : ab.getArenaEntities()) {
 			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 			le.teleport(spawnLocation);
 		}
 
-		new MessageTimer(ab.arenaPlayers, ChatColor.RED + "Scrambling Mobs").run();
+		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Scrambling Mobs").run();
 	}
 
 	private void ArenaHasEntitiesLeft() {
 		ab.GetPlayersAverageLevel();
-		ab.currentRunTimes++;
-		new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName() + " has " + String.valueOf(ab.ArenaEntities.size())
-				+ " mobs left").run();
+		ab.setCurrentRunTimes(ab.getCurrentRunTimes() + 1);
+		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has "
+				+ String.valueOf(ab.getArenaEntities().size()) + " mobs left").run();
 
 		int delay = Functions.SecondsToTicks(10);
-		new ArenaTimer(ab).runTaskLater(ab.plugin, delay);
+		new ArenaTimer(ab).runTaskLater(ab.getPlugin(), delay);
 		this.cancel();
 	}
 
 	private void CleanUpEntites() {
-		Iterator<LivingEntity> ArenaEntities = ab.ArenaEntities.iterator();
+		Iterator<LivingEntity> ArenaEntities = ab.getArenaEntities().iterator();
 
 		while (ArenaEntities.hasNext()) {
 			LivingEntity le = ArenaEntities.next();
 			if (le != null && le.isDead()) {
 				if (le.hasMetadata("ArenaMob")) {
-					le.removeMetadata("ArenaMob", ab.plugin);
+					le.removeMetadata("ArenaMob", ab.getPlugin());
 				}
 				ArenaEntities.remove();
 			}
@@ -98,17 +97,17 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	public void ArenaSuccessfull() {
-		new BlockRestorer(Material.REDSTONE_BLOCK, ab.deactivateBlock).runTaskLater(ab.plugin,
+		new BlockRestorer(Material.REDSTONE_BLOCK, ab.getDeactivateBlock()).runTaskLater(ab.getPlugin(),
 				Functions.SecondsToTicks(1));
 		// Give arena rewards
 		ab.GiveRewards();
 
 		// check to see if we need to run other linked arenas
-		if (ab.linkedArenas.size() > 0) {
-			for (BaseArena lab : ab.linkedArenas) {
-				if (lab != null && !lab.isActive) {
-					new LinkedArenaTimer(ab, lab)
-							.runTaskLater(ab.plugin, Functions.SecondsToTicks(ab.linkedArenaDelay));
+		if (ab.getLinkedArenas().size() > 0) {
+			for (BaseArena lab : ab.getLinkedArenas()) {
+				if (lab != null && !lab.isActive()) {
+					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(),
+							Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
 				}
 			}
 		}
@@ -118,13 +117,12 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	public void EndArena() {
-		new MessageTimer(ab.arenaPlayers, "Arena " + ab.ArenaName() + " has ended!!").run();
+		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 
-		if (ab.linkedArenas.size() == 0) {
-			List<Player> ArenaPlayers = new ArrayList<Player>();
-			ArenaPlayers.addAll(ab.arenaPlayers);
+		if (ab.getLinkedArenas().size() == 0) {
+			List<Player> ArenaPlayers = ab.getArenaPlayers();
 			for (Player p : ArenaPlayers) {
-				ab.plugin.LeaveArena(p);
+				ab.getPlugin().LeaveArena(p);
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			}
 		}

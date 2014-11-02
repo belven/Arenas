@@ -3,9 +3,11 @@ package belven.arena.timedevents;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena;
 
@@ -14,7 +16,7 @@ public class LinkedArenaTimer extends BukkitRunnable {
 	ArenaManager plugin;
 
 	public LinkedArenaTimer(BaseArena ParentArena, BaseArena ChildArena) {
-		plugin = ParentArena.plugin;
+		plugin = ParentArena.getPlugin();
 		parentArena = ParentArena;
 		childArena = ChildArena;
 	}
@@ -22,16 +24,17 @@ public class LinkedArenaTimer extends BukkitRunnable {
 	@Override
 	public void run() {
 		List<Player> players = new ArrayList<Player>();
-		players.addAll(parentArena.arenaPlayers);
+		players.addAll(parentArena.getArenaPlayers());
 
 		for (Player p : players) {
-			parentArena.arenaPlayers.remove(p);
+			parentArena.getArenaPlayers().remove(p);
 			plugin.PlayersInArenas.remove(p);
-			p.teleport(childArena.arenaWarp.getLocation());
+			Location l = Functions.offsetLocation(childArena.getArenaWarp().getLocation(), 0.5, 0, 0.5);
+			p.teleport(l);
 		}
 
-		if (parentArena.currentChallengeBlock != null) {
-			parentArena.currentChallengeBlock.challengeBlockState.update(true);
+		if (parentArena.getCurrentChallengeBlock() != null) {
+			parentArena.getCurrentChallengeBlock().challengeBlockState.update(true);
 		}
 
 		parentArena.RestoreArena();
