@@ -21,19 +21,18 @@ import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.timedevents.MessageTimer;
 import belven.arena.timedevents.PvPArenaTimer;
-import belven.teams.TeamManager;
 
 public class PvPArena extends BaseArena {
 
 	public HashMap<String, Integer> Lives = new HashMap<String, Integer>();
-	public TeamManager tm;
+	// public TeamManager tm;
 	public List<Material> spawnMats = new ArrayList<Material>();
 	public int lives = 0;
 
 	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
 			Material m, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
-		tm = getPlugin().teams;
+		// tm = getPlugin().teams;
 		spawnMats.add(m);
 		setType(ArenaTypes.PvP);
 		lives = 10;
@@ -45,9 +44,11 @@ public class PvPArena extends BaseArena {
 		Lives.clear();
 		if (getArenaPlayers().size() != 0) {
 			for (Player p : getArenaPlayers()) {
-				if (tm != null && tm.isInATeam(p) && !Lives.containsKey(tm.getTeam(p).teamName)) {
-					Lives.put(tm.getTeam(p).teamName, lives);
-				} else if (!Lives.containsKey(p.getName())) {
+				// if (tm != null && tm.isInATeam(p) &&
+				// !Lives.containsKey(tm.getTeam(p).teamName)) {
+				// Lives.put(tm.getTeam(p).teamName, lives);
+				// } else
+				if (!Lives.containsKey(p.getName())) {
 					Lives.put(p.getName(), lives);
 				}
 			}
@@ -123,11 +124,11 @@ public class PvPArena extends BaseArena {
 		String heighestKills = "";
 		String key = "";
 
-		if (tm != null && tm.isInATeam(p)) {
-			key = tm.getTeam(p).teamName;
-		} else {
-			key = p.getName();
-		}
+		// if (tm != null && tm.isInATeam(p)) {
+		// key = tm.getTeam(p).teamName;
+		// } else {
+		key = p.getName();
+		// }
 
 		int newLives = Lives.get(key) - 1;
 		Lives.put(key, newLives);

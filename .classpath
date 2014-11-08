@@ -4,7 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/bukkit.jar"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/WorldEdit.jar"/>
-	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/BelvensTeams.jar"/>
 	<classpathentry kind="lib" path="C:/Users/sam/Desktop/BukkitServer/plugins/Resources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

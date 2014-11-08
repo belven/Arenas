@@ -69,6 +69,8 @@ public abstract class BaseArena extends BaseArenaData {
 					p.getInventory().addItem(is);
 				}
 			}
+
+			p.removeMetadata("InArena", plugin);
 		}
 	}
 
@@ -89,7 +91,8 @@ public abstract class BaseArena extends BaseArenaData {
 					BaseArena ab = (BaseArena) data.value();
 					if (data != null && ab == this) {
 						ab.getArenaPlayers().add(p);
-						getPlugin().PlayersInArenas.put(p, ab);
+						getPlugin().PlayersInArenas.put(p, this);
+						getPlugin().setPlayerMetaData(this);
 					}
 				}
 			}
@@ -133,9 +136,7 @@ public abstract class BaseArena extends BaseArenaData {
 	}
 
 	public static Block GetRandomArenaSpawnBlock(BaseArena ab) {
-		Block b;
-		b = ab.getSpawnArea().get(new Random().nextInt(ab.getSpawnArea().size()));
-		return b;
+		return ab.getSpawnArea().get(new Random().nextInt(ab.getSpawnArea().size()));
 	}
 
 	public static Location GetRandomArenaSpawnLocation(BaseArena ab) {

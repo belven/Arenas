@@ -33,7 +33,7 @@ public class Wave {
 		SpawnMobs();
 		renewPlayerWeapons();
 
-		Bukkit.getPluginManager().callEvent(new ArenaBlockNewWave(this));
+		Bukkit.getPluginManager().callEvent(new ArenaBlockNewWave(ab, this));
 	}
 
 	public void EliteMob(LivingEntity currentEntity) {

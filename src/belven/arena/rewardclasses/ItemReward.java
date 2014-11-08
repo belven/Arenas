@@ -66,23 +66,24 @@ public class ItemReward extends Reward {
 			}
 		});
 
-		for (Player p : players) {
-			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-			int count = 0;
+		int count = 0;
 
-			for (Item i : rewards) {
-				if (i.ShouldGive(players.size())) {
-					count++;
-					int amountToGive = amountOfPlayers * 2 - i.getItemChance().ordinal();
-					i.getItem().setAmount(amountToGive);
+		for (Item i : rewards) {
+			if (i.ShouldGive(players.size())) {
+				count++;
+				int amountToGive = amountOfPlayers * 2 - i.getItemChance().ordinal();
+				i.getItem().setAmount(amountToGive);
 
-					messtext += i.getType().name() + " " + String.valueOf(i.getAmount() + " ");
+				messtext += i.getType().name() + " " + String.valueOf(i.getAmount() + " ");
+
+				for (Player p : players) {
+					p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 					p.getInventory().addItem(i.getItem());
 				}
+			}
 
-				if (count >= amountOfPlayers) {
-					break;
-				}
+			if (count >= amountOfPlayers) {
+				break;
 			}
 		}
 

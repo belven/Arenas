@@ -35,6 +35,7 @@ import org.bukkit.potion.PotionType;
 import resources.EntityFunctions;
 import resources.Functions;
 import resources.Gear;
+import resources.Group;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.PvPArena;
@@ -46,7 +47,6 @@ import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
 import belven.arena.rewardclasses.Item.ChanceLevel;
-import belven.teams.TeamManager;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
@@ -73,6 +73,8 @@ public class ArenaManager extends JavaPlugin {
 	public List<ChallengeBlock> challengeBlocks = new ArrayList<ChallengeBlock>();
 
 	private static String preFix = "BelvensArenas.";
+	// public TeamManager teams = (TeamManager)
+	// Bukkit.getServer().getPluginManager().getPlugin("BelvensTeams");
 
 	static {
 		// Item Chances
@@ -177,8 +179,6 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	public TeamManager teams = (TeamManager) Bukkit.getServer().getPluginManager().getPlugin("BelvensTeams");
-
 	private ItemStack AddItemEnchantments(ItemStack is, String Path) {
 		Set<String> enchants = getConfig().getConfigurationSection(Path + ".Enchantments").getKeys(false);
 
@@ -206,6 +206,14 @@ public class ArenaManager extends JavaPlugin {
 			} else {
 				player.sendMessage("Can't find arena " + arenaToAdd);
 			}
+		}
+	}
+
+	public void setPlayerMetaData(BaseArena ba) {
+		for (Player p : ba.getArenaPlayers()) {
+			p.setMetadata("InArena",
+					new FixedMetadataValue(this, new Group(ba.getArenaPlayers(), ba.getName(),
+							ba.getType() == ArenaTypes.PvP)));
 		}
 	}
 
@@ -617,6 +625,7 @@ public class ArenaManager extends JavaPlugin {
 			BaseArena ab = getArena(p);
 			ab.getArenaPlayers().remove(p);
 			PlayersInArenas.remove(p);
+			setPlayerMetaData(ab);
 
 			if (ab.getArenaPlayers().size() == 0) {
 				ab.Deactivate();
@@ -1274,6 +1283,7 @@ public class ArenaManager extends JavaPlugin {
 		if (ab.isActive()) {
 
 			PlayersInArenas.put(p, ab);
+			setPlayerMetaData(ab);
 
 			if (!ab.getArenaPlayers().contains(p)) {
 				ab.getArenaPlayers().add(p);

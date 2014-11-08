@@ -109,12 +109,13 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerMoveEvent(PlayerMoveEvent event) {
-		if (plugin.IsPlayerInArena(event.getPlayer())) {
-			BaseArena ab = plugin.getArena(event.getPlayer());
+		Player p = event.getPlayer();
+		if (plugin.IsPlayerInArena(p)) {
+			BaseArena ab = plugin.getArena(p);
 
 			if (ab.getType() != ArenaTypes.Temp && event.getTo().getWorld() == ab.getArenaWarp().getWorld()) {
 				if (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
-					plugin.LeaveArena(event.getPlayer());
+					p.teleport(BaseArena.GetRandomArenaSpawnLocation(ab));
 				}
 			}
 		}
@@ -164,7 +165,6 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerDeathEvent(PlayerDeathEvent event) {
 		Player p = event.getEntity();
-		event.getDrops().clear();
 
 		event.setNewLevel(p.getLevel());
 
@@ -181,9 +181,12 @@ public class PlayerListener implements Listener {
 			playerEffects.put(p.getName(), p.getActivePotionEffects());
 		}
 
-		PlayerInventory pi = p.getInventory();
-		playerInventories.put(p.getName(), pi.getContents());
-		playerArmour.put(p.getName(), p.getInventory().getArmorContents());
+		if (!playerInventories.containsKey(p)) {
+			PlayerInventory pi = p.getInventory();
+			playerInventories.put(p.getName(), pi.getContents());
+			playerArmour.put(p.getName(), p.getInventory().getArmorContents());
+			event.getDrops().clear();
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
