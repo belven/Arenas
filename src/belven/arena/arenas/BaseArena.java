@@ -26,12 +26,9 @@ public abstract class BaseArena extends BaseArenaData {
 
 	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
+
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		getPlugin().currentArenaBlocks.add(this);
-	}
-
-	public BaseArena(BaseArenaData bad) {
-		super(bad);
 	}
 
 	public String ArenaName() {
@@ -97,6 +94,8 @@ public abstract class BaseArena extends BaseArenaData {
 				}
 			}
 		}
+
+		setPlayers(getArenaPlayers());
 	}
 
 	public void GetArenaArea() {

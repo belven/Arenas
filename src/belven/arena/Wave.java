@@ -67,6 +67,8 @@ public class Wave {
 		}
 
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
+		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
+		ab.getArenaEntities().add(currentEntity);
 
 		if (ab.getCurrentRunTimes() > 0 && ab.getEliteWave() > 0) {
 			if (ab.getCurrentRunTimes() % ab.getEliteWave() == 0) {
@@ -76,8 +78,6 @@ public class Wave {
 			currentEntity.getEquipment().setItemInHand(new ItemStack(Material.BOW));
 		}
 
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
-		ab.getArenaEntities().add(currentEntity);
 	}
 
 	public void renewPlayerWeapons() {

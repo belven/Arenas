@@ -11,12 +11,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import resources.Functions;
+import resources.Group;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.resources.SavedBlock;
 
-public class BaseArenaData {
+public class BaseArenaData extends Group {
 	protected ArenaManager plugin;
 	protected boolean isActive = false;
 	protected ArenaTypes type;
@@ -47,6 +48,7 @@ public class BaseArenaData {
 
 	public BaseArenaData(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
+		super(new ArrayList<Player>(), ArenaName);
 		setSpawnArenaStartLocation(startLocation);
 		setSpawnArenaEndLocation(endLocation);
 		setArenaStartLocation(startLocation);
@@ -62,25 +64,28 @@ public class BaseArenaData {
 		setMaxRunTimes(5);
 	}
 
-	public BaseArenaData(boolean isActive, ChallengeBlock currentChallengeBlock, int challengeBlockWave,
-			List<Block> arenaArea, List<SavedBlock> originalBlocks, List<Player> arenaPlayers, List<Block> spawnArea,
-			List<BaseArena> linkedArenas, int currentRunTimes, List<ItemStack> arenaRewards, UUID arenaRunID) {
-		this.isActive = isActive;
-		this.currentChallengeBlock = currentChallengeBlock;
-		ChallengeBlockWave = challengeBlockWave;
-		this.arenaArea = arenaArea;
-		this.originalBlocks = originalBlocks;
-		this.arenaPlayers = arenaPlayers;
-		this.spawnArea = spawnArea;
-		this.linkedArenas = linkedArenas;
-		this.currentRunTimes = currentRunTimes;
-		this.arenaRewards = arenaRewards;
-		this.arenaRunID = arenaRunID;
-	}
+	// public BaseArenaData(boolean isActive, ChallengeBlock
+	// currentChallengeBlock, int challengeBlockWave,
+	// List<Block> arenaArea, List<SavedBlock> originalBlocks, List<Player>
+	// arenaPlayers, List<Block> spawnArea,
+	// List<BaseArena> linkedArenas, int currentRunTimes, List<ItemStack>
+	// arenaRewards, UUID arenaRunID) {
+	// this.isActive = isActive;
+	// this.currentChallengeBlock = currentChallengeBlock;
+	// ChallengeBlockWave = challengeBlockWave;
+	// this.arenaArea = arenaArea;
+	// this.originalBlocks = originalBlocks;
+	// this.arenaPlayers = arenaPlayers;
+	// this.spawnArea = spawnArea;
+	// this.linkedArenas = linkedArenas;
+	// this.currentRunTimes = currentRunTimes;
+	// this.arenaRewards = arenaRewards;
+	// this.arenaRunID = arenaRunID;
+	// }
 
-	public BaseArenaData(BaseArenaData bad) {
-		setValues(bad, this);
-	}
+	// public BaseArenaData(BaseArenaData bad) {
+	// setValues(bad, this);
+	// }
 
 	public void setValues(Object exampleClassWithValues, Object exampleClassToGetValues) {
 		try {
@@ -127,10 +132,12 @@ public class BaseArenaData {
 		this.type = type;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
