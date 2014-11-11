@@ -129,8 +129,8 @@ public abstract class BaseArena extends BaseArenaData {
 		setAverageLevel(totalLevels / getArenaPlayers().size());
 		setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
 
-		if (getMaxMobCounter() > getArenaPlayers().size() * 15) {
-			setMaxMobCounter(getArenaPlayers().size() * 15);
+		if (getMaxMobCounter() > getArenaPlayers().size() * 7) {
+			setMaxMobCounter(getArenaPlayers().size() * 7);
 		}
 	}
 

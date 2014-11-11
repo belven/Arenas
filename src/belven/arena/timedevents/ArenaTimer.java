@@ -1,7 +1,6 @@
 package belven.arena.timedevents;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -120,8 +119,9 @@ public class ArenaTimer extends BukkitRunnable {
 		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 
 		if (ab.getLinkedArenas().size() == 0) {
-			List<Player> ArenaPlayers = ab.getArenaPlayers();
-			for (Player p : ArenaPlayers) {
+			Iterator<Player> ArenaPlayers = ab.getArenaPlayers().iterator();
+			while (ArenaPlayers.hasNext()) {
+				Player p = ArenaPlayers.next();
 				ab.getPlugin().LeaveArena(p);
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			}

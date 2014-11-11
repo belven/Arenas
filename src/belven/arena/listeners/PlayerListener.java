@@ -47,11 +47,11 @@ public class PlayerListener implements Listener {
 	private final ArenaManager plugin;
 	Random randomGenerator = new Random();
 
-	public HashMap<String, Location> warpLocations = new HashMap<String, Location>();
-	public ArrayList<String> playerDeathProtection = new ArrayList<String>();
-	public HashMap<String, ItemStack[]> playerInventories = new HashMap<String, ItemStack[]>();
-	public HashMap<String, ItemStack[]> playerArmour = new HashMap<String, ItemStack[]>();
-	public HashMap<String, Collection<PotionEffect>> playerEffects = new HashMap<String, Collection<PotionEffect>>();
+	public HashMap<String, Location> warpLocations = new HashMap<>();
+	public ArrayList<String> playerDeathProtection = new ArrayList<>();
+	public HashMap<String, ItemStack[]> playerInventories = new HashMap<>();
+	public HashMap<String, ItemStack[]> playerArmour = new HashMap<>();
+	public HashMap<String, Collection<PotionEffect>> playerEffects = new HashMap<>();
 
 	public PlayerListener(ArenaManager instance) {
 		plugin = instance;
@@ -162,9 +162,15 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerDeathEvent(PlayerDeathEvent event) {
 		Player p = event.getEntity();
+
+		if (!playerInventories.containsKey(p)) {
+			PlayerInventory pi = p.getInventory();
+			playerInventories.put(p.getName(), pi.getContents());
+			playerArmour.put(p.getName(), p.getInventory().getArmorContents());
+		}
 
 		event.setNewLevel(p.getLevel());
 
@@ -180,13 +186,8 @@ public class PlayerListener implements Listener {
 			warpLocations.put(p.getName(), spawnLocation);
 			playerEffects.put(p.getName(), p.getActivePotionEffects());
 		}
+		event.getDrops().clear();
 
-		if (!playerInventories.containsKey(p)) {
-			PlayerInventory pi = p.getInventory();
-			playerInventories.put(p.getName(), pi.getContents());
-			playerArmour.put(p.getName(), p.getInventory().getArmorContents());
-			event.getDrops().clear();
-		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -208,10 +209,12 @@ public class PlayerListener implements Listener {
 
 		if (playerInventories.containsKey(currentPlayer.getName())) {
 			currentPlayer.getInventory().setContents(playerInventories.get(currentPlayer.getName()));
+			playerInventories.remove(currentPlayer.getName());
 		}
 
 		if (playerArmour.containsKey(currentPlayer.getName())) {
 			currentPlayer.getInventory().setArmorContents(playerArmour.get(currentPlayer.getName()));
+			playerArmour.remove(currentPlayer.getName());
 		}
 	}
 
