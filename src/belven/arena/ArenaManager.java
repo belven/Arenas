@@ -14,6 +14,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -31,6 +33,7 @@ import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.util.BlockIterator;
 
 import resources.EntityFunctions;
 import resources.Functions;
@@ -159,6 +162,7 @@ public class ArenaManager extends JavaPlugin {
 		arenaPaths.add(13, ".End Location");
 		arenaPaths.add(14, ".Type");
 		arenaPaths.add(15, ".Materials");
+		arenaPaths.add(16, ".Chest");
 	}
 
 	public static HashMap<Material, ChanceLevel> getItemChances() {
@@ -370,6 +374,11 @@ public class ArenaManager extends JavaPlugin {
 			SetArenaArea(player);
 			return true;
 
+		case "setarenachest":
+		case "sac":
+			SetArenaChest(player);
+			return true;
+
 		case "setarenarewards":
 		case "sar":
 			SetArenaRewards(player);
@@ -463,6 +472,22 @@ public class ArenaManager extends JavaPlugin {
 			}
 		}
 		return false;
+	}
+
+	private void SetArenaChest(Player p) {
+		int count = 0;
+		if (HasArenaBlockSelected(p)) {
+			BlockIterator bi = new BlockIterator(p);
+			while (bi.hasNext() && count <= 5) {
+				BlockState next = bi.next().getState();
+				if (next instanceof Chest) {
+					GetSelectedArenaBlock(p).setArenaChest(next.getLocation());
+					p.sendMessage("Arena now uses chest for rewards!");
+					break;
+				}
+				count++;
+			}
+		}
 	}
 
 	private void ForceStartArena(Player p) {
@@ -714,6 +739,8 @@ public class ArenaManager extends JavaPlugin {
 		MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
 		spawnMats.Add(EntityType.ZOMBIE, mat);
 		spawnMats.Add(EntityType.SKELETON, mat);
+		spawnMats.Add(EntityType.SPIDER, mat);
+		spawnMats.Add(EntityType.SLIME, mat);
 		return spawnMats;
 	}
 
@@ -834,6 +861,12 @@ public class ArenaManager extends JavaPlugin {
 
 		Location AreaEndLocation = StringToLocation(con.getString(path + arenaPaths.get(13)), world);
 
+		Location chestLocation = null;
+
+		if (con.contains(path + arenaPaths.get(16))) {
+			chestLocation = StringToLocation(con.getString(path + arenaPaths.get(16)), world);
+		}
+
 		BaseArena ab = null;
 
 		if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("standard")) {
@@ -860,7 +893,13 @@ public class ArenaManager extends JavaPlugin {
 			ab.setArenaWarp(arenaWarp);
 			ab.setArenaStartLocation(AreaStartLocation);
 			ab.setArenaEndLocation(AreaEndLocation);
-			ab.setArenaRewards(GetArenaRewards(ArenaName, path));
+
+			if (chestLocation != null) {
+				ab.setArenaChest(chestLocation);
+			} else {
+				ab.setArenaRewards(GetArenaRewards(ArenaName, path));
+			}
+
 			ab.setLinkedArenas(GetArenaLinkedArenas(ArenaName));
 			ab.setBlockToActivate(blockToActivate);
 			ab.setDeactivateBlock(deactivateBlock);
@@ -1013,8 +1052,13 @@ public class ArenaManager extends JavaPlugin {
 
 		getConfig().set(path + arenaPaths.get(14), ab.getType().name());
 
+		if (ab.getArenaChest() != null) {
+			getConfig().set(path + arenaPaths.get(16), LocationToString(ab.getArenaChest()));
+		} else {
+			SaveArenaRewards(ab);
+		}
+
 		SaveLinkedArenas(ab);
-		SaveArenaRewards(ab);
 
 		if (ab.getType() != ArenaTypes.PvP) {
 			StandardArena sab = (StandardArena) ab;

@@ -2,11 +2,14 @@ package belven.arena.arenas;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -36,6 +39,7 @@ public class BaseArenaData extends Group {
 	protected Location spawnArenaEndLocation;
 	protected Location ArenaStartLocation;
 	protected Location ArenaEndLocation;
+	protected Location arenaChest;
 	protected int maxRunTimes = 0;
 	protected int timerPeriod = 0;
 	protected int eliteWave = 0;
@@ -311,7 +315,20 @@ public class BaseArenaData extends Group {
 	}
 
 	public List<ItemStack> getArenaRewards() {
-		return arenaRewards;
+		List<ItemStack> rewards = new ArrayList<>();
+
+		if (getArenaChest() != null) {
+			BlockState state = getArenaChest().getBlock().getState();
+
+			if (state instanceof Chest) {
+				ItemStack[] items = ((Chest) state).getInventory().getContents();
+				Collections.addAll(rewards, items);
+				return rewards;
+			}
+		}
+		rewards = arenaRewards;
+
+		return rewards;
 	}
 
 	public void setArenaRewards(List<ItemStack> arenaRewards) {
@@ -324,5 +341,13 @@ public class BaseArenaData extends Group {
 
 	public void setArenaRunID(UUID arenaRunID) {
 		this.arenaRunID = arenaRunID;
+	}
+
+	public Location getArenaChest() {
+		return arenaChest;
+	}
+
+	public void setArenaChest(Location arenaChest) {
+		this.arenaChest = arenaChest;
 	}
 }

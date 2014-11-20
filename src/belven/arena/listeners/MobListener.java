@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.metadata.MetadataValue;
@@ -44,6 +45,11 @@ public class MobListener implements Listener {
 		if (event.getEntity().hasMetadata("ArenaMob") && event.getDuration() == 8) {
 			event.setCancelled(true);
 		}
+	}
+
+	@EventHandler
+	public void onEntityExplodeEvent(EntityExplodeEvent event) {
+		event.blockList().clear();
 	}
 
 	@SuppressWarnings("deprecation")

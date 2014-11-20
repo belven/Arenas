@@ -71,7 +71,7 @@ public class ItemReward extends Reward {
 		for (Item i : rewards) {
 			if (i.ShouldGive(players.size())) {
 				count++;
-				int amountToGive = amountOfPlayers * 2 - i.getItemChance().ordinal();
+				int amountToGive = amountOfPlayers * 10 / i.getItemChance().ordinal();
 				i.getItem().setAmount(amountToGive);
 
 				messtext += i.getType().name() + " " + String.valueOf(i.getAmount() + " ");
@@ -82,7 +82,7 @@ public class ItemReward extends Reward {
 				}
 			}
 
-			if (count >= amountOfPlayers) {
+			if (count >= 4) {
 				break;
 			}
 		}

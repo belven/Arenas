@@ -96,10 +96,11 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	public void ArenaSuccessfull() {
-		new BlockRestorer(Material.REDSTONE_BLOCK, ab.getDeactivateBlock()).runTaskLater(ab.getPlugin(),
-				Functions.SecondsToTicks(1));
 		// Give arena rewards
 		ab.GiveRewards();
+
+		new BlockRestorer(Material.REDSTONE_BLOCK, ab.getDeactivateBlock()).runTaskLater(ab.getPlugin(),
+				Functions.SecondsToTicks(1));
 
 		// check to see if we need to run other linked arenas
 		if (ab.getLinkedArenas().size() > 0) {
@@ -117,6 +118,7 @@ public class ArenaTimer extends BukkitRunnable {
 
 	public void EndArena() {
 		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
+		ab.Deactivate();
 
 		if (ab.getLinkedArenas().size() == 0) {
 			Iterator<Player> ArenaPlayers = ab.getArenaPlayers().iterator();
@@ -126,7 +128,6 @@ public class ArenaTimer extends BukkitRunnable {
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			}
 		}
-		ab.Deactivate();
 		this.cancel();
 	}
 }

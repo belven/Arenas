@@ -48,7 +48,7 @@ public abstract class BaseArena extends BaseArenaData {
 
 	public void GiveRewards() {
 		int count = getArenaPlayers().size();
-		Iterator<Player> ArenaPlayers = getArenaPlayers().iterator();
+		Iterator<Player> ArenaPlayers = getArenaPlayers().listIterator();
 
 		while (ArenaPlayers.hasNext()) {
 			Player p = ArenaPlayers.next();
@@ -61,6 +61,7 @@ public abstract class BaseArena extends BaseArenaData {
 				}
 			}
 
+			p.sendMessage("Giving rewards");
 			for (ItemStack is : getArenaRewards()) {
 				if (is != null) {
 					p.getInventory().addItem(is);
