@@ -84,14 +84,14 @@ public class MobListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
 		if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
 			event.setCancelled(false);
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeathEvent(EntityDeathEvent event) {
 		Entity e = event.getEntity();
 		List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, e);

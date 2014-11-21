@@ -2,21 +2,20 @@ package belven.arena.timedevents;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BlockRestorer extends BukkitRunnable {
-	Material origanalBlockMat;
-	Block blockToChange;
+	BlockState origanalBlockMat;
 
 	public BlockRestorer(Material matToChangeTo, Block blockToChange) {
-		origanalBlockMat = blockToChange.getType();
-		this.blockToChange = blockToChange;
+		origanalBlockMat = blockToChange.getState();
 		blockToChange.setType(matToChangeTo);
 	}
 
 	@Override
 	public void run() {
-		blockToChange.setType(origanalBlockMat);
+		origanalBlockMat.update(true);
 		this.cancel();
 	}
 }

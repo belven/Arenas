@@ -3,6 +3,7 @@ package belven.arena.arenas;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -42,12 +43,9 @@ public class PvPArena extends BaseArena {
 	public void Activate() {
 		SetPlayers();
 		Lives.clear();
+
 		if (getArenaPlayers().size() != 0) {
 			for (Player p : getArenaPlayers()) {
-				// if (tm != null && tm.isInATeam(p) &&
-				// !Lives.containsKey(tm.getTeam(p).teamName)) {
-				// Lives.put(tm.getTeam(p).teamName, lives);
-				// } else
 				if (!Lives.containsKey(p.getName())) {
 					Lives.put(p.getName(), lives);
 				}
@@ -115,7 +113,11 @@ public class PvPArena extends BaseArena {
 		setArenaRunID(null);
 		RestoreArena();
 		setActive(false);
-		for (Player p : getArenaPlayers()) {
+
+		ListIterator<Player> players = getArenaPlayers().listIterator();
+
+		while (players.hasNext()) {
+			Player p = players.next();
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		}
 	}

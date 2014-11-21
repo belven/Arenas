@@ -2,6 +2,7 @@ package belven.arena.arenas;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 import java.util.UUID;
 
@@ -142,8 +143,10 @@ public class StandardArena extends BaseArena {
 		if (getCurrentChallengeBlock() != null) {
 			getCurrentChallengeBlock().challengeBlockState.update(true);
 		}
+		ListIterator<Player> players = getArenaPlayers().listIterator();
 
-		for (Player p : getArenaPlayers()) {
+		while (players.hasNext()) {
+			Player p = players.next();
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		}
 	}

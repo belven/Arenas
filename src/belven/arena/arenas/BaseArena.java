@@ -46,7 +46,7 @@ public abstract class BaseArena extends BaseArenaData {
 		}
 	}
 
-	public void GiveRewards() {
+	public synchronized void GiveRewards() {
 		int count = getArenaPlayers().size();
 		Iterator<Player> ArenaPlayers = getArenaPlayers().listIterator();
 

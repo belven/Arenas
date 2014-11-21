@@ -203,6 +203,8 @@ public class BaseArenaData extends Group {
 	}
 
 	public List<Player> getArenaPlayers() {
+		// List<Player> tempPlayers = new ArrayList<Player>();
+		// tempPlayers.addAll(arenaPlayers);
 		return arenaPlayers;
 	}
 

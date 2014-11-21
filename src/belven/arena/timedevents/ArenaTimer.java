@@ -1,5 +1,6 @@
 package belven.arena.timedevents;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -95,7 +96,7 @@ public class ArenaTimer extends BukkitRunnable {
 		}
 	}
 
-	public void ArenaSuccessfull() {
+	public synchronized void ArenaSuccessfull() {
 		// Give arena rewards
 		ab.GiveRewards();
 
@@ -116,16 +117,20 @@ public class ArenaTimer extends BukkitRunnable {
 		EndArena();
 	}
 
-	public void EndArena() {
+	public synchronized void EndArena() {
 		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 		ab.Deactivate();
 
 		if (ab.getLinkedArenas().size() == 0) {
-			Iterator<Player> ArenaPlayers = ab.getArenaPlayers().iterator();
-			while (ArenaPlayers.hasNext()) {
-				Player p = ArenaPlayers.next();
-				ab.getPlugin().LeaveArena(p);
-				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			Iterator<Player> players = ab.getArenaPlayers().iterator();
+			while (players.hasNext()) {
+				try {
+					Player p = players.next();
+					ab.getPlugin().LeaveArena(p);
+					p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+				} catch (ConcurrentModificationException e) {
+					break;
+				}
 			}
 		}
 		this.cancel();
