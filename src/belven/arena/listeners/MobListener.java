@@ -88,6 +88,11 @@ public class MobListener implements Listener {
 	public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
 		if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
 			event.setCancelled(false);
+
+			// if (event.getSpawnReason() == SpawnReason.SLIME_SPLIT) {
+			// Slime s = (Slime) event.getEntity();
+			//
+			// }
 		}
 	}
 

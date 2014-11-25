@@ -49,6 +49,7 @@ public class BaseArenaData extends Group {
 	protected int currentRunTimes = 0;
 	protected List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
 	protected UUID arenaRunID;
+	protected List<UUID> editors = new ArrayList<>();
 
 	public BaseArenaData(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
@@ -351,5 +352,13 @@ public class BaseArenaData extends Group {
 
 	public void setArenaChest(Location arenaChest) {
 		this.arenaChest = arenaChest;
+	}
+
+	public List<UUID> getEditors() {
+		return editors != null ? editors : new ArrayList<UUID>();
+	}
+
+	public void setEditors(List<UUID> editors) {
+		this.editors = editors;
 	}
 }

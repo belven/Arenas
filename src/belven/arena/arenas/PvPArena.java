@@ -126,11 +126,7 @@ public class PvPArena extends BaseArena {
 		String heighestKills = "";
 		String key = "";
 
-		// if (tm != null && tm.isInATeam(p)) {
-		// key = tm.getTeam(p).teamName;
-		// } else {
 		key = p.getName();
-		// }
 
 		int newLives = Lives.get(key) - 1;
 		Lives.put(key, newLives);
@@ -153,6 +149,9 @@ public class PvPArena extends BaseArena {
 
 	public void SetPlayersScoreBoards() {
 		for (Player p : getArenaPlayers()) {
+			if (!Lives.containsKey(p.getName())) {
+				Lives.put(p.getName(), lives);
+			}
 			p.setScoreboard(GetScoreboard());
 		}
 	}
