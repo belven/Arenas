@@ -5,7 +5,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 
-import resources.Gear;
+import belven.resources.Gear;
 
 public class BossMob {
 	public EntityType BossType = EntityType.ZOMBIE;

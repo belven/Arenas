@@ -8,10 +8,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import resources.Functions;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.PvPArena;
 import belven.arena.events.ArenaSuccessful;
+import belven.resources.Functions;
 
 public class PvPArenaTimer extends BukkitRunnable {
 	private PvPArena ab;

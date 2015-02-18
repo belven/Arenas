@@ -6,8 +6,8 @@ import java.util.List;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import resources.Gear;
 import belven.arena.arenas.BaseArena;
+import belven.resources.Gear;
 
 public class EliteMobCollection {
 	public BaseArena ab;

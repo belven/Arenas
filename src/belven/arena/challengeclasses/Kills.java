@@ -16,10 +16,10 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import resources.Functions;
 import belven.arena.MDM;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
+import belven.resources.Functions;
 
 public class Kills extends ChallengeType {
 	public static HashMap<EntityType, Integer> GetRandomEntities(StandardArena ab) {

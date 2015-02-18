@@ -36,10 +36,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
-import resources.EntityFunctions;
-import resources.Functions;
-import resources.Gear;
-import resources.Group;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.PvPArena;
@@ -51,6 +47,10 @@ import belven.arena.listeners.BlockListener;
 import belven.arena.listeners.MobListener;
 import belven.arena.listeners.PlayerListener;
 import belven.arena.rewardclasses.Item.ChanceLevel;
+import belven.resources.EntityFunctions;
+import belven.resources.Functions;
+import belven.resources.Gear;
+import belven.resources.Group;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;

@@ -2,7 +2,7 @@ package belven.arena;
 
 import org.bukkit.entity.EntityType;
 
-import resources.Gear;
+import belven.resources.Gear;
 
 public class EliteMob {
 	public EntityType type = EntityType.ZOMBIE;

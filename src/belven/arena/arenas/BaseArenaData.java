@@ -13,12 +13,12 @@ import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import resources.Functions;
-import resources.Group;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.resources.SavedBlock;
+import belven.resources.Functions;
+import belven.resources.Group;
 
 public class BaseArenaData extends Group {
 	protected ArenaManager plugin;

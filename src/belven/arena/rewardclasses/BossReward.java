@@ -9,11 +9,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import resources.Gear;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.timedevents.MessageTimer;
+import belven.resources.Gear;
 
 public class BossReward extends Reward {
 	public EntityType boss;

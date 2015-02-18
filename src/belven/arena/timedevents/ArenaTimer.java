@@ -12,10 +12,10 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import resources.Functions;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaSuccessful;
+import belven.resources.Functions;
 
 public class ArenaTimer extends BukkitRunnable {
 	private StandardArena ab;

@@ -22,7 +22,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
@@ -32,8 +31,6 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import resources.EntityFunctions;
-import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
@@ -42,6 +39,8 @@ import belven.arena.arenas.PvPArena;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
 import belven.arena.challengeclasses.PlayerSacrifice;
+import belven.resources.EntityFunctions;
+import belven.resources.Functions;
 
 public class PlayerListener implements Listener {
 	private final ArenaManager plugin;
@@ -107,19 +106,16 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void onPlayerMoveEvent(PlayerMoveEvent event) {
-		Player p = event.getPlayer();
-		if (plugin.IsPlayerInArena(p)) {
-			BaseArena ab = plugin.getArena(p);
-
-			if (ab.getType() != ArenaTypes.Temp && event.getTo().getWorld() == ab.getArenaWarp().getWorld()) {
-				if (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
-					p.teleport(BaseArena.GetRandomArenaSpawnLocation(ab));
-				}
-			}
-		}
-	}
+	/*
+	 * @EventHandler public void onPlayerMoveEvent(PlayerMoveEvent event) {
+	 * Player p = event.getPlayer(); if (plugin.IsPlayerInArena(p)) { BaseArena
+	 * ab = plugin.getArena(p);
+	 * 
+	 * if (ab.getType() != ArenaTypes.Temp && event.getTo().getWorld() ==
+	 * ab.getArenaWarp().getWorld()) { if
+	 * (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
+	 * p.teleport(BaseArena.GetRandomArenaSpawnLocation(ab)); } } } }
+	 */
 
 	@EventHandler
 	public void onPlayerVelocityEvent(PlayerVelocityEvent event) {

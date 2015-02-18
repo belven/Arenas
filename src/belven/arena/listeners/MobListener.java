@@ -61,8 +61,8 @@ public class MobListener implements Listener {
 
 		if (event.getEntityType() == EntityType.ARROW) {
 			Arrow a = (Arrow) event.getEntity();
-			if (a.getShooter() != null && a.getShooter().getType() == EntityType.SKELETON) {
-				LivingEntity le = a.getShooter();
+			if (a.getShooter() != null && ((LivingEntity) a.getShooter()).getType() == EntityType.SKELETON) {
+				LivingEntity le = (LivingEntity) a.getShooter();
 				if (le.hasMetadata("ArenaMob")) {
 					a.remove();
 				}

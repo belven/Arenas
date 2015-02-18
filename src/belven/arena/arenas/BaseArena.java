@@ -12,12 +12,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
-import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
+import belven.resources.Functions;
 
 public abstract class BaseArena extends BaseArenaData {
 	public enum ArenaTypes {

@@ -18,10 +18,10 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.timedevents.MessageTimer;
 import belven.arena.timedevents.PvPArenaTimer;
+import belven.resources.Functions;
 
 public class PvPArena extends BaseArena {
 

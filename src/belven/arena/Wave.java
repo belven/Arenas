@@ -16,13 +16,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import resources.EntityFunctions;
-import resources.Gear;
-import resources.MaterialFunctions;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.timedevents.MessageTimer;
+import belven.resources.EntityFunctions;
+import belven.resources.Gear;
+import belven.resources.MaterialFunctions;
 
 public class Wave {
 	private StandardArena ab;

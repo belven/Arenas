@@ -14,7 +14,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import resources.Functions;
 import belven.arena.ArenaManager;
 import belven.arena.BossMob;
 import belven.arena.EliteMobCollection;
@@ -23,6 +22,7 @@ import belven.arena.Wave;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.timedevents.ArenaTimer;
 import belven.arena.timedevents.MessageTimer;
+import belven.resources.Functions;
 
 public class StandardArena extends BaseArena {
 
