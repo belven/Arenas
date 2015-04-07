@@ -9,7 +9,7 @@ public class TempArena extends StandardArena {
 
 	public TempArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
 			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
-		super(startLocation, endLocation, ArenaName, Radius, mobToMat, Plugin, TimerPeriod);
+		super(startLocation, endLocation, ArenaName, mobToMat, Plugin, TimerPeriod);
 
 		Activate();
 		setType(ArenaTypes.Temp);

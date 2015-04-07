@@ -31,8 +31,8 @@ public class StandardArena extends BaseArena {
 	protected List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();
 	protected EliteMobCollection emc = new EliteMobCollection(this);
 
-	public StandardArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
-			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
+	public StandardArena(Location startLocation, Location endLocation, String ArenaName, MobToMaterialCollecton mobToMat,
+			ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		MobToMat = mobToMat;
 		setType(ArenaTypes.Standard);

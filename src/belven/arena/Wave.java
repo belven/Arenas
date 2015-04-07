@@ -112,6 +112,7 @@ public class Wave {
 	public void SpawnBoss() {
 
 		LivingEntity le = ab.getBossMob().SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
+		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.getPlugin(), ab));
 
 		Gear gear = ArenaManager.scalingGear.get(ab.getArenaPlayers().size());
 
@@ -121,7 +122,6 @@ public class Wave {
 
 		new MessageTimer(ab.getArenaPlayers(), "A " + ab.getBossMob().BossType.name() + " boss has Spawned!!").run();
 
-		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.getPlugin(), ab));
 		ab.getArenaEntities().add(le);
 	}
 

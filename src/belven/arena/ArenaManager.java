@@ -299,11 +299,10 @@ public class ArenaManager extends JavaPlugin {
 				Location max = sel.getMaximumPoint();
 
 				String ArenaName = args[1];
-				int Radius = Integer.valueOf(args[2]);
-				MobToMaterialCollecton mobs = MatToMob(Material.getMaterial(args[3]));
+				MobToMaterialCollecton mobs = MatToMob(Material.getMaterial(args[2]));
 
-				StandardArena newArenaBlock = new StandardArena(min, max, ArenaName, Radius, mobs, this,
-						Functions.SecondsToTicks(Integer.valueOf(args[4])));
+				StandardArena newArenaBlock = new StandardArena(min, max, ArenaName, mobs, this,
+						Functions.SecondsToTicks(Integer.valueOf(args[3])));
 
 				SelectedArenaBlocks.put(p, newArenaBlock);
 				currentArenaBlocks.add(newArenaBlock);
@@ -494,7 +493,7 @@ public class ArenaManager extends JavaPlugin {
 			return true;
 
 		case "createarena":
-			if (args.length >= 4) {
+			if (args.length >= 3) {
 				CreateStandardArena(player, player.getLocation().getBlock(), args);
 				return true;
 			}
@@ -549,7 +548,6 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void addEditor(Player p, String playerName) {
 		if (HasArenaBlockSelected(p)) {
 			if (playerName != null && getOnlinePlayer(playerName) != null) {
@@ -828,6 +826,7 @@ public class ArenaManager extends JavaPlugin {
 		spawnMats.Add(EntityType.SKELETON, mat);
 		spawnMats.Add(EntityType.SPIDER, mat);
 		spawnMats.Add(EntityType.SLIME, mat);
+		spawnMats.Add(EntityType.CAVE_SPIDER, mat);
 		return spawnMats;
 	}
 
@@ -960,15 +959,13 @@ public class ArenaManager extends JavaPlugin {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
 			int eliteWave = con.getInt(path + arenaPaths.get(11));
 
-			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, radius, mobs, this,
-					timerPeriod);
+			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
 			ab.setEliteWave(eliteWave);
 		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("standard")) {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
 			int eliteWave = con.getInt(path + arenaPaths.get(11));
 
-			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, radius, mobs, this,
-					timerPeriod);
+			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
 			ab.setEliteWave(eliteWave);
 		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("pvp")) {
 			// TODO

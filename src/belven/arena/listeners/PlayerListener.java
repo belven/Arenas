@@ -106,17 +106,6 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	/*
-	 * @EventHandler public void onPlayerMoveEvent(PlayerMoveEvent event) {
-	 * Player p = event.getPlayer(); if (plugin.IsPlayerInArena(p)) { BaseArena
-	 * ab = plugin.getArena(p);
-	 * 
-	 * if (ab.getType() != ArenaTypes.Temp && event.getTo().getWorld() ==
-	 * ab.getArenaWarp().getWorld()) { if
-	 * (!event.getTo().getBlock().hasMetadata("ArenaAreaBlock")) {
-	 * p.teleport(BaseArena.GetRandomArenaSpawnLocation(ab)); } } } }
-	 */
-
 	@EventHandler
 	public void onPlayerVelocityEvent(PlayerVelocityEvent event) {
 		if (event.getPlayer().isBlocking()) {
@@ -217,21 +206,15 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (event.getEntityType() == EntityType.PLAYER) {
-			PlayerTakenDamage(event);
-		}
-	}
+			Player damagedPlayer = (Player) event.getEntity();
 
-	public void PlayerTakenDamage(EntityDamageByEntityEvent event) {
-		Player damagedPlayer = (Player) event.getEntity();
-
-		if (playerDeathProtection.contains(damagedPlayer.getName())) {
-			event.setDamage(0.0);
-
-			damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer.getName()));
-
-			damagedPlayer.addPotionEffect(
-					new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Functions.SecondsToTicks(3), 4), true);
-			playerDeathProtection.remove(damagedPlayer.getName());
+			if (playerDeathProtection.contains(damagedPlayer.getName())) {
+				event.setDamage(0.0);
+				damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer.getName()));
+				damagedPlayer.addPotionEffect(
+						new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Functions.SecondsToTicks(3), 4), true);
+				playerDeathProtection.remove(damagedPlayer.getName());
+			}
 		}
 	}
 }

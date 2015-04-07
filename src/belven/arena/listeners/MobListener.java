@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -52,7 +51,6 @@ public class MobListener implements Listener {
 		event.blockList().clear();
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onProjectileHitEvent(ProjectileHitEvent event) {
 		if (event.getEntity() == null) {
@@ -84,17 +82,17 @@ public class MobListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
-		if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
-			event.setCancelled(false);
-
-			// if (event.getSpawnReason() == SpawnReason.SLIME_SPLIT) {
-			// Slime s = (Slime) event.getEntity();
-			//
-			// }
-		}
-	}
+	// @EventHandler(priority = EventPriority.HIGHEST)
+	// public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
+	// if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
+	// event.setCancelled(false);
+	//
+	// // if (event.getSpawnReason() == SpawnReason.SLIME_SPLIT) {
+	// // Slime s = (Slime) event.getEntity();
+	// //
+	// // }
+	// }
+	// }
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeathEvent(EntityDeathEvent event) {
@@ -131,6 +129,7 @@ public class MobListener implements Listener {
 					cb.SetPlayersScoreboard();
 				}
 			}
+
 			event.setDroppedExp(0);
 			event.getDrops().clear();
 		}
