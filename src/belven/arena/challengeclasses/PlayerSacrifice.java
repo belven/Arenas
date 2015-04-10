@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -15,34 +16,21 @@ import belven.arena.events.ChallengeComplete;
 
 public class PlayerSacrifice extends ChallengeType {
 	public List<Player> playersSacrificed = new ArrayList<Player>();
-	public int amountToSacrifice = 1;
+	public List<Player> players = new ArrayList<Player>();
 
-	public PlayerSacrifice(int amount) {
+	public PlayerSacrifice(ChallengeBlock cb, List<Player> players) {
+		super(cb);
 		type = ChallengeTypes.PlayerSacrifice;
-		amountToSacrifice = amount;
+		this.players = players;
 	}
 
 	@Override
 	public boolean ChallengeComplete() {
-		return amountToSacrifice <= 0;
-	}
-
-	public void SacrificePlayer(Player p) {
-		if (!playersSacrificed.contains(p)) {
-			playersSacrificed.add(p);
-			amountToSacrifice--;
-
-			if (ChallengeComplete()) {
-				Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
-			}
-			p.setHealth(0.0);
-		} else {
-			p.sendMessage("You cannot sacrifice yourself again");
-		}
+		return playersSacrificed.size() == players.size();
 	}
 
 	@Override
-	public Scoreboard SetChallengeScoreboard(ChallengeType ct) {
+	public Scoreboard SetChallengeScoreboard() {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard sb = manager.getNewScoreboard();
 
@@ -51,9 +39,31 @@ public class PlayerSacrifice extends ChallengeType {
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			objective.setDisplayName("Sacrifice Challenge");
 			Score score = objective.getScore("Amount Left: ");
-			score.setScore(amountToSacrifice);
+			score.setScore(players.size());
 		}
 
 		return sb;
 	}
+
+	@Override
+	public boolean ChallengeBlockInteracted(Player p) {
+		if (!playersSacrificed.contains(p)) {
+			playersSacrificed.add(p);
+
+			if (ChallengeComplete()) {
+				Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
+			}
+			p.setHealth(0.0);
+		} else {
+			p.sendMessage("You cannot sacrifice yourself again");
+		}
+		return false;
+	}
+
+	@Override
+	public void EntityKilled(EntityType entityType) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

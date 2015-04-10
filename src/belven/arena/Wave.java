@@ -23,6 +23,7 @@ import belven.arena.timedevents.MessageTimer;
 import belven.resources.EntityFunctions;
 import belven.resources.Gear;
 import belven.resources.MaterialFunctions;
+import belven.resources.events.EntityMetadataChanged;
 
 public class Wave {
 	private StandardArena ab;
@@ -110,9 +111,12 @@ public class Wave {
 	}
 
 	public void SpawnBoss() {
-
 		LivingEntity le = ab.getBossMob().SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
-		le.setMetadata(MDM.ArenaBoss, new FixedMetadataValue(ab.getPlugin(), ab));
+		FixedMetadataValue metaData = new FixedMetadataValue(ab.getPlugin(), ab);
+
+		le.setMetadata(MDM.ArenaBoss, metaData);
+
+		Bukkit.getPluginManager().callEvent(new EntityMetadataChanged(metaData, le));
 
 		Gear gear = ArenaManager.scalingGear.get(ab.getArenaPlayers().size());
 

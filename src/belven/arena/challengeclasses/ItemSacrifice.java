@@ -1,9 +1,12 @@
 package belven.arena.challengeclasses;
 
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
 public class ItemSacrifice extends ChallengeType {
-	public ItemSacrifice() {
+	public ItemSacrifice(ChallengeBlock cb) {
+		super(cb);
 		type = ChallengeTypes.ItemSacrifice;
 	}
 
@@ -13,8 +16,21 @@ public class ItemSacrifice extends ChallengeType {
 	}
 
 	@Override
-	public Scoreboard SetChallengeScoreboard(ChallengeType ct) {
+	public Scoreboard SetChallengeScoreboard() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public boolean ChallengeBlockInteracted(Player p) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void EntityKilled(EntityType entityType) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

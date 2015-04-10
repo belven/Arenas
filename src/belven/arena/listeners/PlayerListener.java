@@ -37,8 +37,6 @@ import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.PvPArena;
 import belven.arena.challengeclasses.ChallengeBlock;
-import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
-import belven.arena.challengeclasses.PlayerSacrifice;
 import belven.resources.EntityFunctions;
 import belven.resources.Functions;
 
@@ -120,13 +118,7 @@ public class PlayerListener implements Listener {
 			List<MetadataValue> mData = MDM.getMetaData(MDM.ChallengeBlock, event.getClickedBlock());
 			if (mData != null) {
 				ChallengeBlock cb = (ChallengeBlock) mData.get(0).value();
-
-				if (cb.challengeType.type == ChallengeTypes.PlayerSacrifice) {
-					PlayerSacrifice ps = (PlayerSacrifice) cb.challengeType;
-					ps.SacrificePlayer(event.getPlayer());
-				} else if (cb.challengeType.type == ChallengeTypes.ItemSacrifice) {
-					// TO DO
-				}
+				cb.challengeType.ChallengeBlockInteracted(event.getPlayer());
 			} else if (event.getClickedBlock().getType() == Material.SIGN) {
 				currentSign = (Sign) event.getClickedBlock();
 

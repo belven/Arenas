@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -56,7 +57,8 @@ public class Kills extends ChallengeType {
 
 	public HashMap<EntityType, Integer> entitiesToKill = new HashMap<EntityType, Integer>();
 
-	public Kills(HashMap<EntityType, Integer> entities) {
+	public Kills(ChallengeBlock cb, HashMap<EntityType, Integer> entities) {
+		super(cb);
 		type = ChallengeTypes.Kills;
 		entitiesToKill = entities;
 	}
@@ -71,6 +73,7 @@ public class Kills extends ChallengeType {
 		return enitiesLeft <= 0;
 	}
 
+	@Override
 	public void EntityKilled(EntityType et) {
 		if (!ChallengeComplete()) {
 			int amountLeft = entitiesToKill.get(et) != null ? entitiesToKill.get(et) : 0;
@@ -79,6 +82,8 @@ public class Kills extends ChallengeType {
 				amountLeft--;
 				entitiesToKill.put(et, amountLeft);
 			}
+
+			getChallengeBlock().SetPlayersScoreboard();
 
 			if (ChallengeComplete()) {
 				Bukkit.getPluginManager().callEvent(new ChallengeComplete(this));
@@ -95,7 +100,7 @@ public class Kills extends ChallengeType {
 	}
 
 	@Override
-	public Scoreboard SetChallengeScoreboard(ChallengeType ct) {
+	public Scoreboard SetChallengeScoreboard() {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard sb = manager.getNewScoreboard();
 
@@ -112,6 +117,12 @@ public class Kills extends ChallengeType {
 		}
 
 		return sb;
+	}
+
+	@Override
+	public boolean ChallengeBlockInteracted(Player p) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

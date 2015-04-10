@@ -26,8 +26,7 @@ import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.StandardArena;
 import belven.arena.challengeclasses.ChallengeBlock;
-import belven.arena.challengeclasses.ChallengeType.ChallengeTypes;
-import belven.arena.challengeclasses.Kills;
+import belven.arena.rewardclasses.Reward;
 
 public class MobListener implements Listener {
 	private final ArenaManager plugin;
@@ -82,28 +81,22 @@ public class MobListener implements Listener {
 		}
 	}
 
-	// @EventHandler(priority = EventPriority.HIGHEST)
-	// public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
-	// if (event.getEntity() != null && event.getEntity().hasMetadata(MDM.ArenaMob)) {
-	// event.setCancelled(false);
-	//
-	// // if (event.getSpawnReason() == SpawnReason.SLIME_SPLIT) {
-	// // Slime s = (Slime) event.getEntity();
-	// //
-	// // }
-	// }
-	// }
-
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeathEvent(EntityDeathEvent event) {
 		Entity e = event.getEntity();
 		List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, e);
+		List<MetadataValue> reward = MDM.getMetaData(MDM.RewardBoss, e);
 
 		if (data != null) {
 			BaseArena ab = (BaseArena) data.get(0).value();
 
 			if (ab == null) {
 				return;
+			}
+
+			if (reward != null) {
+				Reward r = (Reward) reward.get(0);
+				r.GiveRewards(ab.getCurrentChallengeBlock(), ab.getArenaPlayers());
 			}
 
 			if (ab.getType() != ArenaTypes.PvP) {
@@ -122,12 +115,7 @@ public class MobListener implements Listener {
 
 			if (ab.getCurrentChallengeBlock() != null) {
 				ChallengeBlock cb = ab.getCurrentChallengeBlock();
-
-				if (!cb.completed && cb.challengeType.type == ChallengeTypes.Kills) {
-					Kills ct = (Kills) cb.challengeType;
-					ct.EntityKilled(e.getType());
-					cb.SetPlayersScoreboard();
-				}
+				cb.challengeType.EntityKilled(e.getType());
 			}
 
 			event.setDroppedExp(0);

@@ -22,8 +22,9 @@ public class ChallengeBlock {
 		ChallengeBlock cb = null;
 		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
 		Reward r = Reward.GetRandomReward();
-		ChallengeType ct = ChallengeType.GetRandomChallengeType(ab);
+		ChallengeType ct = ChallengeType.GetRandomChallengeType(cb, ab);
 		cb = new ChallengeBlock(instance, b, r, ct, ab);
+		ct.setChallengeBlock(cb);
 		return cb;
 	}
 
@@ -75,7 +76,7 @@ public class ChallengeBlock {
 		List<Player> tempPlayers = ab != null ? ab.getArenaPlayers() : players;
 
 		for (Player p : tempPlayers) {
-			p.setScoreboard(challengeType.SetChallengeScoreboard(challengeType));
+			p.setScoreboard(challengeType.SetChallengeScoreboard());
 		}
 	}
 }
