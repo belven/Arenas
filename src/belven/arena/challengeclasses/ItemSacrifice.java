@@ -4,7 +4,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
-public class ItemSacrifice extends ChallengeType {
+public class ItemSacrifice extends Challenge {
 	public ItemSacrifice(ChallengeBlock cb) {
 		super(cb);
 		type = ChallengeTypes.ItemSacrifice;
@@ -22,9 +22,9 @@ public class ItemSacrifice extends ChallengeType {
 	}
 
 	@Override
-	public boolean ChallengeBlockInteracted(Player p) {
+	public void interactedWith(Player p) {
 		// TODO Auto-generated method stub
-		return false;
+		return;
 	}
 
 	@Override

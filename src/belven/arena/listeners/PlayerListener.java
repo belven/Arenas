@@ -36,7 +36,7 @@ import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.arenas.PvPArena;
-import belven.arena.challengeclasses.ChallengeBlock;
+import belven.arena.phases.Interactable;
 import belven.resources.EntityFunctions;
 import belven.resources.Functions;
 
@@ -113,29 +113,31 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
-		Sign currentSign;
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			List<MetadataValue> mData = MDM.getMetaData(MDM.ChallengeBlock, event.getClickedBlock());
-			if (mData != null) {
-				ChallengeBlock cb = (ChallengeBlock) mData.get(0).value();
-				cb.challengeType.ChallengeBlockInteracted(event.getPlayer());
+			if (event.getClickedBlock().hasMetadata(MDM.ChallengeBlock)) {
+				Interactable interactable = (Interactable) getMetaData(event, MDM.ChallengeBlock);
+				interactable.interactedWith(event.getPlayer());
+			} else if (event.getClickedBlock().hasMetadata(Interactable.metadataName)) {
+				Interactable interactable = (Interactable) getMetaData(event, Interactable.metadataName);
+				interactable.interactedWith(event.getPlayer());
 			} else if (event.getClickedBlock().getType() == Material.SIGN) {
-				currentSign = (Sign) event.getClickedBlock();
-
-				if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[Arena]")) {
-					plugin.WarpToArena(event.getPlayer(), currentSign.getLine(1));
-				} else if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
-					plugin.LeaveArena(event.getPlayer());
-				}
+				arenaSignInteraction(event, (Sign) event.getClickedBlock());
 			} else if (event.getClickedBlock().getType() == Material.WALL_SIGN) {
-				currentSign = (Sign) event.getClickedBlock().getState();
-
-				if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[Arena]")) {
-					plugin.WarpToArena(event.getPlayer(), currentSign.getLine(1));
-				} else if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
-					plugin.LeaveArena(event.getPlayer());
-				}
+				arenaSignInteraction(event, (Sign) event.getClickedBlock().getState());
 			}
+		}
+	}
+
+	private Object getMetaData(PlayerInteractEvent event, String metaDataName) {
+		List<MetadataValue> mData = MDM.getMetaData(metaDataName, event.getClickedBlock());
+		return mData.get(0).value();
+	}
+
+	private void arenaSignInteraction(PlayerInteractEvent event, Sign currentSign) {
+		if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[Arena]")) {
+			plugin.WarpToArena(event.getPlayer(), currentSign.getLine(1));
+		} else if (currentSign.getLine(0) != null && currentSign.getLine(0).contentEquals("[ArenaLeave]")) {
+			plugin.LeaveArena(event.getPlayer());
 		}
 	}
 
@@ -175,8 +177,6 @@ public class PlayerListener implements Listener {
 			Location spawnLocation = warpLocations.get(currentPlayer.getName());
 
 			if (spawnLocation != null) {
-				spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
-
 				event.setRespawnLocation(spawnLocation);
 			}
 

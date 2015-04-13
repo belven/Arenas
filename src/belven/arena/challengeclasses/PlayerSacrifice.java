@@ -14,7 +14,7 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import belven.arena.events.ChallengeComplete;
 
-public class PlayerSacrifice extends ChallengeType {
+public class PlayerSacrifice extends Challenge {
 	public List<Player> playersSacrificed = new ArrayList<Player>();
 	public List<Player> players = new ArrayList<Player>();
 
@@ -46,7 +46,7 @@ public class PlayerSacrifice extends ChallengeType {
 	}
 
 	@Override
-	public boolean ChallengeBlockInteracted(Player p) {
+	public void interactedWith(Player p) {
 		if (!playersSacrificed.contains(p)) {
 			playersSacrificed.add(p);
 
@@ -57,7 +57,7 @@ public class PlayerSacrifice extends ChallengeType {
 		} else {
 			p.sendMessage("You cannot sacrifice yourself again");
 		}
-		return false;
+		return;
 	}
 
 	@Override

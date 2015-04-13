@@ -22,7 +22,7 @@ public class ChallengeBlock {
 		ChallengeBlock cb = null;
 		Block b = BaseArena.GetRandomArenaSpawnBlock(ab);
 		Reward r = Reward.GetRandomReward();
-		ChallengeType ct = ChallengeType.GetRandomChallengeType(cb, ab);
+		Challenge ct = Challenge.GetRandomChallengeType(cb, ab);
 		cb = new ChallengeBlock(instance, b, r, ct, ab);
 		ct.setChallengeBlock(cb);
 		return cb;
@@ -30,7 +30,7 @@ public class ChallengeBlock {
 
 	public boolean completed = false;
 	public Reward challengeReward = new ExperienceReward(10);
-	public ChallengeType challengeType = null;
+	public Challenge challengeType = null;
 	public Block challengeBlock;
 	public BlockState challengeBlockState;
 
@@ -40,7 +40,7 @@ public class ChallengeBlock {
 
 	public BaseArena ab;
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, Challenge ct) {
 		ID = UUID.randomUUID();
 		challengeReward = r;
 		challengeType = ct;
@@ -52,14 +52,14 @@ public class ChallengeBlock {
 		b.setMetadata(MDM.ChallengeBlock, new FixedMetadataValue(plugin, this));
 	}
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct, BaseArena arenaBlock) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, Challenge ct, BaseArena arenaBlock) {
 		this(instance, b, r, ct);
 		ab = arenaBlock;
 		new MessageTimer(ab.getArenaPlayers(), "A challenge of type " + ct.type.name() + " has begun").run();
 		SetPlayersScoreboard();
 	}
 
-	public ChallengeBlock(ArenaManager instance, Block b, Reward r, ChallengeType ct, List<Player> playersToAdd) {
+	public ChallengeBlock(ArenaManager instance, Block b, Reward r, Challenge ct, List<Player> playersToAdd) {
 		this(instance, b, r, ct);
 		players = playersToAdd;
 		SetPlayersScoreboard();

@@ -14,6 +14,7 @@ import org.bukkit.metadata.MetadataValue;
 
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
+import belven.arena.phases.Phase;
 import belven.arena.resources.SavedBlock;
 import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
@@ -43,6 +44,36 @@ public abstract class BaseArena extends BaseArenaData {
 		for (SavedBlock sb : getOriginalBlocks()) {
 			sb.bs.update(true);
 			sb.bs.removeMetadata("ArenaAreaBlock", getPlugin());
+		}
+	}
+
+	/**
+	 * Creates an amount of Phases for random waves, based on a percent of the waves i.e 0.3 will cause 30% of the waves to have a phase,
+	 * i.e. there will be 3 phases with 10 waves
+	 * 
+	 * @param percent - the percent of waves that will create phases
+	 */
+	public void GenerateRandomPhases(double percent) {
+		if (getMaxRunTimes() < 0) {
+			return;
+		}
+
+		int amount = (int) Math.round(getMaxRunTimes() * percent);
+
+		if (amount <= 0) {
+			amount = 1;
+		}
+
+		for (int count = 0; count < amount; count = getPhases().size()) {
+			// Get a random wave to create a Phase
+			int wave = new Random().nextInt(getMaxRunTimes());
+			if (wave <= 0) {
+				amount = 1;
+			}
+			// Don't add 2 phases to the same wave
+			if (!getPhases().containsKey(wave)) {
+				getPhases().put(wave, Phase.getRandomPhase(getPlugin(), getSpawnArea()));
+			}
 		}
 	}
 
@@ -110,33 +141,8 @@ public abstract class BaseArena extends BaseArenaData {
 		}
 	}
 
-	public void GetPlayersAverageLevel() {
-		if (getArenaPlayers().size() == 0) {
-			return;
-		}
-
-		int totalLevels = 0;
-		setAverageLevel(0);
-		setMaxMobCounter(0);
-
-		for (Player p : getArenaPlayers()) {
-			totalLevels += p.getLevel();
-		}
-
-		if (totalLevels == 0) {
-			totalLevels = 1;
-		}
-
-		setAverageLevel(totalLevels / getArenaPlayers().size());
-		setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
-
-		if (getMaxMobCounter() > getArenaPlayers().size() * 7) {
-			setMaxMobCounter(getArenaPlayers().size() * 7);
-		}
-	}
-
 	public static Block GetRandomArenaSpawnBlock(BaseArena ab) {
-		return ab.getSpawnArea().get(new Random().nextInt(ab.getSpawnArea().size()));
+		return ab.getSpawnArea().get(Functions.getRandomIndex(ab.getSpawnArea()));
 	}
 
 	public static Location GetRandomArenaSpawnLocation(BaseArena ab) {

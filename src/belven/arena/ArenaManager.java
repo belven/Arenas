@@ -687,7 +687,6 @@ public class ArenaManager extends JavaPlugin {
 		return SelectedArenaBlocks.get(p);
 	}
 
-	@SuppressWarnings("deprecation")
 	private void GiveArenaRewards(Player p) {
 		if (HasArenaBlockSelected(p)) {
 			BaseArena ab = getSelectedArena(p);
@@ -960,13 +959,13 @@ public class ArenaManager extends JavaPlugin {
 			int eliteWave = con.getInt(path + arenaPaths.get(11));
 
 			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
-			ab.setEliteWave(eliteWave);
+			((StandardArena) ab).setEliteWave(eliteWave);
 		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("standard")) {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
 			int eliteWave = con.getInt(path + arenaPaths.get(11));
 
 			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
-			ab.setEliteWave(eliteWave);
+			((StandardArena) ab).setEliteWave(eliteWave);
 		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("pvp")) {
 			// TODO
 			Material m = Material.GRASS;
@@ -1179,7 +1178,7 @@ public class ArenaManager extends JavaPlugin {
 		if (ab.getType() != ArenaTypes.PvP) {
 			StandardArena sab = (StandardArena) ab;
 			SaveArenaEliteMobs(sab);
-			getConfig().set(path + arenaPaths.get(11), ab.getEliteWave());
+			getConfig().set(path + arenaPaths.get(11), sab.getEliteWave());
 			SaveArenaMobs(sab);
 			getConfig().set(path + ".Boss.Type", sab.getBossMob().BossType.toString());
 		}
@@ -1328,7 +1327,7 @@ public class ArenaManager extends JavaPlugin {
 
 	private void SetEliteWave(Player player, String ew) {
 		if (HasArenaBlockSelected(player)) {
-			BaseArena ab = getSelectedArena(player);
+			StandardArena ab = (StandardArena) getSelectedArena(player);
 			ab.setEliteWave(Integer.valueOf(ew));
 			player.sendMessage("Arena " + ab.ArenaName() + " elite wave is now " + ew);
 		}

@@ -3,12 +3,12 @@ package belven.arena.events;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import belven.arena.challengeclasses.ChallengeType;
+import belven.arena.challengeclasses.Challenge;
 
 public class ChallengeComplete extends Event {
 	private static final HandlerList handlers = new HandlerList();
 
-	private ChallengeType ct;
+	private Challenge ct;
 
 	@Override
 	public HandlerList getHandlers() {
@@ -19,11 +19,11 @@ public class ChallengeComplete extends Event {
 		return handlers;
 	}
 
-	public ChallengeComplete(ChallengeType ct) {
+	public ChallengeComplete(Challenge ct) {
 		this.ct = ct;
 	}
 
-	public ChallengeType GetChallengeType() {
+	public Challenge GetChallengeType() {
 		return ct;
 	}
 }

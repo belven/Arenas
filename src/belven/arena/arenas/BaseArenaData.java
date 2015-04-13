@@ -3,6 +3,7 @@ package belven.arena.arenas;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
+import belven.arena.phases.Phase;
 import belven.arena.resources.SavedBlock;
 import belven.resources.Functions;
 import belven.resources.Group;
@@ -25,28 +27,19 @@ public class BaseArenaData extends Group {
 	protected boolean isActive = false;
 	protected ArenaTypes type;
 	protected String name = "";
-	protected Block blockToActivate;
-	protected Block deactivateBlock;
-	protected Block arenaWarp;
+	protected Block blockToActivate, deactivateBlock, arenaWarp;
 	protected ChallengeBlock currentChallengeBlock;
-	protected int ChallengeBlockWave;
-	protected List<Block> arenaArea = new ArrayList<Block>();
+	private HashMap<Integer, Phase> phases = new HashMap<>();
+	private Phase activePhase;
+	protected List<Block> arenaArea = new ArrayList<Block>(), spawnArea = new ArrayList<Block>();
 	protected List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
-	protected List<Player> arenaPlayers = new ArrayList<Player>();
-	protected List<Block> spawnArea = new ArrayList<Block>();
 	protected List<BaseArena> linkedArenas = new ArrayList<BaseArena>();
-	protected Location spawnArenaStartLocation;
-	protected Location spawnArenaEndLocation;
-	protected Location ArenaStartLocation;
-	protected Location ArenaEndLocation;
-	protected Location arenaChest;
-	protected int maxRunTimes = 0;
-	protected int timerPeriod = 0;
-	protected int eliteWave = 0;
-	protected int averageLevel = 0;
-	protected int maxMobCounter = 0;
-	protected int linkedArenaDelay = 0;
-	protected int currentRunTimes = 0;
+	protected Location spawnArenaStartLocation, spawnArenaEndLocation, ArenaStartLocation, ArenaEndLocation,
+			arenaChest;
+
+	protected int maxRunTimes = 0, timerPeriod = 0, averageLevel = 0, linkedArenaDelay = 0, currentRunTimes = 0,
+			ChallengeBlockWave = 0;
+
 	protected List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
 	protected UUID arenaRunID;
 	protected List<UUID> editors = new ArrayList<>();
@@ -68,29 +61,6 @@ public class BaseArenaData extends Group {
 		setPlugin(Plugin);
 		setMaxRunTimes(5);
 	}
-
-	// public BaseArenaData(boolean isActive, ChallengeBlock
-	// currentChallengeBlock, int challengeBlockWave,
-	// List<Block> arenaArea, List<SavedBlock> originalBlocks, List<Player>
-	// arenaPlayers, List<Block> spawnArea,
-	// List<BaseArena> linkedArenas, int currentRunTimes, List<ItemStack>
-	// arenaRewards, UUID arenaRunID) {
-	// this.isActive = isActive;
-	// this.currentChallengeBlock = currentChallengeBlock;
-	// ChallengeBlockWave = challengeBlockWave;
-	// this.arenaArea = arenaArea;
-	// this.originalBlocks = originalBlocks;
-	// this.arenaPlayers = arenaPlayers;
-	// this.spawnArea = spawnArea;
-	// this.linkedArenas = linkedArenas;
-	// this.currentRunTimes = currentRunTimes;
-	// this.arenaRewards = arenaRewards;
-	// this.arenaRunID = arenaRunID;
-	// }
-
-	// public BaseArenaData(BaseArenaData bad) {
-	// setValues(bad, this);
-	// }
 
 	public void setValues(Object exampleClassWithValues, Object exampleClassToGetValues) {
 		try {
@@ -206,11 +176,11 @@ public class BaseArenaData extends Group {
 	public List<Player> getArenaPlayers() {
 		// List<Player> tempPlayers = new ArrayList<Player>();
 		// tempPlayers.addAll(arenaPlayers);
-		return arenaPlayers;
+		return getPlayers();
 	}
 
 	public void setArenaPlayers(List<Player> arenaPlayers) {
-		this.arenaPlayers = arenaPlayers;
+		setPlayers(arenaPlayers);
 	}
 
 	public List<Block> getSpawnArea() {
@@ -277,28 +247,12 @@ public class BaseArenaData extends Group {
 		this.timerPeriod = timerPeriod;
 	}
 
-	public int getEliteWave() {
-		return eliteWave;
-	}
-
-	public void setEliteWave(int eliteWave) {
-		this.eliteWave = eliteWave;
-	}
-
 	public int getAverageLevel() {
 		return averageLevel;
 	}
 
 	public void setAverageLevel(int averageLevel) {
 		this.averageLevel = averageLevel;
-	}
-
-	public int getMaxMobCounter() {
-		return maxMobCounter;
-	}
-
-	public void setMaxMobCounter(int maxMobCounter) {
-		this.maxMobCounter = maxMobCounter;
 	}
 
 	public int getLinkedArenaDelay() {
@@ -360,5 +314,21 @@ public class BaseArenaData extends Group {
 
 	public void setEditors(List<UUID> editors) {
 		this.editors = editors;
+	}
+
+	public HashMap<Integer, Phase> getPhases() {
+		return phases;
+	}
+
+	public void setPhases(HashMap<Integer, Phase> phases) {
+		this.phases = phases;
+	}
+
+	public Phase getActivePhase() {
+		return activePhase;
+	}
+
+	public void setActivePhase(Phase activePhase) {
+		this.activePhase = activePhase;
 	}
 }

@@ -7,7 +7,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import belven.arena.ArenaManager;
 import belven.arena.arenas.BaseArena;
 import belven.arena.challengeclasses.ChallengeBlock;
-import belven.arena.challengeclasses.ChallengeType;
+import belven.arena.challengeclasses.Challenge;
 import belven.arena.events.ArenaBlockActivatedEvent;
 import belven.arena.events.ChallengeComplete;
 
@@ -40,7 +40,7 @@ public class ArenaListener implements Listener {
 
 	@EventHandler
 	public void onChallengeComplete(ChallengeComplete event) {
-		ChallengeType cct = event.GetChallengeType();
+		Challenge cct = event.GetChallengeType();
 		for (ChallengeBlock cb : plugin.challengeBlocks) {
 			if (cb.challengeType.challengeID == cct.challengeID) {
 				cb.GiveRewards();

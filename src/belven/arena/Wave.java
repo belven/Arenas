@@ -113,7 +113,7 @@ public class Wave {
 	public void SpawnBoss() {
 		LivingEntity le = ab.getBossMob().SpawnBoss(BaseArena.GetRandomArenaSpawnLocation(ab));
 		FixedMetadataValue metaData = new FixedMetadataValue(ab.getPlugin(), ab);
-
+		le.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
 		le.setMetadata(MDM.ArenaBoss, metaData);
 
 		Bukkit.getPluginManager().callEvent(new EntityMetadataChanged(metaData, le));

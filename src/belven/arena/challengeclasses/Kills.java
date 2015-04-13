@@ -22,7 +22,7 @@ import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
 import belven.resources.Functions;
 
-public class Kills extends ChallengeType {
+public class Kills extends Challenge {
 	public static HashMap<EntityType, Integer> GetRandomEntities(StandardArena ab) {
 		HashMap<EntityType, Integer> tempEntities = new HashMap<EntityType, Integer>();
 		int amountOfEntities = new Random().nextInt(10) + 1;
@@ -120,9 +120,8 @@ public class Kills extends ChallengeType {
 	}
 
 	@Override
-	public boolean ChallengeBlockInteracted(Player p) {
-		// TODO Auto-generated method stub
-		return false;
+	public void interactedWith(Player p) {
+		return;
 	}
 
 }

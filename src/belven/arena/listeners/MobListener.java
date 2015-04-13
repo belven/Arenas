@@ -70,10 +70,12 @@ public class MobListener implements Listener {
 	@EventHandler
 	public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent event) {
 		if (event.getTarget() != null && event.getTarget().getType() == EntityType.PLAYER) {
-
 			Player p = (Player) event.getTarget();
+			Entity entity = event.getEntity();
 
-			if (event.getEntity() != null && event.getEntity().hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
+			if (entity != null && entity.hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
+				event.setCancelled(true);
+			} else if (entity != null && !entity.hasMetadata("ArenaMob") && plugin.IsPlayerInArena(p)) {
 				event.setCancelled(true);
 			} else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 				event.setCancelled(true);

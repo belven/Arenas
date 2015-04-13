@@ -4,12 +4,12 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
 import belven.arena.arenas.StandardArena;
+import belven.arena.phases.Interactable;
 
-public abstract class ChallengeType {
+public abstract class Challenge extends Interactable {
 	public enum ChallengeTypes {
 		Default, Kills, PlayerSacrifice, ItemSacrifice
 	}
@@ -18,19 +18,17 @@ public abstract class ChallengeType {
 	public ChallengeTypes type = ChallengeTypes.Default;
 	private ChallengeBlock cb;
 
-	public ChallengeType(ChallengeBlock cb) {
+	public Challenge(ChallengeBlock cb) {
 		this.setChallengeBlock(cb);
 	}
 
 	public abstract boolean ChallengeComplete();
 
-	public abstract boolean ChallengeBlockInteracted(Player p);
-
 	public abstract void EntityKilled(EntityType entityType);
 
 	public abstract Scoreboard SetChallengeScoreboard();
 
-	public static ChallengeType GetRandomChallengeType(ChallengeBlock cb, StandardArena ab) {
+	public static Challenge GetRandomChallengeType(ChallengeBlock cb, StandardArena ab) {
 		int ran = new Random().nextInt(2);
 		switch (ran) {
 		case 0:
