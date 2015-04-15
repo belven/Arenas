@@ -21,6 +21,7 @@ import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.timedevents.MessageTimer;
 import belven.resources.EntityFunctions;
+import belven.resources.Functions;
 import belven.resources.Gear;
 import belven.resources.MaterialFunctions;
 import belven.resources.events.EntityMetadataChanged;
@@ -61,11 +62,7 @@ public class Wave {
 			return;
 		}
 
-		int rand = new Random().nextInt(et.size());
-
-		if (rand > 0) {
-			rand--;
-		}
+		int rand = Functions.getRandomIndex(et);
 
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
 		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
