@@ -1,8 +1,14 @@
 package belven.arena;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +63,7 @@ import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaManager extends JavaPlugin {
+	private static String logFileName = "ArenasLog.log";
 	private final PlayerListener newplayerListener = new PlayerListener(this);
 	private final BlockListener blockListener = new BlockListener(this);
 	private final ArenaListener arenaListener = new ArenaListener(this);
@@ -165,6 +172,30 @@ public class ArenaManager extends JavaPlugin {
 		arenaPaths.add(15, ".Materials");
 		arenaPaths.add(16, ".Chest");
 		arenaPaths.add(17, ".Editors");
+	}
+
+	public void writeToLog(String logText) {
+		try {
+			File saveTo = new File(getDataFolder(), logFileName);
+
+			if (!saveTo.exists()) {
+				saveTo.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(saveTo, true);
+			PrintWriter pw = new PrintWriter(fw);
+
+			Date dt = new Date();
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String time = df.format(dt);
+
+			pw.println(time + " " + logText);
+			pw.flush();
+			pw.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static HashMap<Material, ChanceLevel> getItemChances() {
@@ -748,6 +779,8 @@ public class ArenaManager extends JavaPlugin {
 			}
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			p.sendMessage("You left the arena " + ab.ArenaName());
+
+			writeToLog("Player " + p.getName() + " has left arena " + ab.getName());
 		}
 	}
 
@@ -1445,12 +1478,10 @@ public class ArenaManager extends JavaPlugin {
 	}
 
 	public boolean WarpToArena(Player p, BaseArena ab) {
-
 		Location tpL = Functions.offsetLocation(ab.getArenaWarp().getLocation(), 0.5, 0, 0.5);
 		String tpMsg = "You were teleported and added to the arena " + ab.ArenaName();
 
 		if (ab.isActive()) {
-
 			PlayersInArenas.put(p, ab);
 			setPlayerMetaData(ab);
 
@@ -1468,11 +1499,13 @@ public class ArenaManager extends JavaPlugin {
 			}
 
 			p.sendMessage(tpMsg);
+			writeToLog("Player " + p.getName() + " has warped to arena" + ab.getName());
 			return true;
 		} else {
 			warpLocations.put(p.getName(), p.getLocation());
 			p.teleport(tpL, TeleportCause.COMMAND);
 			p.sendMessage(tpMsg);
+			writeToLog("Player " + p.getName() + " has warped to arena" + ab.getName());
 			return true;
 		}
 	}

@@ -164,7 +164,13 @@ public class PlayerListener implements Listener {
 			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 			warpLocations.put(p.getName(), spawnLocation);
 			playerEffects.put(p.getName(), p.getActivePotionEffects());
+
+			plugin.writeToLog("Player " + p.getName() + " has died in arena" + ab.getName());
+		} else {
+			plugin.writeToLog("Player " + p.getName() + " has died");
+
 		}
+
 		event.getDrops().clear();
 
 	}
@@ -193,6 +199,7 @@ public class PlayerListener implements Listener {
 			currentPlayer.getInventory().setArmorContents(playerArmour.get(currentPlayer.getName()));
 			playerArmour.remove(currentPlayer.getName());
 		}
+		plugin.writeToLog("Player " + currentPlayer.getName() + " has respawned");
 	}
 
 	@EventHandler

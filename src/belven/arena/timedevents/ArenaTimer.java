@@ -44,6 +44,13 @@ public class ArenaTimer extends BukkitRunnable {
 				BeyondLastWave();
 			} else {
 				ab.GoToNextWave();
+
+				if (ab.getCurrentRunTimes() > nextWave) {
+					ab.getPlugin().writeToLog(
+							"Arena " + ab.getName() + " has progressed to wave "
+									+ String.valueOf(ab.getCurrentRunTimes()));
+				}
+
 				this.cancel();
 			}
 		}
@@ -113,6 +120,7 @@ public class ArenaTimer extends BukkitRunnable {
 			}
 		}
 
+		ab.getPlugin().writeToLog("Arena " + ab.getName() + " has was completed");
 		Bukkit.getPluginManager().callEvent(new ArenaSuccessful(ab));
 		EndArena();
 	}
