@@ -35,6 +35,18 @@ public abstract class BaseArena extends BaseArenaData {
 	public String ArenaName() {
 		return ChatColor.RED + getName() + ChatColor.WHITE;
 	}
+	
+	public void ClearPlayerScoreboards(){
+		ListIterator<Player> players = getArenaPlayers().listIterator();
+
+		while (players.hasNext()) {
+			 clearPlayerScoreboard(players.next());
+		}
+	}
+	
+	public void clearPlayerScoreboard(Player p){
+		p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+	}
 
 	public abstract void Activate();
 
