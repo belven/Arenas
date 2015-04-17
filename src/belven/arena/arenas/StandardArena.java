@@ -114,12 +114,9 @@ public class StandardArena extends StandardArenaData {
 		if (getCurrentChallengeBlock() != null) {
 			getCurrentChallengeBlock().challengeBlockState.update(true);
 		}
-		ListIterator<Player> players = getArenaPlayers().listIterator();
+		
+		ClearPlayerScoreBoards();
 
-		while (players.hasNext()) {
-			Player p = players.next();
-			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-		}
 	}
 
 	@Override
