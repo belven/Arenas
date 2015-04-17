@@ -1,8 +1,11 @@
 package belven.arena.arenas;
 
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -107,6 +110,8 @@ public class StandardArena extends StandardArenaData {
 		RestoreArena();
 		setActive(false);
 		RemoveMobs();
+		setActivePhase(null);
+		getPhases().clear();
 		ArenaEntities.clear();
 
 		if (getCurrentChallengeBlock() != null) {
@@ -114,6 +119,24 @@ public class StandardArena extends StandardArenaData {
 		}
 
 		ClearPlayerScoreboards();
+
+		if (getLinkedArenas().size() == 0) {
+			Iterator<Player> players = getArenaPlayers().iterator();
+			while (players.hasNext()) {
+				try {
+					Player p = players.next();
+					getPlugin().LeaveArena(p);
+					p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+				} catch (ConcurrentModificationException e) {
+					e.printStackTrace();
+					try {
+						wait(500);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
 
 	}
 
@@ -144,6 +167,10 @@ public class StandardArena extends StandardArenaData {
 			} else if (getActivePhase() != null && getActivePhase().isActive()) {
 				for (Player p : getPlayers()) {
 					p.setScoreboard(getActivePhase().GetPhaseScoreboard());
+				}
+
+				if (getActivePhase().getPhaseBlocks().size() == 0) {
+					setActivePhase(null);
 				}
 				new ArenaTimer(this).runTaskLater(getPlugin(), Functions.SecondsToTicks(2));
 			}

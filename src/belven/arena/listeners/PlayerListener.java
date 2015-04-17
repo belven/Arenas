@@ -142,13 +142,15 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onPlayerDeathEvent(PlayerDeathEvent event) {
+	public synchronized void onPlayerDeathEvent(PlayerDeathEvent event) {
 		Player p = event.getEntity();
 
-		if (!playerInventories.containsKey(p)) {
+		if (!playerInventories.containsKey(p) && p.getInventory().getSize() > 0) {
 			PlayerInventory pi = p.getInventory();
 			playerInventories.put(p.getName(), pi.getContents());
 			playerArmour.put(p.getName(), p.getInventory().getArmorContents());
+			playerEffects.put(p.getName(), p.getActivePotionEffects());
+			event.getDrops().clear();
 		}
 
 		event.setNewLevel(p.getLevel());
@@ -163,15 +165,12 @@ public class PlayerListener implements Listener {
 
 			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 			warpLocations.put(p.getName(), spawnLocation);
-			playerEffects.put(p.getName(), p.getActivePotionEffects());
 
 			plugin.writeToLog("Player " + p.getName() + " has died in arena" + ab.getName());
 		} else {
 			plugin.writeToLog("Player " + p.getName() + " has died");
 
 		}
-
-		event.getDrops().clear();
 
 	}
 

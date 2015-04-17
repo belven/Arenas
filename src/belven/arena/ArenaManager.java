@@ -858,7 +858,6 @@ public class ArenaManager extends JavaPlugin {
 		spawnMats.Add(EntityType.ZOMBIE, mat);
 		spawnMats.Add(EntityType.SKELETON, mat);
 		spawnMats.Add(EntityType.SPIDER, mat);
-		spawnMats.Add(EntityType.SLIME, mat);
 		spawnMats.Add(EntityType.CAVE_SPIDER, mat);
 		return spawnMats;
 	}
