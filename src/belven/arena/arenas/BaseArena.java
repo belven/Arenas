@@ -2,8 +2,10 @@ package belven.arena.arenas;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -35,16 +37,16 @@ public abstract class BaseArena extends BaseArenaData {
 	public String ArenaName() {
 		return ChatColor.RED + getName() + ChatColor.WHITE;
 	}
-	
-	public void ClearPlayerScoreboards(){
+
+	public void ClearPlayerScoreboards() {
 		ListIterator<Player> players = getArenaPlayers().listIterator();
 
 		while (players.hasNext()) {
-			 clearPlayerScoreboard(players.next());
+			clearPlayerScoreboard(players.next());
 		}
 	}
-	
-	public void clearPlayerScoreboard(Player p){
+
+	public void clearPlayerScoreboard(Player p) {
 		p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 	}
 

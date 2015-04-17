@@ -1,10 +1,8 @@
 package belven.arena.arenas;
 
 import java.util.List;
-import java.util.ListIterator;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -114,8 +112,8 @@ public class StandardArena extends StandardArenaData {
 		if (getCurrentChallengeBlock() != null) {
 			getCurrentChallengeBlock().challengeBlockState.update(true);
 		}
-		
-		ClearPlayerScoreBoards();
+
+		ClearPlayerScoreboards();
 
 	}
 
