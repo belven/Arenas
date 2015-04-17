@@ -64,17 +64,18 @@ public class Wave {
 
 		int rand = Functions.getRandomIndex(et);
 
-		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
-		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
-		ab.getArenaEntities().add(currentEntity);
+		LivingEntity le = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et.get(rand));
+		le.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
+		ab.getArenaEntities().add(le);
 
 		if (ab.getCurrentRunTimes() > 0 && ab.getEliteWave() > 0) {
 			if (ab.getCurrentRunTimes() % ab.getEliteWave() == 0) {
-				EliteMob(currentEntity);
+				EliteMob(le);
 			}
-		} else if (currentEntity.getType() == EntityType.SKELETON) {
-			currentEntity.getEquipment().setItemInHand(new ItemStack(Material.BOW));
+		} else if (le.getType() == EntityType.SKELETON) {
+			le.getEquipment().setItemInHand(new ItemStack(Material.BOW));
 		}
+		ab.getPlugin().writeToLog("A " + le.getType().toString() + " has spawned in arena " + ab.getName());
 
 	}
 
@@ -124,6 +125,7 @@ public class Wave {
 		new MessageTimer(ab.getArenaPlayers(), "A " + ab.getBossMob().BossType.name() + " boss has Spawned!!").run();
 
 		ab.getArenaEntities().add(le);
+		ab.getPlugin().writeToLog("A " + le.getType().toString() + " has spawned in arena " + ab.getName());
 	}
 
 	public void SpawnMobs() {

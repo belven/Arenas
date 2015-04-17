@@ -781,6 +781,7 @@ public class ArenaManager extends JavaPlugin {
 			p.sendMessage("You left the arena " + ab.ArenaName());
 
 			writeToLog("Player " + p.getName() + " has left arena " + ab.getName());
+			writeToLog("Arena " + ab.getName() + " has " + ab.getPlayers().size() + " players");
 		}
 	}
 
@@ -1481,14 +1482,11 @@ public class ArenaManager extends JavaPlugin {
 		Location tpL = Functions.offsetLocation(ab.getArenaWarp().getLocation(), 0.5, 0, 0.5);
 		String tpMsg = "You were teleported and added to the arena " + ab.ArenaName();
 
-		if (ab.isActive()) {
+		if (ab.isActive() && !IsPlayerInArena(p)) {
 			PlayersInArenas.put(p, ab);
 			setPlayerMetaData(ab);
 
 			if (!ab.getArenaPlayers().contains(p)) {
-				ab.getArenaPlayers().add(p);
-			} else {
-				ab.getArenaPlayers().remove(p);
 				ab.getArenaPlayers().add(p);
 			}
 
@@ -1499,7 +1497,8 @@ public class ArenaManager extends JavaPlugin {
 			}
 
 			p.sendMessage(tpMsg);
-			writeToLog("Player " + p.getName() + " has warped to arena" + ab.getName());
+			writeToLog("Player " + p.getName() + " has been added and teleported to arena" + ab.getName());
+			writeToLog("Arena " + ab.getName() + " has " + ab.getPlayers().size() + " players");
 			return true;
 		} else {
 			warpLocations.put(p.getName(), p.getLocation());
