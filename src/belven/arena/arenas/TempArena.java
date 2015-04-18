@@ -10,9 +10,9 @@ public class TempArena extends StandardArena {
 	public TempArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
 			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, mobToMat, Plugin, TimerPeriod);
+		setType(ArenaTypes.Temp);
 
 		Activate();
-		setType(ArenaTypes.Temp);
 	}
 
 	@Override

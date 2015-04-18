@@ -13,6 +13,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import belven.arena.ArenaManager;
+import belven.arena.arenas.Phaseable;
 import belven.resources.Functions;
 
 public class InteractionPhase extends Phase {
@@ -26,13 +27,13 @@ public class InteractionPhase extends Phase {
 		this.interactables = interactables;
 	}
 
-	public InteractionPhase(ArenaManager plugin, List<PhaseBlock> interactables) {
-		this(plugin);
+	public InteractionPhase(ArenaManager plugin, Phaseable owner, List<PhaseBlock> interactables) {
+		this(plugin, owner);
 		setInteractables(interactables);
 	}
 
-	public InteractionPhase(ArenaManager plugin) {
-		super(plugin);
+	public InteractionPhase(ArenaManager plugin, Phaseable owner) {
+		super(plugin, owner);
 	}
 
 	@Override
@@ -65,19 +66,34 @@ public class InteractionPhase extends Phase {
 		for (PhaseBlock pb : getInteractables()) {
 			pb.SetMetaData();
 		}
+		getOwner().PhaseChanged(this);
 	}
 
 	@Override
 	public void deactivate() {
 		setActive(false);
+		if (!isCompleted()) {
+			for (PhaseBlock pb : getInteractables()) {
+				pb.interactedWith(null);
+			}
+		}
+
+		getOwner().PhaseChanged(this);
 	}
 
 	public synchronized void interactionOccured(Interactable interactable) {
-		if (getInteractables().contains(interactable)) {
+		if (getInteractables().contains(interactable) && isActive()) {
 			getInteractables().remove(interactable);
-			if (getInteractables().size() <= 0) {
+			getOwner().PhaseChanged(this);
+
+			if (isCompleted()) {
 				deactivate();
 			}
 		}
+	}
+
+	@Override
+	public boolean isCompleted() {
+		return getInteractables().size() <= 0;
 	}
 }

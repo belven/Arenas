@@ -22,7 +22,11 @@ import belven.arena.rewardclasses.Item;
 import belven.arena.rewardclasses.ItemReward;
 import belven.resources.Functions;
 
-public abstract class BaseArena extends BaseArenaData {
+/**
+ * @author sam
+ * 
+ */
+public abstract class BaseArena extends BaseArenaData implements Phaseable {
 
 	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
@@ -50,6 +54,14 @@ public abstract class BaseArena extends BaseArenaData {
 	public abstract void Activate();
 
 	public abstract void Deactivate();
+
+	public abstract void ClearingArena();
+
+	public abstract void Phased();
+
+	public boolean shouldPhase() {
+		return getPhases().containsKey(getCurrentRunTimes());
+	}
 
 	public void RestoreArena() {
 		for (SavedBlock sb : getOriginalBlocks()) {
@@ -83,7 +95,7 @@ public abstract class BaseArena extends BaseArenaData {
 			}
 			// Don't add 2 phases to the same wave
 			if (!getPhases().containsKey(wave)) {
-				getPhases().put(wave, Phase.getRandomPhase(getPlugin(), getSpawnArea()));
+				getPhases().put(wave, Phase.getRandomPhase(getPlugin(), this, getSpawnArea()));
 			}
 		}
 	}
@@ -118,12 +130,15 @@ public abstract class BaseArena extends BaseArenaData {
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.GivingRewards.toString() + "state");
+					"Arena " + getName() + " failed to go to " + ArenaState.GivingRewards.toString() + " state");
 		}
 	}
 
-	public abstract void GoToNextWave();
+	public abstract void ProgressingWave();
 
+	/**
+	 * Pre-generates the arenas blocks to determine if a player is standing on one
+	 */
 	public void SetPlayers() {
 		GetArenaArea();
 

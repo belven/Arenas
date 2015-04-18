@@ -21,13 +21,17 @@ import belven.arena.resources.SavedBlock;
 import belven.resources.Functions;
 import belven.resources.Group;
 
+/**
+ * @author sam
+ * 
+ */
 public class BaseArenaData extends Group {
 	public enum ArenaTypes {
 		Standard, PvP, Temp
 	}
 
 	public enum ArenaState {
-		Active, Deactivated, Phased, SpawningEntities, GivingRewards, ClearingArena
+		Active, Deactivated, Phased, ProgressingWave, GivingRewards, ClearingArena
 	}
 
 	private ArenaState state = ArenaState.Deactivated;
@@ -329,8 +333,17 @@ public class BaseArenaData extends Group {
 		return activePhase;
 	}
 
+	/**
+	 * Sets the arenas active phase, activates the phase and removes it from the list.
+	 * 
+	 * @param activePhase - The new active phase
+	 */
 	public void setActivePhase(Phase activePhase) {
 		this.activePhase = activePhase;
+		if (activePhase != null) {
+			activePhase.activate();
+			getPhases().remove(activePhase);
+		}
 	}
 
 	public ArenaState getState() {
@@ -347,21 +360,24 @@ public class BaseArenaData extends Group {
 		}
 	}
 
+	// Based on the arenas active state, this will say what state it can change to
 	public boolean canTransitionToState(ArenaState state) {
 		switch (getState()) {
-		case Active:
-			return state == ArenaState.SpawningEntities || state == ArenaState.GivingRewards
-					|| state == ArenaState.ClearingArena;
-		case SpawningEntities:
-			return state == ArenaState.Phased || state == ArenaState.ClearingArena || state == ArenaState.Active;
-		case Phased:
-			return state == ArenaState.SpawningEntities || state == ArenaState.ClearingArena;
-		case GivingRewards:
+		case Active: // Go to Deactivated because the arena couldn't start, go straight to phased to prevent a wave
+						// go to the first wave or clear the arena as everyone left after it started
+			return state == ArenaState.Deactivated || state == ArenaState.Phased || state == ArenaState.ProgressingWave
+					|| state == ArenaState.ClearingArena || state == ArenaState.GivingRewards;
+		case GivingRewards: // Ensure that the arena is only cleared once rewards are given
 			return state == ArenaState.ClearingArena;
-		case ClearingArena:
+		case ClearingArena: // If we've cleared the arena then there's nothing left so deactive
 			return state == ArenaState.Deactivated;
-		case Deactivated:
-			return state == ArenaState.Active || state == ArenaState.ClearingArena;
+		case ProgressingWave: // We have spawned entities so the arena should still active
+			return state == ArenaState.Active;
+		case Phased: // A phase will stop new waves or arena completion so there is either a new wave or the arena is at it's end
+			return state == ArenaState.ProgressingWave || state == ArenaState.ClearingArena
+					|| state == ArenaState.Active;
+		case Deactivated: // Inactive
+			return state == ArenaState.Active;
 		default:
 			return false;
 		}

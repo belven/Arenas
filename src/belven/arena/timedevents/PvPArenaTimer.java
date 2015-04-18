@@ -33,7 +33,7 @@ public class PvPArenaTimer extends BukkitRunnable {
 		} else if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes()) {
 			ArenaSuccessfull();
 		} else if (ab.getCurrentRunTimes() < ab.getMaxRunTimes()) {
-			ab.GoToNextWave();
+			ab.ProgressingWave();
 			this.cancel();
 		}
 	}

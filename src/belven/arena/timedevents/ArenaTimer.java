@@ -10,14 +10,19 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.BaseArenaData.ArenaState;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaSuccessful;
 import belven.resources.Functions;
 
 public class ArenaTimer extends BukkitRunnable {
 	private StandardArena ab;
-
 	public UUID arenaRunID;
+
+	/**
+	 * This is used to ensure that this only runs if the current wave of the arena hasn't changed, i.e. another event has changed it's state
+	 * to {@link ArenaState.ProgressingWave}
+	 */
 	public int nextWave = 0;
 
 	public ArenaTimer(StandardArena arenaBlock) {
@@ -28,25 +33,31 @@ public class ArenaTimer extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		// IFfthe arena or this timer is no longer vaild
-		if (!ab.isActive() || arenaRunID != ab.getArenaRunID() || nextWave < ab.getCurrentRunTimes()) {
-			this.cancel();
-		} else {
+		if (isArenaAndTimerVaild()) {
 			CleanUpEntites();
+
 			if (isBeyondLastWave()) {
 				BeyondLastWave();
 			} else {
-				ab.GoToNextWave();
+				if (ab.shouldPhase()) {
+					ab.Phased();
+				} else if (ab.canTransitionToState(ArenaState.ProgressingWave)) {
+					ab.ProgressingWave();
 
-				if (ab.getCurrentRunTimes() > nextWave) {
-					ab.getPlugin().writeToLog(
-							"Arena " + ab.getName() + " has progressed to wave "
-									+ String.valueOf(ab.getCurrentRunTimes()));
+					if (ab.getCurrentRunTimes() > nextWave) {
+						ab.getPlugin().writeToLog(
+								"Arena " + ab.getName() + " has progressed to wave "
+										+ String.valueOf(ab.getCurrentRunTimes()));
+					}
 				}
-
-				this.cancel();
 			}
 		}
+
+		this.cancel();
+	}
+
+	private boolean isArenaAndTimerVaild() {
+		return ab.isActive() || arenaRunID == ab.getArenaRunID() || nextWave == ab.getCurrentRunTimes();
 	}
 
 	private boolean isBeyondLastWave() {
@@ -82,12 +93,15 @@ public class ArenaTimer extends BukkitRunnable {
 	private void ArenaHasEntitiesLeft() {
 		ab.SetAmountOfMobsToSpawn();
 		ab.setCurrentRunTimes(ab.getCurrentRunTimes() + 1);
-		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has "
-				+ String.valueOf(ab.getArenaEntities().size()) + " mobs left").run();
+		new MessageTimer(ab.getArenaPlayers(), getMobsLeftString()).run();
 
 		int delay = Functions.SecondsToTicks(10);
 		new ArenaTimer(ab).runTaskLater(ab.getPlugin(), delay);
 		this.cancel();
+	}
+
+	private String getMobsLeftString() {
+		return "Arena " + ab.ArenaName() + " has " + String.valueOf(ab.getArenaEntities().size()) + " mobs left";
 	}
 
 	private void CleanUpEntites() {
@@ -95,7 +109,7 @@ public class ArenaTimer extends BukkitRunnable {
 
 		while (ArenaEntities.hasNext()) {
 			LivingEntity le = ArenaEntities.next();
-			if (le != null && le.isDead()) {
+			if (le == null || le != null && (le.isDead() || !le.isValid())) {
 				if (le.hasMetadata("ArenaMob")) {
 					le.removeMetadata("ArenaMob", ab.getPlugin());
 				}
@@ -105,8 +119,13 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	public synchronized void ArenaSuccessfull() {
+		Bukkit.getPluginManager().callEvent(new ArenaSuccessful(ab));
+
 		// Give arena rewards
 		ab.GiveRewards();
+
+		ab.getPlugin().writeToLog("Arena " + ab.getName() + " has was completed");
+		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 
 		// check to see if we need to run other linked arenas
 		if (ab.getLinkedArenas().size() > 0) {
@@ -118,14 +137,8 @@ public class ArenaTimer extends BukkitRunnable {
 			}
 		}
 
-		ab.getPlugin().writeToLog("Arena " + ab.getName() + " has was completed");
-		Bukkit.getPluginManager().callEvent(new ArenaSuccessful(ab));
-		EndArena();
-	}
-
-	public synchronized void EndArena() {
-		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 		ab.Deactivate();
 		this.cancel();
 	}
+
 }

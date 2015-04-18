@@ -46,7 +46,7 @@ import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArenaData.ArenaTypes;
 import belven.arena.arenas.PvPArena;
 import belven.arena.arenas.StandardArena;
-import belven.arena.arenas.TempArena;
+import belven.arena.arenas.TempMazeArena;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.listeners.ArenaListener;
 import belven.arena.listeners.BlockListener;
@@ -381,7 +381,7 @@ public class ArenaManager extends JavaPlugin {
 			MobToMaterialCollecton mobs = MatToMob(Functions.offsetLocation(p.getLocation(), 0, -1, 0).getBlock()
 					.getType());
 
-			new TempArena(min, max, ArenaName, Radius, mobs, this, Functions.SecondsToTicks(period));
+			new TempMazeArena(min, max, ArenaName, Radius, mobs, this, Functions.SecondsToTicks(period));
 		} else {
 			p.sendMessage("You can't do this while in an arena!!");
 		}
@@ -767,7 +767,7 @@ public class ArenaManager extends JavaPlugin {
 			PlayersInArenas.remove(p);
 			setPlayerMetaData(ab);
 
-			if (ab.getArenaPlayers().size() == 0 && ab.isActive()) {
+			if (ab.getArenaPlayers().size() == 0) {
 				ab.Deactivate();
 			}
 
@@ -834,7 +834,7 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
-	private String LocationToString(Block block) {
+	public String LocationToString(Block block) {
 		String locationString = "";
 		Location l = block.getLocation();
 
@@ -843,7 +843,7 @@ public class ArenaManager extends JavaPlugin {
 		return locationString;
 	}
 
-	private String LocationToString(Location l) {
+	public String LocationToString(Location l) {
 		String locationString = "";
 
 		if (l != null) {

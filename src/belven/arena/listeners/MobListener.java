@@ -13,6 +13,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
@@ -41,6 +43,16 @@ public class MobListener implements Listener {
 	@EventHandler
 	public void onEntityCombustEvent(EntityCombustEvent event) {
 		if (event.getEntity().hasMetadata("ArenaMob") && event.getDuration() == 8) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onEntityDamageEvent(EntityDamageEvent event) {
+		if (event.getEntity().hasMetadata("ArenaMob") && event.getCause() == DamageCause.SUFFOCATION) {
+			List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, event.getEntity());
+			BaseArena ab = (BaseArena) data.get(0).value();
+			event.getEntity().teleport(BaseArena.GetRandomArenaSpawnLocation(ab));
 			event.setCancelled(true);
 		}
 	}
@@ -107,7 +119,7 @@ public class MobListener implements Listener {
 				sab.getArenaEntities().remove(e);
 
 				if (sab.getArenaEntities().size() <= 0 && sab.getCurrentRunTimes() <= sab.getMaxRunTimes()) {
-					sab.GoToNextWave();
+					sab.ProgressingWave();
 				}
 			}
 

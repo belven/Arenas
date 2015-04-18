@@ -1,6 +1,5 @@
 package belven.arena.phases;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -8,20 +7,17 @@ import org.bukkit.block.Block;
 import org.bukkit.scoreboard.Scoreboard;
 
 import belven.arena.ArenaManager;
+import belven.arena.arenas.Phaseable;
 
 public abstract class Phase {
 	private boolean active = false;
 	private ArenaManager plugin;
-	private List<Block> phaseBlocks = new ArrayList<Block>();
-	private int phaseDuration;
+	private int phaseDuration = 30;
+	private Phaseable owner;
 
-	public Phase(ArenaManager plugin, List<Block> phaseBlocks) {
-		this(plugin);
-		setPhaseBlocks(phaseBlocks);
-	}
-
-	public Phase(ArenaManager plugin) {
+	public Phase(ArenaManager plugin, Phaseable owner) {
 		setPlugin(plugin);
+		setOwner(owner);
 	}
 
 	public abstract Scoreboard GetPhaseScoreboard();
@@ -30,17 +26,19 @@ public abstract class Phase {
 
 	public abstract void deactivate();
 
-	public static Phase getRandomPhase(ArenaManager plugin, List<Block> blocks) {
+	public abstract boolean isCompleted();
+
+	public static Phase getRandomPhase(ArenaManager plugin, Phaseable owner, List<Block> blocks) {
 		InteractionPhase ip;
 		int rand = new Random().nextInt(1);
 
 		switch (rand) {
 		case 0:
-			ip = new InteractionPhase(plugin);
+			ip = new InteractionPhase(plugin, owner);
 			ip.setRandomPhaseBlocks(blocks);
 			return ip;
 		default:
-			ip = new InteractionPhase(plugin);
+			ip = new InteractionPhase(plugin, owner);
 			ip.setRandomPhaseBlocks(blocks);
 			return ip;
 		}
@@ -62,20 +60,20 @@ public abstract class Phase {
 		this.plugin = plugin;
 	}
 
-	public List<Block> getPhaseBlocks() {
-		return phaseBlocks;
-	}
-
-	public void setPhaseBlocks(List<Block> phaseBlocks) {
-		this.phaseBlocks = phaseBlocks;
-	}
-
 	public int getPhaseDuration() {
 		return phaseDuration;
 	}
 
 	public void setPhaseDuration(int phaseDuration) {
 		this.phaseDuration = phaseDuration;
+	}
+
+	public Phaseable getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Phaseable owner) {
+		this.owner = owner;
 	}
 
 }

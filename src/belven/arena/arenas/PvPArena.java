@@ -19,6 +19,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import belven.arena.ArenaManager;
+import belven.arena.phases.Phase;
 import belven.arena.timedevents.MessageTimer;
 import belven.arena.timedevents.PvPArenaTimer;
 import belven.resources.Functions;
@@ -115,20 +116,12 @@ public class PvPArena extends BaseArena {
 	@Override
 	public void Deactivate() {
 		try {
-			setArenaRunID(null);
-			RestoreArena();
-
-			ListIterator<Player> players = getArenaPlayers().listIterator();
-
-			while (players.hasNext()) {
-				Player p = players.next();
-				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-			}
-
+			ClearingArena();
 			setState(ArenaState.Deactivated);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog("Arena " + getName() + " failed to go to active state");
+			getPlugin().writeToLog(
+					"Arena " + getName() + " failed to go to " + ArenaState.Deactivated.toString() + "  state");
 		}
 	}
 
@@ -167,7 +160,7 @@ public class PvPArena extends BaseArena {
 	}
 
 	@Override
-	public void GoToNextWave() {
+	public void ProgressingWave() {
 		if (getArenaPlayers().size() > 0) {
 			setCurrentRunTimes(getCurrentRunTimes() + 1);
 
@@ -178,5 +171,49 @@ public class PvPArena extends BaseArena {
 		} else {
 			Deactivate();
 		}
+	}
+
+	@Override
+	public void ClearingArena() {
+		try {
+			setState(ArenaState.ClearingArena);
+			setArenaRunID(null);
+			RestoreArena();
+
+			ListIterator<Player> players = getArenaPlayers().listIterator();
+
+			while (players.hasNext()) {
+				Player p = players.next();
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			}
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog(
+					"Arena " + getName() + " failed to go to " + ArenaState.ClearingArena.toString() + "  state");
+		}
+	}
+
+	@Override
+	public void Phased() {
+		try {
+			setState(ArenaState.Phased);
+			Phase activePhase = getPhases().get(getCurrentRunTimes());
+			setActivePhase(activePhase);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog(
+					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
+		}
+	}
+
+	@Override
+	public void PhaseChanged(Phase p) {
+		ListIterator<Player> players = getArenaPlayers().listIterator();
+
+		while (players.hasNext()) {
+			Player pl = players.next();
+			pl.setScoreboard(p.GetPhaseScoreboard());
+		}
+
 	}
 }
