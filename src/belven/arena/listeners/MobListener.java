@@ -28,6 +28,7 @@ import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArenaData.ArenaTypes;
 import belven.arena.arenas.StandardArena;
 import belven.arena.challengeclasses.ChallengeBlock;
+import belven.arena.phases.KillsPhase;
 import belven.arena.rewardclasses.Reward;
 
 public class MobListener implements Listener {
@@ -100,6 +101,12 @@ public class MobListener implements Listener {
 		Entity e = event.getEntity();
 		List<MetadataValue> data = MDM.getMetaData(MDM.ArenaMob, e);
 		List<MetadataValue> reward = MDM.getMetaData(MDM.RewardBoss, e);
+		List<MetadataValue> killPhase = MDM.getMetaData(KillsPhase.KILLS_PHASE, e);
+
+		if (killPhase != null) {
+			KillsPhase kp = (KillsPhase) killPhase.get(0).value();
+			kp.EntityKilled(e);
+		}
 
 		if (data != null) {
 			BaseArena ab = (BaseArena) data.get(0).value();

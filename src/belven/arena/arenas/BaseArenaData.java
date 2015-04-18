@@ -374,8 +374,8 @@ public class BaseArenaData extends Group {
 		case ProgressingWave: // We have spawned entities so the arena should still active
 			return state == ArenaState.Active;
 		case Phased: // A phase will stop new waves or arena completion so there is either a new wave or the arena is at it's end
-			return state == ArenaState.ProgressingWave || state == ArenaState.ClearingArena
-					|| state == ArenaState.Active;
+			return state == ArenaState.ProgressingWave || state == ArenaState.ClearingArena;
+			// || state == ArenaState.Active;
 		case Deactivated: // Inactive
 			return state == ArenaState.Active;
 		default:

@@ -30,17 +30,21 @@ public abstract class Phase {
 
 	public static Phase getRandomPhase(ArenaManager plugin, Phaseable owner, List<Block> blocks) {
 		InteractionPhase ip;
-		int rand = new Random().nextInt(1);
+		int rand = new Random().nextInt(3);
 
 		switch (rand) {
 		case 0:
 			ip = new InteractionPhase(plugin, owner);
 			ip.setRandomPhaseBlocks(blocks);
 			return ip;
+		case 1:
+			KillsPhase kp = new KillsPhase(plugin, owner);
+			kp.setBlocks(blocks);
+			return kp;
 		default:
-			ip = new InteractionPhase(plugin, owner);
-			ip.setRandomPhaseBlocks(blocks);
-			return ip;
+			KillsPhase kp1 = new KillsPhase(plugin, owner);
+			kp1.setBlocks(blocks);
+			return kp1;
 		}
 	}
 

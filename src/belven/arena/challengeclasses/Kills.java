@@ -20,7 +20,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import belven.arena.MDM;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ChallengeComplete;
-import belven.resources.Functions;
 
 public class Kills extends Challenge {
 	public static HashMap<EntityType, Integer> GetRandomEntities(StandardArena ab) {
@@ -44,14 +43,9 @@ public class Kills extends Challenge {
 	}
 
 	public static void SpawnEntity(StandardArena ab, EntityType et) {
-		int randomInt = new Random().nextInt(ab.getSpawnArea().size());
-		Location spawnLocation = ab.getSpawnArea().get(randomInt).getLocation();
-		spawnLocation = Functions.offsetLocation(spawnLocation, 0.5, 0, 0.5);
-
+		Location spawnLocation = StandardArena.GetRandomArenaSpawnLocation(ab);
 		LivingEntity currentEntity = (LivingEntity) spawnLocation.getWorld().spawnEntity(spawnLocation, et);
-
 		currentEntity.setMetadata(MDM.ArenaMob, new FixedMetadataValue(ab.getPlugin(), ab));
-
 		ab.getArenaEntities().add(currentEntity);
 	}
 

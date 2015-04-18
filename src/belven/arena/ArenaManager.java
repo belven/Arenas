@@ -43,6 +43,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
 import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.BaseArenaData.ArenaState;
 import belven.arena.arenas.BaseArenaData.ArenaTypes;
 import belven.arena.arenas.PvPArena;
 import belven.arena.arenas.StandardArena;
@@ -767,7 +768,8 @@ public class ArenaManager extends JavaPlugin {
 			PlayersInArenas.remove(p);
 			setPlayerMetaData(ab);
 
-			if (ab.getArenaPlayers().size() == 0) {
+			if (ab.getArenaPlayers().size() == 0 && ab.getState() != ArenaState.ClearingArena
+					&& ab.getState() != ArenaState.Deactivated) {
 				ab.Deactivate();
 			}
 
@@ -853,11 +855,11 @@ public class ArenaManager extends JavaPlugin {
 		return locationString;
 	}
 
-	private MobToMaterialCollecton MatToMob(Material mat) {
+	public static MobToMaterialCollecton MatToMob(Material mat) {
 		MobToMaterialCollecton spawnMats = new MobToMaterialCollecton();
 		spawnMats.Add(EntityType.ZOMBIE, mat);
 		spawnMats.Add(EntityType.SKELETON, mat);
-		spawnMats.Add(EntityType.SPIDER, mat);
+		// spawnMats.Add(EntityType.SPIDER, mat);
 		spawnMats.Add(EntityType.CAVE_SPIDER, mat);
 		return spawnMats;
 	}

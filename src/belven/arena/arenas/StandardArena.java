@@ -150,8 +150,9 @@ public class StandardArena extends StandardArenaData {
 	public void ProgressingWave() {
 		try {
 			setState(ArenaState.ProgressingWave);
-			SetAmountOfMobsToSpawn();
 			setCurrentRunTimes(getCurrentRunTimes() + 1);
+
+			SetAmountOfMobsToSpawn();
 
 			if (getCurrentRunTimes() == 1) {
 				new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
@@ -171,12 +172,14 @@ public class StandardArena extends StandardArenaData {
 	@Override
 	public void Phased() {
 		try {
-			if (getState() != ArenaState.Phased) {
+			if (canTransitionToState(ArenaState.Phased)) {
 				setState(ArenaState.Phased);
 				Phase activePhase = getPhases().get(getCurrentRunTimes());
 				setActivePhase(activePhase);
-			} else {
+			} else if (getActivePhase().isActive()) {
 				new ArenaTimer(this).runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
+			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
+				ProgressingWave();
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
@@ -187,6 +190,7 @@ public class StandardArena extends StandardArenaData {
 
 	@Override
 	public void PhaseChanged(Phase p) {
+		ClearPlayerScoreboards();
 		ListIterator<Player> players = getArenaPlayers().listIterator();
 
 		if (p.isActive()) {
@@ -195,7 +199,6 @@ public class StandardArena extends StandardArenaData {
 				pl.setScoreboard(p.GetPhaseScoreboard());
 			}
 		} else if (p.isCompleted() && canTransitionToState(ArenaState.ProgressingWave)) {
-			ClearPlayerScoreboards();
 			ProgressingWave();
 		}
 	}
