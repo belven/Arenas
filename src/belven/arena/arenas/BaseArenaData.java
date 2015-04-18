@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import belven.arena.ArenaManager;
-import belven.arena.arenas.BaseArena.ArenaTypes;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.phases.Phase;
 import belven.arena.resources.SavedBlock;
@@ -23,8 +22,16 @@ import belven.resources.Functions;
 import belven.resources.Group;
 
 public class BaseArenaData extends Group {
+	public enum ArenaTypes {
+		Standard, PvP, Temp
+	}
+
+	public enum ArenaState {
+		Active, Deactivated, Phased, SpawningEntities, GivingRewards, ClearingArena
+	}
+
+	private ArenaState state = ArenaState.Deactivated;
 	protected ArenaManager plugin;
-	protected boolean isActive = false;
 	protected ArenaTypes type;
 	protected String name = "";
 	protected Block blockToActivate, deactivateBlock, arenaWarp;
@@ -92,11 +99,7 @@ public class BaseArenaData extends Group {
 	}
 
 	public boolean isActive() {
-		return isActive;
-	}
-
-	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+		return getState() == ArenaState.Active;
 	}
 
 	public ArenaTypes getType() {
@@ -174,8 +177,6 @@ public class BaseArenaData extends Group {
 	}
 
 	public List<Player> getArenaPlayers() {
-		// List<Player> tempPlayers = new ArrayList<Player>();
-		// tempPlayers.addAll(arenaPlayers);
 		return getPlayers();
 	}
 
@@ -330,5 +331,39 @@ public class BaseArenaData extends Group {
 
 	public void setActivePhase(Phase activePhase) {
 		this.activePhase = activePhase;
+	}
+
+	public ArenaState getState() {
+		return state;
+	}
+
+	public void setState(ArenaState state) throws IllegalStateException {
+		if (canTransitionToState(state)) {
+			this.state = state;
+			getPlugin().writeToLog("Arena " + getName() + " changed state to " + state.toString());
+		} else {
+			throw new IllegalStateException("Tried to trasition from state " + getState().toString() + " to state "
+					+ state.toString());
+		}
+	}
+
+	public boolean canTransitionToState(ArenaState state) {
+		switch (getState()) {
+		case Active:
+			return state == ArenaState.SpawningEntities || state == ArenaState.GivingRewards
+					|| state == ArenaState.ClearingArena;
+		case SpawningEntities:
+			return state == ArenaState.Phased || state == ArenaState.ClearingArena || state == ArenaState.Active;
+		case Phased:
+			return state == ArenaState.SpawningEntities || state == ArenaState.ClearingArena;
+		case GivingRewards:
+			return state == ArenaState.ClearingArena;
+		case ClearingArena:
+			return state == ArenaState.Deactivated;
+		case Deactivated:
+			return state == ArenaState.Active || state == ArenaState.ClearingArena;
+		default:
+			return false;
+		}
 	}
 }

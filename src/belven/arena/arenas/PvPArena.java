@@ -26,14 +26,12 @@ import belven.resources.Functions;
 public class PvPArena extends BaseArena {
 
 	public HashMap<String, Integer> Lives = new HashMap<String, Integer>();
-	// public TeamManager tm;
 	public List<Material> spawnMats = new ArrayList<Material>();
 	public int lives = 0;
 
 	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
 			Material m, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
-		// tm = getPlugin().teams;
 		spawnMats.add(m);
 		setType(ArenaTypes.PvP);
 		lives = 10;
@@ -45,16 +43,22 @@ public class PvPArena extends BaseArena {
 		Lives.clear();
 
 		if (getArenaPlayers().size() != 0) {
-			for (Player p : getArenaPlayers()) {
-				if (!Lives.containsKey(p.getName())) {
-					Lives.put(p.getName(), lives);
+			try {
+				for (Player p : getArenaPlayers()) {
+					if (!Lives.containsKey(p.getName())) {
+						Lives.put(p.getName(), lives);
+					}
 				}
-			}
 
-			GetSpawnArea();
-			setArenaRunID(UUID.randomUUID());
-			setActive(true);
-			SetPlayersScoreBoards();
+				GetSpawnArea();
+				setArenaRunID(UUID.randomUUID());
+				SetPlayersScoreBoards();
+
+				setState(ArenaState.Active);
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				getPlugin().writeToLog("Arena " + getName() + " failed to go to active state");
+			}
 		} else {
 			Deactivate();
 		}
@@ -110,15 +114,21 @@ public class PvPArena extends BaseArena {
 
 	@Override
 	public void Deactivate() {
-		setArenaRunID(null);
-		RestoreArena();
-		setActive(false);
+		try {
+			setArenaRunID(null);
+			RestoreArena();
 
-		ListIterator<Player> players = getArenaPlayers().listIterator();
+			ListIterator<Player> players = getArenaPlayers().listIterator();
 
-		while (players.hasNext()) {
-			Player p = players.next();
-			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			while (players.hasNext()) {
+				Player p = players.next();
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			}
+
+			setState(ArenaState.Deactivated);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to active state");
 		}
 	}
 

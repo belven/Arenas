@@ -1,5 +1,6 @@
 package belven.arena.phases;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -11,7 +12,7 @@ import belven.arena.ArenaManager;
 public abstract class Phase {
 	private boolean active = false;
 	private ArenaManager plugin;
-	private List<Block> phaseBlocks;
+	private List<Block> phaseBlocks = new ArrayList<Block>();
 	private int phaseDuration;
 
 	public Phase(ArenaManager plugin, List<Block> phaseBlocks) {

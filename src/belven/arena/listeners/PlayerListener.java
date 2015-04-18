@@ -34,7 +34,7 @@ import org.bukkit.potion.PotionEffectType;
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
-import belven.arena.arenas.BaseArena.ArenaTypes;
+import belven.arena.arenas.BaseArenaData.ArenaTypes;
 import belven.arena.arenas.PvPArena;
 import belven.arena.phases.Interactable;
 import belven.resources.EntityFunctions;

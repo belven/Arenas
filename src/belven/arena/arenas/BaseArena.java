@@ -23,9 +23,6 @@ import belven.arena.rewardclasses.ItemReward;
 import belven.resources.Functions;
 
 public abstract class BaseArena extends BaseArenaData {
-	public enum ArenaTypes {
-		Standard, PvP, Temp
-	}
 
 	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
 			int TimerPeriod) {
@@ -92,28 +89,36 @@ public abstract class BaseArena extends BaseArenaData {
 	}
 
 	public synchronized void GiveRewards() {
-		int count = getArenaPlayers().size();
-		Iterator<Player> ArenaPlayers = getArenaPlayers().listIterator();
+		try {
+			setState(ArenaState.GivingRewards);
 
-		while (ArenaPlayers.hasNext()) {
-			Player p = ArenaPlayers.next();
-			if (getArenaRewards().size() <= 0) {
-				ItemReward ir = new ItemReward(ItemReward.RandomItemRewards());
-				for (Item i : ir.rewards) {
-					if (i.ShouldGive(count)) {
-						p.getInventory().addItem(i.getItem());
+			int count = getArenaPlayers().size();
+			Iterator<Player> ArenaPlayers = getArenaPlayers().listIterator();
+
+			while (ArenaPlayers.hasNext()) {
+				Player p = ArenaPlayers.next();
+				if (getArenaRewards().size() <= 0) {
+					ItemReward ir = new ItemReward(ItemReward.RandomItemRewards());
+					for (Item i : ir.rewards) {
+						if (i.ShouldGive(count)) {
+							p.getInventory().addItem(i.getItem());
+						}
 					}
 				}
-			}
 
-			p.sendMessage("Giving rewards");
-			for (ItemStack is : getArenaRewards()) {
-				if (is != null) {
-					p.getInventory().addItem(is);
+				p.sendMessage("Giving rewards");
+				for (ItemStack is : getArenaRewards()) {
+					if (is != null) {
+						p.getInventory().addItem(is);
+					}
 				}
-			}
 
-			p.removeMetadata("InArena", plugin);
+				p.removeMetadata("InArena", plugin);
+			}
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog(
+					"Arena " + getName() + " failed to go to " + ArenaState.GivingRewards.toString() + "state");
 		}
 	}
 

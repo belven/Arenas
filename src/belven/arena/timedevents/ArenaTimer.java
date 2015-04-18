@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -29,16 +28,12 @@ public class ArenaTimer extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		if (arenaRunID != ab.getArenaRunID() || nextWave < ab.getCurrentRunTimes()) {
+		// IFfthe arena or this timer is no longer vaild
+		if (!ab.isActive() || arenaRunID != ab.getArenaRunID() || nextWave < ab.getCurrentRunTimes()) {
 			this.cancel();
-		} else if (!ab.isActive()) {
-			ab.RemoveMobs();
-			this.cancel();
-		} else if (ab.getArenaArea().size() == 0 || ab.getArenaPlayers().size() == 0) {
-			EndArena();
 		} else {
 			CleanUpEntites();
-			if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes()) {
+			if (isBeyondLastWave()) {
 				BeyondLastWave();
 			} else {
 				ab.GoToNextWave();
@@ -54,17 +49,25 @@ public class ArenaTimer extends BukkitRunnable {
 		}
 	}
 
+	private boolean isBeyondLastWave() {
+		return ab.getCurrentRunTimes() >= ab.getMaxRunTimes();
+	}
+
 	private void BeyondLastWave() {
 		if (ab.getArenaEntities().size() == 0) {
 			ArenaSuccessfull();
-		} else if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes() && ab.getCurrentRunTimes() % 7 == 0) {
-			SpreadEntities();
-			ArenaHasEntitiesLeft();
 		} else if (ab.getArenaEntities().size() > 0) {
+			if (shouldSpreadEntities()) {
+				SpreadEntities();
+			}
 			ArenaHasEntitiesLeft();
 		} else {
 			ArenaSuccessfull();
 		}
+	}
+
+	public boolean shouldSpreadEntities() {
+		return ab.getCurrentRunTimes() >= ab.getMaxRunTimes() && ab.getCurrentRunTimes() % 7 == 0;
 	}
 
 	private void SpreadEntities() {
@@ -77,7 +80,7 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	private void ArenaHasEntitiesLeft() {
-		ab.GetPlayersAverageLevel();
+		ab.SetAmountOfMobsToSpawn();
 		ab.setCurrentRunTimes(ab.getCurrentRunTimes() + 1);
 		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has "
 				+ String.valueOf(ab.getArenaEntities().size()) + " mobs left").run();
@@ -104,9 +107,6 @@ public class ArenaTimer extends BukkitRunnable {
 	public synchronized void ArenaSuccessfull() {
 		// Give arena rewards
 		ab.GiveRewards();
-
-		new BlockRestorer(Material.REDSTONE_BLOCK, ab.getDeactivateBlock()).runTaskLater(ab.getPlugin(),
-				Functions.SecondsToTicks(1));
 
 		// check to see if we need to run other linked arenas
 		if (ab.getLinkedArenas().size() > 0) {

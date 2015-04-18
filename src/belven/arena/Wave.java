@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import belven.arena.arenas.BaseArena;
+import belven.arena.arenas.BaseArenaData.ArenaState;
 import belven.arena.arenas.StandardArena;
 import belven.arena.events.ArenaBlockNewWave;
 import belven.arena.timedevents.MessageTimer;
@@ -129,16 +130,26 @@ public class Wave {
 	}
 
 	public void SpawnMobs() {
-		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
-				+ String.valueOf(ab.getMaxMobCounter())).run();
-
 		if (ab.getSpawnArea().size() > 0) {
-			for (int mobCounter = 0; mobCounter < ab.getMaxMobCounter(); mobCounter++) {
-				MobToSpawn(BaseArena.GetRandomArenaSpawnLocation(ab));
-			}
+			try {
+				ab.setState(ArenaState.SpawningEntities);
 
-			if (ab.getCurrentRunTimes() == ab.getMaxRunTimes()) {
-				SpawnBoss();
+				new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
+						+ String.valueOf(ab.getMaxMobCounter())).run();
+
+				for (int mobCounter = 0; mobCounter < ab.getMaxMobCounter(); mobCounter++) {
+					MobToSpawn(BaseArena.GetRandomArenaSpawnLocation(ab));
+				}
+
+				if (ab.getCurrentRunTimes() == ab.getMaxRunTimes()) {
+					SpawnBoss();
+				}
+				ab.setState(ArenaState.Active);
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				ab.getPlugin().writeToLog(
+						"Arena " + ab.getName() + " failed to go to " + ArenaState.SpawningEntities.toString()
+								+ "  state");
 			}
 		}
 	}

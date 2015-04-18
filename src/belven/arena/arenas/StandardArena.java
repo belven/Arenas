@@ -1,11 +1,8 @@
 package belven.arena.arenas;
 
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -45,39 +42,44 @@ public class StandardArena extends StandardArenaData {
 	public void Activate() {
 		SetPlayers();
 
-		if (getArenaPlayers().size() != 0) {
-			setArenaRunID(UUID.randomUUID());
-			setActive(true);
-			RemoveMobs();
-			ArenaEntities.clear();
-			GetSpawnArea();
-			GenerateRandomPhases(0.5);
-			new ArenaTimer(this).runTaskLater(getPlugin(), 10);
+		try {
+			if (getArenaPlayers().size() != 0) {
+				setState(ArenaState.Active);
+				setArenaRunID(UUID.randomUUID());
+				GetSpawnArea();
+				GenerateRandomPhases(0.5);
+				new ArenaTimer(this).runTaskLater(getPlugin(), 10);
+			} else {
+				getPlugin().writeToLog("Arena " + getName() + " was started but detected no players");
+			}
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin()
+					.writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Active.toString() + " state");
 		}
+
 	}
 
-	public void GetPlayersAverageLevel() {
-		if (getArenaPlayers().size() == 0) {
-			return;
-		}
+	public void SetAmountOfMobsToSpawn() {
+		if (getArenaPlayers().size() > 0) {
+			int totalLevels = 0;
+			setAverageLevel(0);
+			setMaxMobCounter(0);
 
-		int totalLevels = 0;
-		setAverageLevel(0);
-		setMaxMobCounter(0);
+			for (Player p : getArenaPlayers()) {
+				totalLevels += p.getLevel();
+			}
 
-		for (Player p : getArenaPlayers()) {
-			totalLevels += p.getLevel();
-		}
+			if (totalLevels == 0) {
+				totalLevels = 1;
+			}
 
-		if (totalLevels == 0) {
-			totalLevels = 1;
-		}
+			setAverageLevel(totalLevels / getArenaPlayers().size());
+			setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
 
-		setAverageLevel(totalLevels / getArenaPlayers().size());
-		setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
-
-		if (getMaxMobCounter() > getArenaPlayers().size() * _MaxMobCount) {
-			setMaxMobCounter(getArenaPlayers().size() * _MaxMobCount);
+			if (getMaxMobCounter() > getArenaPlayers().size() * _MaxMobCount) {
+				setMaxMobCounter(getArenaPlayers().size() * _MaxMobCount);
+			}
 		}
 	}
 
@@ -102,78 +104,46 @@ public class StandardArena extends StandardArenaData {
 				le.setHealth(0.0);
 			}
 		}
+		ArenaEntities.clear();
 	}
 
 	@Override
-	public void Deactivate() {
-		setArenaRunID(null);
-		RestoreArena();
-		setActive(false);
-		RemoveMobs();
-		setActivePhase(null);
-		getPhases().clear();
-		ArenaEntities.clear();
+	public synchronized void Deactivate() {
 
-		if (getCurrentChallengeBlock() != null) {
-			getCurrentChallengeBlock().challengeBlockState.update(true);
-		}
+		try {
+			setState(ArenaState.ClearingArena);
+			setArenaRunID(null);
+			RemoveMobs();
+			RestoreArena();
+			setActivePhase(null);
+			getPhases().clear();
 
-		ClearPlayerScoreboards();
+			ClearPlayerScoreboards();
 
-		if (getLinkedArenas().size() == 0) {
-			Iterator<Player> players = getArenaPlayers().iterator();
-			while (players.hasNext()) {
-				try {
-					Player p = players.next();
+			if (getLinkedArenas().size() == 0) {
+				for (Player p : getArenaPlayers().subList(0, getArenaPlayers().size())) {
 					getPlugin().LeaveArena(p);
-					p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-				} catch (ConcurrentModificationException e) {
-					e.printStackTrace();
-					try {
-						wait(500);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
-		}
 
+			setState(ArenaState.Deactivated);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to active state");
+		}
 	}
 
 	@Override
 	public void GoToNextWave() {
-		if (getArenaPlayers().size() > 0) {
-			GetPlayersAverageLevel();
+		SetAmountOfMobsToSpawn();
+		setCurrentRunTimes(getCurrentRunTimes() + 1);
 
-			// We only progress to another wave if the there is no phase or it's not active
-			if (getActivePhase() == null || !getActivePhase().isActive()) {
-				setCurrentRunTimes(getCurrentRunTimes() + 1);
-
-				if (getCurrentRunTimes() == 1) {
-					new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
-				}
-
-				// We only move to another wave if there is no phase this wave
-				if (getPhases().containsKey(getCurrentRunTimes())) {
-					setActivePhase(getPhases().get(getCurrentRunTimes()));
-					getPhases().get(getCurrentRunTimes()).activate();
-					new MessageTimer(getArenaPlayers(), "A phase has begun").run();
-				}
-
-				new Wave(this);
-				new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes()))
-						.run();
-				new ArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
-			} else if (getActivePhase() != null && getActivePhase().isActive()) {
-				for (Player p : getPlayers()) {
-					p.setScoreboard(getActivePhase().GetPhaseScoreboard());
-				}
-
-				if (getActivePhase().getPhaseBlocks().size() == 0) {
-					setActivePhase(null);
-				}
-				new ArenaTimer(this).runTaskLater(getPlugin(), Functions.SecondsToTicks(2));
-			}
+		if (getCurrentRunTimes() == 1) {
+			new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
 		}
+
+		new Wave(this);
+		new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes())).run();
+		new ArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
 	}
 }

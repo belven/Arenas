@@ -27,7 +27,7 @@ public class NextWaveTimer extends BukkitRunnable {
 	}
 
 	private void GoToNextWave() {
-		arenaBlock.GetPlayersAverageLevel();
+		arenaBlock.SetAmountOfMobsToSpawn();
 		arenaBlock.setCurrentRunTimes(arenaBlock.getCurrentRunTimes() + 1);
 		if (arenaBlock.getCurrentRunTimes() == 1) {
 			new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " has Started!!").run();

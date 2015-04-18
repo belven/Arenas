@@ -43,7 +43,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
 import belven.arena.arenas.BaseArena;
-import belven.arena.arenas.BaseArena.ArenaTypes;
+import belven.arena.arenas.BaseArenaData.ArenaTypes;
 import belven.arena.arenas.PvPArena;
 import belven.arena.arenas.StandardArena;
 import belven.arena.arenas.TempArena;
@@ -767,7 +767,7 @@ public class ArenaManager extends JavaPlugin {
 			PlayersInArenas.remove(p);
 			setPlayerMetaData(ab);
 
-			if (ab.getArenaPlayers().size() == 0) {
+			if (ab.getArenaPlayers().size() == 0 && ab.isActive()) {
 				ab.Deactivate();
 			}
 
