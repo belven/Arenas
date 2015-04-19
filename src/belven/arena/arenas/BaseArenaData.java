@@ -18,6 +18,7 @@ import belven.arena.ArenaManager;
 import belven.arena.challengeclasses.ChallengeBlock;
 import belven.arena.phases.Phase;
 import belven.arena.resources.SavedBlock;
+import belven.arena.timedevents.ArenaTimer;
 import belven.resources.Functions;
 import belven.resources.Group;
 
@@ -36,6 +37,7 @@ public class BaseArenaData extends Group {
 
 	private ArenaState state = ArenaState.Deactivated;
 	protected ArenaManager plugin;
+	private ArenaTimer timer;
 	protected ArenaTypes type;
 	protected String name = "";
 	protected Block blockToActivate, deactivateBlock, arenaWarp;
@@ -381,5 +383,16 @@ public class BaseArenaData extends Group {
 		default:
 			return false;
 		}
+	}
+
+	public ArenaTimer getTimer() {
+		return timer;
+	}
+
+	public void setTimer(ArenaTimer timer) {
+		if (getTimer() != null) {
+			getTimer().cancel();
+		}
+		this.timer = timer;
 	}
 }

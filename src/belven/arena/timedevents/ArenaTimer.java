@@ -33,7 +33,7 @@ public class ArenaTimer extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		if (isArenaAndTimerVaild()) {
+		if (isTimerVaild()) {
 			CleanUpEntites();
 
 			if (isBeyondLastWave()) {
@@ -56,7 +56,7 @@ public class ArenaTimer extends BukkitRunnable {
 		this.cancel();
 	}
 
-	private boolean isArenaAndTimerVaild() {
+	private boolean isTimerVaild() {
 		return ab.isActive() || arenaRunID == ab.getArenaRunID() || nextWave == ab.getCurrentRunTimes();
 	}
 
@@ -96,7 +96,8 @@ public class ArenaTimer extends BukkitRunnable {
 		new MessageTimer(ab.getArenaPlayers(), getMobsLeftString()).run();
 
 		int delay = Functions.SecondsToTicks(10);
-		new ArenaTimer(ab).runTaskLater(ab.getPlugin(), delay);
+		ab.setTimer(new ArenaTimer(ab));
+		ab.getTimer().runTaskLater(ab.getPlugin(), delay);
 		this.cancel();
 	}
 

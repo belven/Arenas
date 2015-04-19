@@ -24,7 +24,7 @@ public class StandardArena extends StandardArenaData {
 		super(startLocation, endLocation, ArenaName, mobToMat, Plugin, TimerPeriod);
 	}
 
-	public void GetSpawnArea() {
+	public synchronized void GetSpawnArea() {
 		getSpawnArea().clear();
 
 		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(),
@@ -41,7 +41,7 @@ public class StandardArena extends StandardArenaData {
 	}
 
 	@Override
-	public void Activate() {
+	public synchronized void Activate() {
 		try {
 			SetPlayers();
 
@@ -50,7 +50,8 @@ public class StandardArena extends StandardArenaData {
 				setArenaRunID(UUID.randomUUID());
 				GetSpawnArea();
 				GenerateRandomPhases(0.2);
-				new ArenaTimer(this).runTaskLater(getPlugin(), 10);
+				setTimer(new ArenaTimer(this));
+				getTimer().runTaskLater(getPlugin(), 10);
 			} else {
 				getPlugin().writeToLog("Arena " + getName() + " was started but detected no players");
 			}
@@ -61,7 +62,7 @@ public class StandardArena extends StandardArenaData {
 		}
 	}
 
-	public void SetAmountOfMobsToSpawn() {
+	public synchronized void SetAmountOfMobsToSpawn() {
 		if (getArenaPlayers().size() > 0) {
 			int totalLevels = 0;
 			setAverageLevel(0);
@@ -158,21 +159,26 @@ public class StandardArena extends StandardArenaData {
 	}
 
 	@Override
-	public void ProgressingWave() {
+	public synchronized void ProgressingWave() {
 		try {
-			setState(ArenaState.ProgressingWave);
-			setCurrentRunTimes(getCurrentRunTimes() + 1);
+			if (getCurrentRunTimes() < getMaxRunTimes()) {
+				setState(ArenaState.ProgressingWave);
+				setCurrentRunTimes(getCurrentRunTimes() + 1);
 
-			SetAmountOfMobsToSpawn();
+				SetAmountOfMobsToSpawn();
 
-			if (getCurrentRunTimes() == 1) {
-				new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
+				if (getCurrentRunTimes() == 1) {
+					new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
+				}
+
+				new Wave(this);
+				new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes()))
+						.run();
+
+				setTimer(new ArenaTimer(this));
+				getTimer().runTaskLater(getPlugin(), getTimerPeriod());
+				setState(ArenaState.Active);
 			}
-
-			new Wave(this);
-			new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes())).run();
-			new ArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
-			setState(ArenaState.Active);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 			getPlugin().writeToLog(
@@ -181,15 +187,16 @@ public class StandardArena extends StandardArenaData {
 	}
 
 	@Override
-	public void Phased() {
+	public synchronized void Phased() {
 		try {
 			if (canTransitionToState(ArenaState.Phased)) {
 				setState(ArenaState.Phased);
 				Phase activePhase = getPhases().get(getCurrentRunTimes());
 				setActivePhase(activePhase);
-			} else if (getActivePhase().isActive()) {
+			} else if (getActivePhase().isActive() && !getActivePhase().isCompleted()) {
 				getActivePhase().phaseRanDuration();
-				new ArenaTimer(this).runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
+				setTimer(new ArenaTimer(this));
+				getTimer().runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
 			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
 				ProgressingWave();
 			}
@@ -201,7 +208,7 @@ public class StandardArena extends StandardArenaData {
 	}
 
 	@Override
-	public void PhaseChanged(Phase p) {
+	public synchronized void PhaseChanged(Phase p) {
 		ClearPlayerScoreboards();
 		ListIterator<Player> players = getArenaPlayers().listIterator();
 
