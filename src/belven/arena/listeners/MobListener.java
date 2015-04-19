@@ -17,10 +17,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.potion.PotionEffectType;
 
 import belven.arena.ArenaManager;
 import belven.arena.MDM;
@@ -32,13 +30,11 @@ import belven.arena.phases.KillsPhase;
 import belven.arena.rewardclasses.Reward;
 
 public class MobListener implements Listener {
-	private final ArenaManager plugin;
 	public HashMap<String, String> CurrentPlayerClasses = new HashMap<String, String>();
 
 	Random randomGenerator = new Random();
 
 	public MobListener(ArenaManager instance) {
-		plugin = instance;
 	}
 
 	@EventHandler
@@ -80,21 +76,21 @@ public class MobListener implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent event) {
-		if (event.getTarget() != null && event.getTarget().getType() == EntityType.PLAYER) {
-			Player p = (Player) event.getTarget();
-			Entity entity = event.getEntity();
-
-			if (entity != null && entity.hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
-				event.setCancelled(true);
-			} else if (entity != null && !entity.hasMetadata("ArenaMob") && plugin.IsPlayerInArena(p)) {
-				event.setCancelled(true);
-			} else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-				event.setCancelled(true);
-			}
-		}
-	}
+	// @EventHandler
+	// public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent event) {
+	// if (event.getTarget() != null && event.getTarget().getType() == EntityType.PLAYER) {
+	// Player p = (Player) event.getTarget();
+	// Entity entity = event.getEntity();
+	//
+	// if (entity != null && entity.hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
+	// event.setCancelled(true);
+	// } else if (entity != null && !entity.hasMetadata("ArenaMob") && plugin.IsPlayerInArena(p)) {
+	// event.setCancelled(true);
+	// } else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+	// event.setCancelled(true);
+	// }
+	// }
+	// }
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeathEvent(EntityDeathEvent event) {

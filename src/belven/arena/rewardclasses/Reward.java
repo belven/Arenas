@@ -25,7 +25,7 @@ public abstract class Reward {
 		case 0:
 			return new ExperienceReward(exp);
 		case 1:
-			return new ItemReward(ItemReward.RandomItemRewards());
+			return new ItemReward(ItemReward.RandomItemRewards(new Random().nextInt(20)));
 		case 2:
 		case 3:
 			return new BossReward(EntityType.ZOMBIE);

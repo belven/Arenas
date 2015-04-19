@@ -14,7 +14,7 @@ import belven.arena.EliteMobCollection;
 import belven.arena.MobToMaterialCollecton;
 
 public abstract class StandardArenaData extends BaseArena {
-	protected static final int _MaxMobCount = 7;
+	protected static final int _MaxMobCount = 25;
 	protected BossMob bm = new BossMob();
 	protected MobToMaterialCollecton MobToMat = new MobToMaterialCollecton();
 	protected List<LivingEntity> ArenaEntities = new ArrayList<LivingEntity>();

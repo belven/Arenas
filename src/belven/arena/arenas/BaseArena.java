@@ -110,7 +110,7 @@ public abstract class BaseArena extends BaseArenaData implements Phaseable {
 			while (ArenaPlayers.hasNext()) {
 				Player p = ArenaPlayers.next();
 				if (getArenaRewards().size() <= 0) {
-					ItemReward ir = new ItemReward(ItemReward.RandomItemRewards());
+					ItemReward ir = new ItemReward(ItemReward.RandomItemRewards(getSpawnArea().size()));
 					for (Item i : ir.rewards) {
 						if (i.ShouldGive(count)) {
 							p.getInventory().addItem(i.getItem());

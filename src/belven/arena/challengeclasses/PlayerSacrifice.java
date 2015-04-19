@@ -62,7 +62,7 @@ public class PlayerSacrifice extends Challenge {
 
 	@Override
 	public void EntityKilled(EntityType entityType) {
-		// TODO Auto-generated method stub
+		
 
 	}
 

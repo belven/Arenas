@@ -42,16 +42,15 @@ public class StandardArena extends StandardArenaData {
 
 	@Override
 	public void Activate() {
-		SetPlayers();
-
 		try {
+			SetPlayers();
+
 			if (getArenaPlayers().size() != 0) {
 				setState(ArenaState.Active);
 				setArenaRunID(UUID.randomUUID());
 				GetSpawnArea();
-				GenerateRandomPhases(0.5);
+				GenerateRandomPhases(0.2);
 				new ArenaTimer(this).runTaskLater(getPlugin(), 10);
-				// setState(ArenaState.Phased);
 			} else {
 				getPlugin().writeToLog("Arena " + getName() + " was started but detected no players");
 			}
@@ -76,12 +75,24 @@ public class StandardArena extends StandardArenaData {
 				totalLevels = 1;
 			}
 
-			setAverageLevel(totalLevels / getArenaPlayers().size());
-			setMaxMobCounter(totalLevels / getArenaPlayers().size() + getArenaPlayers().size() * 5);
+			int spawnSize = getSpawnArea().size() / 2;
 
-			if (getMaxMobCounter() > getArenaPlayers().size() * _MaxMobCount) {
-				setMaxMobCounter(getArenaPlayers().size() * _MaxMobCount);
+			setAverageLevel(totalLevels / getArenaPlayers().size());
+
+			int percent = spawnSize / getAverageLevel();
+			int avgPercent = spawnSize / Functions.averagePlayerLevel();
+
+			if (percent > avgPercent) {
+				percent = avgPercent;
 			}
+
+			int count = Math.round(percent * 10);
+
+			if (count > getArenaPlayers().size() * _MaxMobCount) {
+				count = getArenaPlayers().size() * _MaxMobCount;
+			}
+
+			setMaxMobCounter(count);
 		}
 	}
 
@@ -177,6 +188,7 @@ public class StandardArena extends StandardArenaData {
 				Phase activePhase = getPhases().get(getCurrentRunTimes());
 				setActivePhase(activePhase);
 			} else if (getActivePhase().isActive()) {
+				getActivePhase().phaseRanDuration();
 				new ArenaTimer(this).runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
 			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
 				ProgressingWave();

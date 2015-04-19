@@ -28,6 +28,8 @@ public abstract class Phase {
 
 	public abstract boolean isCompleted();
 
+	public abstract boolean phaseRanDuration();
+
 	public static Phase getRandomPhase(ArenaManager plugin, Phaseable owner, List<Block> blocks) {
 		InteractionPhase ip;
 		int rand = new Random().nextInt(3);

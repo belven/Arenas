@@ -16,9 +16,8 @@ import belven.arena.rewardclasses.Item.ChanceLevel;
 import belven.arena.timedevents.MessageTimer;
 
 public class ItemReward extends Reward {
-	public static List<Item> RandomItemRewards() {
+	public static List<Item> RandomItemRewards(int amount) {
 		List<Item> items = new ArrayList<Item>();
-		int amount = 10;
 
 		for (Material m : ArenaManager.getItemMaterials()) {
 			ChanceLevel cl = ArenaManager.getMaterialChance(m);

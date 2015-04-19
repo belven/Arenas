@@ -155,4 +155,13 @@ public class KillsPhase extends Phase {
 	public void setEntities(List<LivingEntity> entities) {
 		this.entities = entities;
 	}
+
+	@Override
+	public boolean phaseRanDuration() {
+		for (LivingEntity le : entities) {
+			Location spawnLocation = getBlocks().get(Functions.getRandomIndex(getBlocks())).getLocation();
+			le.teleport(spawnLocation);
+		}
+		return true;
+	}
 }

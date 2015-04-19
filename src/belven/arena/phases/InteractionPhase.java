@@ -96,4 +96,10 @@ public class InteractionPhase extends Phase {
 	public boolean isCompleted() {
 		return getInteractables().size() <= 0;
 	}
+
+	@Override
+	public boolean phaseRanDuration() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }
