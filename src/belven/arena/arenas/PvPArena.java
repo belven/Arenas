@@ -43,7 +43,7 @@ public class PvPArena extends BaseArena {
 		SetPlayers();
 		Lives.clear();
 
-		if (getArenaPlayers().size() != 0) {
+		if (getArenaPlayers().size() > 1) {
 			try {
 				for (Player p : getArenaPlayers()) {
 					if (!Lives.containsKey(p.getName())) {
