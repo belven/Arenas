@@ -196,9 +196,17 @@ public class PvPArena extends BaseArena {
 	@Override
 	public void Phased() {
 		try {
-			setState(ArenaState.Phased);
-			Phase activePhase = getPhases().get(getCurrentRunTimes());
-			setActivePhase(activePhase);
+			if (canTransitionToState(ArenaState.Phased)) {
+				setState(ArenaState.Phased);
+				Phase activePhase = getPhases().get(getCurrentRunTimes());
+				setActivePhase(activePhase);
+			} else if (getActivePhase().isActive() && !getActivePhase().isCompleted()) {
+				getActivePhase().phaseRanDuration();
+				setTimer(new ArenaTimer(this));
+				getTimer().runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
+			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
+				ProgressingWave();
+			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 			getPlugin().writeToLog(
@@ -208,12 +216,13 @@ public class PvPArena extends BaseArena {
 
 	@Override
 	public void PhaseChanged(Phase p) {
-		ListIterator<Player> players = getArenaPlayers().listIterator();
-
-		while (players.hasNext()) {
-			Player pl = players.next();
-			pl.setScoreboard(p.GetPhaseScoreboard());
+		if (p.isActive()) {
+			while (players.hasNext()) {
+				Player pl = players.next();
+				pl.setScoreboard(p.GetPhaseScoreboard());
+			}
+		} else if (p.isCompleted() && canTransitionToState(ArenaState.ProgressingWave)) {
+			ProgressingWave();
 		}
-
 	}
 }
