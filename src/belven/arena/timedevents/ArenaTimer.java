@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -115,10 +116,9 @@ public class ArenaTimer extends BukkitRunnable {
 					le.removeMetadata("ArenaMob", ab.getPlugin());
 				}
 				ArenaEntities.remove();
-			} else if(le != null && !le.getBlock().getRelative(BlockFace.DOWN).hasMetadata("ArenaBlock")){
+			} else if (le != null && !le.getLocation().getBlock().getRelative(BlockFace.DOWN).hasMetadata("ArenaBlock")) {
 				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 				le.teleport(spawnLocation);
-				// TODO
 			}
 		}
 	}

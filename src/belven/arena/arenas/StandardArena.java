@@ -45,11 +45,11 @@ public class StandardArena extends StandardArenaData {
 		try {
 			SetPlayers();
 
-			if (getArenaPlayers().size() != 0) {
+			if (getArenaPlayers().size() > 0) {
 				setState(ArenaState.Active);
 				setArenaRunID(UUID.randomUUID());
 				GetSpawnArea();
-				GenerateRandomPhases(0.2);
+				GenerateRandomPhases(0.3);
 				setTimer(new ArenaTimer(this));
 				getTimer().runTaskLater(getPlugin(), 10);
 			} else {
@@ -63,8 +63,11 @@ public class StandardArena extends StandardArenaData {
 	}
 
 	public synchronized void SetAmountOfMobsToSpawn() {
-		if (getArenaPlayers().size() > 0) {
-			int totalLevels = 0;
+		final int playerCount = getArenaPlayers().size();
+		// int spawnSize = getSpawnArea().size() / getDifficulty();
+		int totalLevels = 0;
+
+		if (playerCount > 0) {
 			setAverageLevel(0);
 			setMaxMobCounter(0);
 
@@ -76,21 +79,13 @@ public class StandardArena extends StandardArenaData {
 				totalLevels = 1;
 			}
 
-			int spawnSize = getSpawnArea().size() / 2;
+			setAverageLevel(Math.round(totalLevels / playerCount));
 
-			setAverageLevel(totalLevels / getArenaPlayers().size());
+			int count = Math.round(playerCount * 5);
+			count += Math.round(getAverageLevel() / 5);
 
-			int percent = spawnSize / getAverageLevel();
-			int avgPercent = spawnSize / Functions.averagePlayerLevel();
-
-			if (percent > avgPercent) {
-				percent = avgPercent;
-			}
-
-			int count = Math.round(percent * 10);
-
-			if (count > getArenaPlayers().size() * _MaxMobCount) {
-				count = getArenaPlayers().size() * _MaxMobCount;
+			if (count > playerCount * _MaxMobCount) {
+				count = playerCount * _MaxMobCount;
 			}
 
 			setMaxMobCounter(count);
@@ -220,5 +215,10 @@ public class StandardArena extends StandardArenaData {
 		} else if (p.isCompleted() && canTransitionToState(ArenaState.ProgressingWave)) {
 			ProgressingWave();
 		}
+	}
+
+	@Override
+	public int getDifficulty() {
+		return 7;
 	}
 }

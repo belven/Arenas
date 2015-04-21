@@ -2,6 +2,7 @@ package belven.arena.arenas;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.UUID;
@@ -202,7 +203,7 @@ public class PvPArena extends BaseArena {
 				setActivePhase(activePhase);
 			} else if (getActivePhase().isActive() && !getActivePhase().isCompleted()) {
 				getActivePhase().phaseRanDuration();
-				setTimer(new ArenaTimer(this));
+				// setTimer(new ArenaTimer(this));
 				getTimer().runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
 			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
 				ProgressingWave();
@@ -217,6 +218,7 @@ public class PvPArena extends BaseArena {
 	@Override
 	public void PhaseChanged(Phase p) {
 		if (p.isActive()) {
+			Iterator<Player> players = getPlayers().iterator();
 			while (players.hasNext()) {
 				Player pl = players.next();
 				pl.setScoreboard(p.GetPhaseScoreboard());
@@ -225,4 +227,11 @@ public class PvPArena extends BaseArena {
 			ProgressingWave();
 		}
 	}
+
+	@Override
+	public int getDifficulty() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }
