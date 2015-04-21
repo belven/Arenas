@@ -115,6 +115,10 @@ public class ArenaTimer extends BukkitRunnable {
 					le.removeMetadata("ArenaMob", ab.getPlugin());
 				}
 				ArenaEntities.remove();
+			} else if(le != null && !le.getBlock().getRelative(BlockFace.DOWN).hasMetadata("ArenaBlock")){
+				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
+				le.teleport(spawnLocation);
+				// TODO
 			}
 		}
 	}
