@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -69,28 +68,10 @@ public class ArenaTimer extends BukkitRunnable {
 		if (ab.getArenaEntities().size() == 0) {
 			ArenaSuccessfull();
 		} else if (ab.getArenaEntities().size() > 0) {
-			if (shouldSpreadEntities()) {
-				SpreadEntities();
-			}
 			ArenaHasEntitiesLeft();
 		} else {
 			ArenaSuccessfull();
 		}
-	}
-
-	public boolean shouldSpreadEntities() {
-		return ab.getCurrentRunTimes() >= ab.getMaxRunTimes() && ab.getCurrentRunTimes() % 7 == 0;
-	}
-
-	private void SpreadEntities() {
-		for (LivingEntity le : ab.getArenaEntities()) {
-			if (le != null && !le.getLocation().getBlock().hasMetadata(MDM.ArenaBlock)) {
-				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
-				le.teleport(spawnLocation);
-			}
-		}
-
-		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Scrambling Mobs out of the arena!").run();
 	}
 
 	private void ArenaHasEntitiesLeft() {
