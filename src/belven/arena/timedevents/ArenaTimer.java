@@ -84,11 +84,13 @@ public class ArenaTimer extends BukkitRunnable {
 
 	private void SpreadEntities() {
 		for (LivingEntity le : ab.getArenaEntities()) {
-			Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
-			le.teleport(spawnLocation);
+			if (le != null && !le.getLocation().getBlock().hasMetadata(MDM.ArenaBlock)) {
+				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
+				le.teleport(spawnLocation);
+			}
 		}
 
-		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Scrambling Mobs").run();
+		new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Scrambling Mobs out of the arena!").run();
 	}
 
 	private void ArenaHasEntitiesLeft() {
