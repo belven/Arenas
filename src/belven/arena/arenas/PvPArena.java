@@ -162,15 +162,19 @@ public class PvPArena extends BaseArena {
 
 	@Override
 	public void ProgressingWave() {
-		if (getArenaPlayers().size() > 0) {
+		try {
+			setState(ArenaState.ProgressingWave);
 			setCurrentRunTimes(getCurrentRunTimes() + 1);
 
 			if (getCurrentRunTimes() == 1) {
 				new MessageTimer(getArenaPlayers(), ArenaName() + " has Started!!").run();
 			}
+
 			new PvPArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
-		} else {
-			Deactivate();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			getPlugin().writeToLog(
+					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
 		}
 	}
 
@@ -203,7 +207,6 @@ public class PvPArena extends BaseArena {
 				setActivePhase(activePhase);
 			} else if (getActivePhase().isActive() && !getActivePhase().isCompleted()) {
 				getActivePhase().phaseRanDuration();
-				// setTimer(new ArenaTimer(this));
 				getTimer().runTaskLater(getPlugin(), getActivePhase().getPhaseDuration());
 			} else if (canTransitionToState(ArenaState.ProgressingWave)) {
 				ProgressingWave();
@@ -230,7 +233,6 @@ public class PvPArena extends BaseArena {
 
 	@Override
 	public int getDifficulty() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

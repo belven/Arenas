@@ -1,11 +1,8 @@
 package belven.arena.timedevents;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import belven.arena.arenas.BaseArena;
@@ -26,16 +23,18 @@ public class PvPArenaTimer extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		if (arenaRunID != ab.getArenaRunID() || nextWave < ab.getCurrentRunTimes() || !ab.isActive()) {
+		if (isTimerVaild()) {
 			this.cancel();
-		} else if (ab.getArenaArea().size() == 0 || ab.getArenaPlayers().size() == 0) {
-			EndArena();
 		} else if (ab.getCurrentRunTimes() >= ab.getMaxRunTimes()) {
 			ArenaSuccessfull();
 		} else if (ab.getCurrentRunTimes() < ab.getMaxRunTimes()) {
 			ab.ProgressingWave();
 			this.cancel();
 		}
+	}
+
+	private boolean isTimerVaild() {
+		return ab.isActive() || arenaRunID == ab.getArenaRunID() || nextWave == ab.getCurrentRunTimes();
 	}
 
 	public void ArenaSuccessfull() {
@@ -56,14 +55,16 @@ public class PvPArenaTimer extends BukkitRunnable {
 	public void EndArena() {
 		new MessageTimer(ab.getArenaPlayers(), "Arena " + ab.ArenaName() + " has ended!!").run();
 
-		if (ab.getLinkedArenas().size() == 0) {
-			List<Player> ArenaPlayers = new ArrayList<Player>();
-			ArenaPlayers.addAll(ab.getArenaPlayers());
-			for (Player p : ArenaPlayers) {
-				ab.getPlugin().LeaveArena(p);
-				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		// check to see if we need to run other linked arenas
+		if (ab.getLinkedArenas().size() > 0) {
+			for (BaseArena lab : ab.getLinkedArenas()) {
+				if (lab != null && !lab.isActive()) {
+					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(),
+							Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
+				}
 			}
 		}
+
 		ab.Deactivate();
 		this.cancel();
 	}

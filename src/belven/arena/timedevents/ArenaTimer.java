@@ -75,11 +75,10 @@ public class ArenaTimer extends BukkitRunnable {
 	}
 
 	private void ArenaHasEntitiesLeft() {
-		ab.SetAmountOfMobsToSpawn();
-		ab.setCurrentRunTimes(ab.getCurrentRunTimes() + 1);
+		int delay = Functions.SecondsToTicks(10);
+
 		new MessageTimer(ab.getArenaPlayers(), getMobsLeftString()).run();
 
-		int delay = Functions.SecondsToTicks(10);
 		ab.setTimer(new ArenaTimer(ab));
 		ab.getTimer().runTaskLater(ab.getPlugin(), delay);
 		this.cancel();
@@ -99,7 +98,7 @@ public class ArenaTimer extends BukkitRunnable {
 					le.removeMetadata(MDM.ArenaMob, ab.getPlugin());
 				}
 				ArenaEntities.remove();
-			} else if (le != null && !le.getLocation().getBlock().hasMetadata(MDM.ArenaBlock)) {
+			} else if (le != null && !le.getLocation().getBlock().hasMetadata(MDM.ArenaAreaBlock)) {
 				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 				le.teleport(spawnLocation);
 			}
