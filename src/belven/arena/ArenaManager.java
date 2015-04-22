@@ -360,9 +360,9 @@ public class ArenaManager extends JavaPlugin {
 
 			for (Player pl : tempPlayers) {
 				if (!IsPlayerInArena(pl)) {
-					maxSize += 10;
-					Radius += 10;
-					period += 10;
+					maxSize += 40;
+					Radius += 40;
+					period += 40;
 				}
 			}
 

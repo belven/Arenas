@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import belven.arena.MDM;
 import belven.arena.arenas.BaseArena;
 import belven.arena.arenas.BaseArenaData.ArenaState;
 import belven.arena.arenas.StandardArena;
@@ -112,11 +112,11 @@ public class ArenaTimer extends BukkitRunnable {
 		while (ArenaEntities.hasNext()) {
 			LivingEntity le = ArenaEntities.next();
 			if (le == null || le != null && (le.isDead() || !le.isValid())) {
-				if (le.hasMetadata("ArenaMob")) {
-					le.removeMetadata("ArenaMob", ab.getPlugin());
+				if (le.hasMetadata(MDM.ArenaMob)) {
+					le.removeMetadata(MDM.ArenaMob, ab.getPlugin());
 				}
 				ArenaEntities.remove();
-			} else if (le != null && !le.getLocation().getBlock().getRelative(BlockFace.DOWN).hasMetadata("ArenaBlock")) {
+			} else if (le != null && !le.getLocation().getBlock().hasMetadata(MDM.ArenaBlock)) {
 				Location spawnLocation = BaseArena.GetRandomArenaSpawnLocation(ab);
 				le.teleport(spawnLocation);
 			}
