@@ -42,8 +42,7 @@ public class PvPArenaTimer extends BukkitRunnable {
 		if (ab.getLinkedArenas().size() > 0) {
 			for (BaseArena lab : ab.getLinkedArenas()) {
 				if (lab != null && !lab.isActive()) {
-					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(),
-							Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
+					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(), Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
 				}
 			}
 		}
@@ -59,8 +58,7 @@ public class PvPArenaTimer extends BukkitRunnable {
 		if (ab.getLinkedArenas().size() > 0) {
 			for (BaseArena lab : ab.getLinkedArenas()) {
 				if (lab != null && !lab.isActive()) {
-					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(),
-							Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
+					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(), Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
 				}
 			}
 		}

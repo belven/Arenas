@@ -77,14 +77,18 @@ public class MobListener implements Listener {
 	}
 
 	// @EventHandler
-	// public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent event) {
-	// if (event.getTarget() != null && event.getTarget().getType() == EntityType.PLAYER) {
+	// public void onEntityTargetLivingEntityEvent(EntityTargetLivingEntityEvent
+	// event) {
+	// if (event.getTarget() != null && event.getTarget().getType() ==
+	// EntityType.PLAYER) {
 	// Player p = (Player) event.getTarget();
 	// Entity entity = event.getEntity();
 	//
-	// if (entity != null && entity.hasMetadata("ArenaMob") && !plugin.IsPlayerInArena(p)) {
+	// if (entity != null && entity.hasMetadata("ArenaMob") &&
+	// !plugin.IsPlayerInArena(p)) {
 	// event.setCancelled(true);
-	// } else if (entity != null && !entity.hasMetadata("ArenaMob") && plugin.IsPlayerInArena(p)) {
+	// } else if (entity != null && !entity.hasMetadata("ArenaMob") &&
+	// plugin.IsPlayerInArena(p)) {
 	// event.setCancelled(true);
 	// } else if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 	// event.setCancelled(true);

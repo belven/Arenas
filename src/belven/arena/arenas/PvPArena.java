@@ -31,8 +31,7 @@ public class PvPArena extends BaseArena {
 	public List<Material> spawnMats = new ArrayList<Material>();
 	public int lives = 0;
 
-	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin,
-			Material m, int TimerPeriod) {
+	public PvPArena(Location startLocation, Location endLocation, String ArenaName, int Radius, ArenaManager Plugin, Material m, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		spawnMats.add(m);
 		setType(ArenaTypes.PvP);
@@ -87,8 +86,7 @@ public class PvPArena extends BaseArena {
 		Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
 		Block blockAbove = currentBlock.getRelative(BlockFace.UP);
 
-		if (currentBlock.getType() == Material.AIR && blockAbove.getType() == Material.AIR
-				&& spawnMats.contains(blockBelow.getType())) {
+		if (currentBlock.getType() == Material.AIR && blockAbove.getType() == Material.AIR && spawnMats.contains(blockBelow.getType())) {
 			return currentLocation;
 		} else {
 			return null;
@@ -99,8 +97,7 @@ public class PvPArena extends BaseArena {
 		Location spawnLocation;
 		getSpawnArea().clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(),
-				getSpawnArenaEndLocation());
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(), getSpawnArenaEndLocation());
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
@@ -121,8 +118,7 @@ public class PvPArena extends BaseArena {
 			setState(ArenaState.Deactivated);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.Deactivated.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Deactivated.toString() + "  state");
 		}
 	}
 
@@ -173,8 +169,7 @@ public class PvPArena extends BaseArena {
 			new PvPArenaTimer(this).runTaskLater(getPlugin(), getTimerPeriod());
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
 		}
 	}
 
@@ -193,8 +188,7 @@ public class PvPArena extends BaseArena {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.ClearingArena.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.ClearingArena.toString() + "  state");
 		}
 	}
 
@@ -213,8 +207,7 @@ public class PvPArena extends BaseArena {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
 		}
 	}
 

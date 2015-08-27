@@ -28,8 +28,7 @@ import belven.resources.Functions;
  */
 public abstract class BaseArena extends BaseArenaData implements Phaseable {
 
-	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
-			int TimerPeriod) {
+	public BaseArena(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin, int TimerPeriod) {
 
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		getPlugin().currentArenaBlocks.add(this);
@@ -71,10 +70,12 @@ public abstract class BaseArena extends BaseArenaData implements Phaseable {
 	}
 
 	/**
-	 * Creates an amount of Phases for random waves, based on a percent of the waves i.e 0.3 will cause 30% of the waves to have a phase,
-	 * i.e. there will be 3 phases with 10 waves
+	 * Creates an amount of Phases for random waves, based on a percent of the
+	 * waves i.e 0.3 will cause 30% of the waves to have a phase, i.e. there
+	 * will be 3 phases with 10 waves
 	 * 
-	 * @param percent - the percent of waves that will create phases
+	 * @param percent
+	 *            - the percent of waves that will create phases
 	 */
 	public void GenerateRandomPhases(double percent) {
 		if (getMaxRunTimes() < 0) {
@@ -110,8 +111,7 @@ public abstract class BaseArena extends BaseArenaData implements Phaseable {
 			while (ArenaPlayers.hasNext()) {
 				Player p = ArenaPlayers.next();
 				if (getArenaRewards().size() <= 0) {
-					ItemReward ir = new ItemReward(ItemReward.RandomItemRewards(getSpawnArea().size() > 40 ? 40
-							: getSpawnArea().size()));
+					ItemReward ir = new ItemReward(ItemReward.RandomItemRewards(getSpawnArea().size() > 40 ? 40 : getSpawnArea().size()));
 					for (Item i : ir.rewards) {
 						if (i.ShouldGive(count)) {
 							p.getInventory().addItem(i.getItem());
@@ -130,15 +130,15 @@ public abstract class BaseArena extends BaseArenaData implements Phaseable {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.GivingRewards.toString() + " state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.GivingRewards.toString() + " state");
 		}
 	}
 
 	public abstract void ProgressingWave();
 
 	/**
-	 * Pre-generates the arenas blocks to determine if a player is standing on one
+	 * Pre-generates the arenas blocks to determine if a player is standing on
+	 * one
 	 */
 	public void SetPlayers() {
 		GetArenaArea();

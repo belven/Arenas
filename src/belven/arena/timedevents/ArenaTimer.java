@@ -20,8 +20,9 @@ public class ArenaTimer extends BukkitRunnable {
 	public UUID arenaRunID;
 
 	/**
-	 * This is used to ensure that this only runs if the current wave of the arena hasn't changed, i.e. another event has changed it's state
-	 * to {@link ArenaState.ProgressingWave}
+	 * This is used to ensure that this only runs if the current wave of the
+	 * arena hasn't changed, i.e. another event has changed it's state to
+	 * {@link ArenaState.ProgressingWave}
 	 */
 	public int nextWave = 0;
 
@@ -45,9 +46,7 @@ public class ArenaTimer extends BukkitRunnable {
 					ab.ProgressingWave();
 
 					if (ab.getCurrentRunTimes() > nextWave) {
-						ab.getPlugin().writeToLog(
-								"Arena " + ab.getName() + " has progressed to wave "
-										+ String.valueOf(ab.getCurrentRunTimes()));
+						ab.getPlugin().writeToLog("Arena " + ab.getName() + " has progressed to wave " + String.valueOf(ab.getCurrentRunTimes()));
 					}
 				}
 			}
@@ -118,8 +117,7 @@ public class ArenaTimer extends BukkitRunnable {
 		if (ab.getLinkedArenas().size() > 0) {
 			for (BaseArena lab : ab.getLinkedArenas()) {
 				if (lab != null && !lab.isActive()) {
-					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(),
-							Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
+					new LinkedArenaTimer(ab, lab).runTaskLater(ab.getPlugin(), Functions.SecondsToTicks(ab.getLinkedArenaDelay()));
 				}
 			}
 		}

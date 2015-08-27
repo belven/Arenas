@@ -62,7 +62,6 @@ public class PlayerSacrifice extends Challenge {
 
 	@Override
 	public void EntityKilled(EntityType entityType) {
-		
 
 	}
 

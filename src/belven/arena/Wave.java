@@ -131,8 +131,7 @@ public class Wave {
 	public void SpawnMobs() {
 		if (ab.getSpawnArea().size() > 0) {
 
-			new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE
-					+ String.valueOf(ab.getMaxMobCounter())).run();
+			new MessageTimer(ab.getArenaPlayers(), ChatColor.RED + "Mobs Spawning: " + ChatColor.WHITE + String.valueOf(ab.getMaxMobCounter())).run();
 
 			for (int mobCounter = 0; mobCounter < ab.getMaxMobCounter(); mobCounter++) {
 				MobToSpawn(BaseArena.GetRandomArenaSpawnLocation(ab));

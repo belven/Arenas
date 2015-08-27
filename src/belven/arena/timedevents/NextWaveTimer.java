@@ -20,8 +20,7 @@ public class NextWaveTimer extends BukkitRunnable {
 		CleanUpEntites();
 		if (arenaBlock.getArenaPlayers().size() == 0 || !arenaBlock.isActive()) {
 			this.cancel();
-		} else if (arenaBlock.getArenaEntities().size() == 0
-				&& arenaBlock.getCurrentRunTimes() < arenaBlock.getMaxRunTimes()) {
+		} else if (arenaBlock.getArenaEntities().size() == 0 && arenaBlock.getCurrentRunTimes() < arenaBlock.getMaxRunTimes()) {
 			GoToNextWave();
 		}
 	}
@@ -32,8 +31,7 @@ public class NextWaveTimer extends BukkitRunnable {
 		if (arenaBlock.getCurrentRunTimes() == 1) {
 			new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " has Started!!").run();
 		}
-		new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " Wave: "
-				+ String.valueOf(arenaBlock.getCurrentRunTimes())).run();
+		new MessageTimer(arenaBlock.getArenaPlayers(), arenaBlock.getName() + " Wave: " + String.valueOf(arenaBlock.getCurrentRunTimes())).run();
 
 		new Wave(arenaBlock);
 		new ArenaTimer(arenaBlock).runTaskLater(arenaBlock.getPlugin(), arenaBlock.getTimerPeriod());

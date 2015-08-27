@@ -19,16 +19,14 @@ import belven.arena.timedevents.MessageTimer;
 import belven.resources.Functions;
 
 public class StandardArena extends StandardArenaData {
-	public StandardArena(Location startLocation, Location endLocation, String ArenaName,
-			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
+	public StandardArena(Location startLocation, Location endLocation, String ArenaName, MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, mobToMat, Plugin, TimerPeriod);
 	}
 
 	public synchronized void GetSpawnArea() {
 		getSpawnArea().clear();
 
-		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(),
-				getSpawnArenaEndLocation());
+		List<Block> tempSpawnArea = Functions.getBlocksBetweenPoints(getSpawnArenaStartLocation(), getSpawnArenaEndLocation());
 
 		if (tempSpawnArea != null && tempSpawnArea.size() > 0) {
 			for (Block b : tempSpawnArea) {
@@ -57,8 +55,7 @@ public class StandardArena extends StandardArenaData {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin()
-					.writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Active.toString() + " state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Active.toString() + " state");
 		}
 	}
 
@@ -97,8 +94,7 @@ public class StandardArena extends StandardArenaData {
 		Block blockBelow = currentBlock.getRelative(BlockFace.DOWN);
 		Block blockAbove = currentBlock.getRelative(BlockFace.UP);
 
-		if (isAir(currentBlock) && isAir(blockAbove) && MobToMat.Contains(blockBelow.getType())
-				&& isWithinArena(currentBlock) && isWithinArena(blockAbove)) {
+		if (isAir(currentBlock) && isAir(blockAbove) && MobToMat.Contains(blockBelow.getType()) && isWithinArena(currentBlock) && isWithinArena(blockAbove)) {
 			return currentLocation;
 		} else {
 			return null;
@@ -167,8 +163,7 @@ public class StandardArena extends StandardArenaData {
 				}
 
 				new Wave(this);
-				new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes()))
-						.run();
+				new MessageTimer(getArenaPlayers(), ArenaName() + " Wave: " + String.valueOf(getCurrentRunTimes())).run();
 
 				setTimer(new ArenaTimer(this));
 				getTimer().runTaskLater(getPlugin(), getTimerPeriod());
@@ -176,8 +171,7 @@ public class StandardArena extends StandardArenaData {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
 		}
 	}
 
@@ -197,8 +191,7 @@ public class StandardArena extends StandardArenaData {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin().writeToLog(
-					"Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.ProgressingWave.toString() + "  state");
 		}
 	}
 

@@ -47,18 +47,15 @@ public class BaseArenaData extends Group {
 	protected List<Block> arenaArea = new ArrayList<Block>(), spawnArea = new ArrayList<Block>();
 	protected List<SavedBlock> originalBlocks = new ArrayList<SavedBlock>();
 	protected List<BaseArena> linkedArenas = new ArrayList<BaseArena>();
-	protected Location spawnArenaStartLocation, spawnArenaEndLocation, ArenaStartLocation, ArenaEndLocation,
-			arenaChest;
+	protected Location spawnArenaStartLocation, spawnArenaEndLocation, ArenaStartLocation, ArenaEndLocation, arenaChest;
 
-	protected int maxRunTimes = 0, timerPeriod = 0, averageLevel = 0, linkedArenaDelay = 0, currentRunTimes = 0,
-			ChallengeBlockWave = 0;
+	protected int maxRunTimes = 0, timerPeriod = 0, averageLevel = 0, linkedArenaDelay = 0, currentRunTimes = 0, ChallengeBlockWave = 0;
 
 	protected List<ItemStack> arenaRewards = new ArrayList<ItemStack>();
 	protected UUID arenaRunID;
 	protected List<UUID> editors = new ArrayList<>();
 
-	public BaseArenaData(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin,
-			int TimerPeriod) {
+	public BaseArenaData(Location startLocation, Location endLocation, String ArenaName, ArenaManager Plugin, int TimerPeriod) {
 		super(new ArrayList<Player>(), ArenaName);
 		setSpawnArenaStartLocation(startLocation);
 		setSpawnArenaEndLocation(endLocation);
@@ -336,9 +333,11 @@ public class BaseArenaData extends Group {
 	}
 
 	/**
-	 * Sets the arenas active phase, activates the phase and removes it from the list.
+	 * Sets the arenas active phase, activates the phase and removes it from the
+	 * list.
 	 * 
-	 * @param activePhase - The new active phase
+	 * @param activePhase
+	 *            - The new active phase
 	 */
 	public void setActivePhase(Phase activePhase) {
 		this.activePhase = activePhase;
@@ -357,25 +356,30 @@ public class BaseArenaData extends Group {
 			this.state = state;
 			getPlugin().writeToLog("Arena " + getName() + " changed state to " + state.toString());
 		} else {
-			throw new IllegalStateException("Tried to trasition from state " + getState().toString() + " to state "
-					+ state.toString());
+			throw new IllegalStateException("Tried to trasition from state " + getState().toString() + " to state " + state.toString());
 		}
 	}
 
-	// Based on the arenas active state, this will say what state it can change to
+	// Based on the arenas active state, this will say what state it can change
+	// to
 	public boolean canTransitionToState(ArenaState state) {
 		switch (getState()) {
-		case Active: // Go to Deactivated because the arena couldn't start, go straight to phased to prevent a wave
-						// go to the first wave or clear the arena as everyone left after it started
-			return state == ArenaState.Deactivated || state == ArenaState.Phased || state == ArenaState.ProgressingWave
-					|| state == ArenaState.ClearingArena || state == ArenaState.GivingRewards;
-		case GivingRewards: // Ensure that the arena is only cleared once rewards are given
+		case Active: // Go to Deactivated because the arena couldn't start, go
+						// straight to phased to prevent a wave
+						// go to the first wave or clear the arena as everyone
+						// left after it started
+			return state == ArenaState.Deactivated || state == ArenaState.Phased || state == ArenaState.ProgressingWave || state == ArenaState.ClearingArena || state == ArenaState.GivingRewards;
+		case GivingRewards: // Ensure that the arena is only cleared once
+							// rewards are given
 			return state == ArenaState.ClearingArena;
-		case ClearingArena: // If we've cleared the arena then there's nothing left so deactive
+		case ClearingArena: // If we've cleared the arena then there's nothing
+							// left so deactive
 			return state == ArenaState.Deactivated;
-		case ProgressingWave: // We have spawned entities so the arena should still active
+		case ProgressingWave: // We have spawned entities so the arena should
+								// still active
 			return state == ArenaState.Active;
-		case Phased: // A phase will stop new waves or arena completion so there is either a new wave or the arena is at it's end
+		case Phased: // A phase will stop new waves or arena completion so there
+						// is either a new wave or the arena is at it's end
 			return state == ArenaState.ProgressingWave || state == ArenaState.ClearingArena;
 			// || state == ArenaState.Active;
 		case Deactivated: // Inactive

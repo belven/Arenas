@@ -85,8 +85,13 @@ public class ArenaManager extends JavaPlugin {
 	public List<ChallengeBlock> challengeBlocks = new ArrayList<ChallengeBlock>();
 
 	private static String preFix = "BelvensArenas.";
+
 	// public TeamManager teams = (TeamManager)
 	// Bukkit.getServer().getPluginManager().getPlugin("BelvensTeams");
+
+	enum pathsEnum {
+		Radius, Timer_Period, Max_Run_Times, Players_Check_Location, World, Activate_Block, Deactivate_Block, Arena_Warp, Spawn_Start_Location, Spawn_End_Location, Linked_Arena_Delay, Elite_Wave, Start_Location, End_Location, Type, Materials, Chest, Editors
+	}
 
 	static {
 		// Item Chances
@@ -155,24 +160,24 @@ public class ArenaManager extends JavaPlugin {
 		commandPerms.put("select", preFix + "select");
 		commandPerms.put("createarena", preFix + "create");
 
-		arenaPaths.add(0, ".Radius");
-		arenaPaths.add(1, ".Timer Period");
-		arenaPaths.add(2, ".Max Run Times");
-		arenaPaths.add(3, ".Players Check Location");
-		arenaPaths.add(4, ".World");
-		arenaPaths.add(5, ".Activate Block");
-		arenaPaths.add(6, ".Deactivate Block");
-		arenaPaths.add(7, ".Arena Warp");
-		arenaPaths.add(8, ".Spawn Start Location");
-		arenaPaths.add(9, ".Spawn End Location");
-		arenaPaths.add(10, ".Linked Arena Delay");
-		arenaPaths.add(11, ".Elite Wave");
-		arenaPaths.add(12, ".Start Location");
-		arenaPaths.add(13, ".End Location");
-		arenaPaths.add(14, ".Type");
-		arenaPaths.add(15, ".Materials");
-		arenaPaths.add(16, ".Chest");
-		arenaPaths.add(17, ".Editors");
+		arenaPaths.add(pathsEnum.Radius.ordinal(), ".Radius");
+		arenaPaths.add(pathsEnum.Timer_Period.ordinal(), ".Timer Period");
+		arenaPaths.add(pathsEnum.Max_Run_Times.ordinal(), ".Max Run Times");
+		arenaPaths.add(pathsEnum.Players_Check_Location.ordinal(), ".Players Check Location");
+		arenaPaths.add(pathsEnum.World.ordinal(), ".World");
+		arenaPaths.add(pathsEnum.Activate_Block.ordinal(), ".Activate Block");
+		arenaPaths.add(pathsEnum.Deactivate_Block.ordinal(), ".Deactivate Block");
+		arenaPaths.add(pathsEnum.Arena_Warp.ordinal(), ".Arena Warp");
+		arenaPaths.add(pathsEnum.Spawn_Start_Location.ordinal(), ".Spawn Start Location");
+		arenaPaths.add(pathsEnum.Spawn_End_Location.ordinal(), ".Spawn End Location");
+		arenaPaths.add(pathsEnum.Linked_Arena_Delay.ordinal(), ".Linked Arena Delay");
+		arenaPaths.add(pathsEnum.Elite_Wave.ordinal(), ".Elite Wave");
+		arenaPaths.add(pathsEnum.Start_Location.ordinal(), ".Start Location");
+		arenaPaths.add(pathsEnum.End_Location.ordinal(), ".End Location");
+		arenaPaths.add(pathsEnum.Type.ordinal(), ".Type");
+		arenaPaths.add(pathsEnum.Materials.ordinal(), ".Materials");
+		arenaPaths.add(pathsEnum.Chest.ordinal(), ".Chest");
+		arenaPaths.add(pathsEnum.Editors.ordinal(), ".Editors");
 	}
 
 	public void writeToLog(String logText) {
@@ -249,9 +254,7 @@ public class ArenaManager extends JavaPlugin {
 
 	public void setPlayerMetaData(BaseArena ba) {
 		for (Player p : ba.getArenaPlayers()) {
-			p.setMetadata("InArena",
-					new FixedMetadataValue(this, new Group(ba.getArenaPlayers(), ba.getName(),
-							ba.getType() == ArenaTypes.PvP)));
+			p.setMetadata("InArena", new FixedMetadataValue(this, new Group(ba.getArenaPlayers(), ba.getName(), ba.getType() == ArenaTypes.PvP)));
 		}
 	}
 
@@ -305,8 +308,7 @@ public class ArenaManager extends JavaPlugin {
 				int Radius = Integer.valueOf(args[2]);
 				Material m = Material.valueOf(args[3]);
 
-				PvPArena newArenaBlock = new PvPArena(min, max, ArenaName, Radius, this, m,
-						Functions.SecondsToTicks(Integer.valueOf(args[4])));
+				PvPArena newArenaBlock = new PvPArena(min, max, ArenaName, Radius, this, m, Functions.SecondsToTicks(Integer.valueOf(args[4])));
 
 				SelectedArenaBlocks.put(p, newArenaBlock);
 				currentArenaBlocks.add(newArenaBlock);
@@ -319,6 +321,7 @@ public class ArenaManager extends JavaPlugin {
 		}
 	}
 
+	// Exmaple createarena TestArena GRASS 10
 	private void CreateStandardArena(Player p, Block block, String[] args) {
 		block.setMetadata(MDM.ArenaBlock, new FixedMetadataValue(this, "Something"));
 
@@ -333,8 +336,7 @@ public class ArenaManager extends JavaPlugin {
 				String ArenaName = args[1];
 				MobToMaterialCollecton mobs = MatToMob(Material.getMaterial(args[2]));
 
-				StandardArena newArenaBlock = new StandardArena(min, max, ArenaName, mobs, this,
-						Functions.SecondsToTicks(Integer.valueOf(args[3])));
+				StandardArena newArenaBlock = new StandardArena(min, max, ArenaName, mobs, this, Functions.SecondsToTicks(Integer.valueOf(args[3])));
 
 				SelectedArenaBlocks.put(p, newArenaBlock);
 				currentArenaBlocks.add(newArenaBlock);
@@ -360,9 +362,9 @@ public class ArenaManager extends JavaPlugin {
 
 			for (Player pl : tempPlayers) {
 				if (!IsPlayerInArena(pl)) {
-					maxSize += 40;
-					Radius += 40;
-					period += 40;
+					maxSize += 10;
+					Radius += 10;
+					period += 10;
 				}
 			}
 
@@ -379,8 +381,7 @@ public class ArenaManager extends JavaPlugin {
 
 			String ArenaName = "Temp Arena";
 
-			MobToMaterialCollecton mobs = MatToMob(Functions.offsetLocation(p.getLocation(), 0, -1, 0).getBlock()
-					.getType());
+			MobToMaterialCollecton mobs = MatToMob(Functions.offsetLocation(p.getLocation(), 0, -1, 0).getBlock().getType());
 
 			new TempMazeArena(min, max, ArenaName, Radius, mobs, this, Functions.SecondsToTicks(period));
 		} else {
@@ -768,8 +769,7 @@ public class ArenaManager extends JavaPlugin {
 			PlayersInArenas.remove(p);
 			setPlayerMetaData(ab);
 
-			if (ab.getArenaPlayers().size() == 0 && ab.getState() != ArenaState.ClearingArena
-					&& ab.getState() != ArenaState.Deactivated) {
+			if (ab.getArenaPlayers().size() == 0 && ab.getState() != ArenaState.ClearingArena && ab.getState() != ArenaState.Deactivated) {
 				ab.Deactivate();
 			}
 
@@ -840,8 +840,7 @@ public class ArenaManager extends JavaPlugin {
 		String locationString = "";
 		Location l = block.getLocation();
 
-		locationString = String.valueOf(l.getBlockX()) + "," + String.valueOf(l.getBlockY()) + ","
-				+ String.valueOf(l.getBlockZ());
+		locationString = String.valueOf(l.getBlockX()) + "," + String.valueOf(l.getBlockY()) + "," + String.valueOf(l.getBlockZ());
 		return locationString;
 	}
 
@@ -849,8 +848,7 @@ public class ArenaManager extends JavaPlugin {
 		String locationString = "";
 
 		if (l != null) {
-			locationString = String.valueOf(l.getBlockX()) + "," + String.valueOf(l.getBlockY()) + ","
-					+ String.valueOf(l.getBlockZ());
+			locationString = String.valueOf(l.getBlockX()) + "," + String.valueOf(l.getBlockY()) + "," + String.valueOf(l.getBlockZ());
 		}
 		return locationString;
 	}
@@ -889,15 +887,12 @@ public class ArenaManager extends JavaPlugin {
 
 		if (commandPerms.containsKey(args[0])) {
 			if (!player.hasPermission(commandPerms.get(args[0]))) {
-				player.sendMessage("You need the permission " + commandPerms.get(args[0]) + " in order to do /"
-						+ commandSent + " " + args[0]);
+				player.sendMessage("You need the permission " + commandPerms.get(args[0]) + " in order to do /" + commandSent + " " + args[0]);
 				return false;
 			}
 		}
 
-		return commandSent.equals("ba")
-				&& (ListArenaCommands(player, args) || UtilityArenaCommands(player, args) || EditArenaCommand(player,
-						args));
+		return commandSent.equals("ba") && (ListArenaCommands(player, args) || UtilityArenaCommands(player, args) || EditArenaCommand(player, args));
 	}
 
 	@Override
@@ -945,12 +940,12 @@ public class ArenaManager extends JavaPlugin {
 		String path = currentPath + ArenaName;
 		FileConfiguration con = getConfig();
 
-		int radius = con.getInt(path + arenaPaths.get(0));
-		int timerPeriod = con.getInt(path + arenaPaths.get(1));
-		int maxRunTimes = con.getInt(path + arenaPaths.get(2));
-		int linkedArenaDelay = con.getInt(path + arenaPaths.get(10));
+		int radius = con.getInt(path + GetPath(pathsEnum.Radius, arenaPaths));
+		int timerPeriod = con.getInt(path + GetPath(pathsEnum.Timer_Period, arenaPaths));
+		int maxRunTimes = con.getInt(path + GetPath(pathsEnum.Max_Run_Times, arenaPaths));
+		int linkedArenaDelay = con.getInt(path + GetPath(pathsEnum.Linked_Arena_Delay, arenaPaths));
 
-		String worldName = con.getString(path + arenaPaths.get(4));
+		String worldName = con.getString(path + GetPath(pathsEnum.World, arenaPaths));
 
 		if (worldName == null) {
 			worldName = "world";
@@ -967,45 +962,45 @@ public class ArenaManager extends JavaPlugin {
 			}
 		}
 
-		Block blockToActivate = StringToLocation(con.getString(path + arenaPaths.get(5)), world).getBlock();
+		Block blockToActivate = StringToLocation(con.getString(path + GetPath(pathsEnum.Activate_Block, arenaPaths)), world).getBlock();
 
-		Block deactivateBlock = StringToLocation(con.getString(path + arenaPaths.get(6)), world).getBlock();
+		Block deactivateBlock = StringToLocation(con.getString(path + GetPath(pathsEnum.Deactivate_Block, arenaPaths)), world).getBlock();
 
-		Block arenaWarp = StringToLocation(con.getString(path + arenaPaths.get(7)), world).getBlock();
+		Block arenaWarp = StringToLocation(con.getString(path + GetPath(pathsEnum.Arena_Warp, arenaPaths)), world).getBlock();
 
-		Location spawnAreaStartLocation = StringToLocation(con.getString(path + arenaPaths.get(8)), world);
+		Location spawnAreaStartLocation = StringToLocation(con.getString(path + GetPath(pathsEnum.Spawn_Start_Location, arenaPaths)), world);
 
-		Location spawnAreaEndLocation = StringToLocation(con.getString(path + arenaPaths.get(9)), world);
+		Location spawnAreaEndLocation = StringToLocation(con.getString(path + GetPath(pathsEnum.Spawn_End_Location, arenaPaths)), world);
 
-		Location AreaStartLocation = StringToLocation(con.getString(path + arenaPaths.get(12)), world);
+		Location AreaStartLocation = StringToLocation(con.getString(path + GetPath(pathsEnum.Start_Location, arenaPaths)), world);
 
-		Location AreaEndLocation = StringToLocation(con.getString(path + arenaPaths.get(13)), world);
+		Location AreaEndLocation = StringToLocation(con.getString(path + GetPath(pathsEnum.End_Location, arenaPaths)), world);
 
 		Location chestLocation = null;
 
-		if (con.contains(path + arenaPaths.get(16))) {
-			chestLocation = StringToLocation(con.getString(path + arenaPaths.get(16)), world);
+		if (con.contains(path + GetPath(pathsEnum.Chest, arenaPaths))) {
+			chestLocation = StringToLocation(con.getString(path + GetPath(pathsEnum.Chest, arenaPaths)), world);
 		}
 
 		BaseArena ab = null;
 
-		if (!con.contains(path + arenaPaths.get(14))) {
+		if (!con.contains(path + GetPath(pathsEnum.Type, arenaPaths))) {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
-			int eliteWave = con.getInt(path + arenaPaths.get(11));
+			int eliteWave = con.getInt(path + GetPath(pathsEnum.Elite_Wave, arenaPaths));
 
 			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
 			((StandardArena) ab).setEliteWave(eliteWave);
-		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("standard")) {
+		} else if (con.getString(path + GetPath(pathsEnum.Type, arenaPaths)).equalsIgnoreCase("standard")) {
 			MobToMaterialCollecton mobs = GetArenaMobs(ArenaName, path);
-			int eliteWave = con.getInt(path + arenaPaths.get(11));
+			int eliteWave = con.getInt(path + GetPath(pathsEnum.Elite_Wave, arenaPaths));
 
 			ab = new StandardArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, mobs, this, timerPeriod);
 			((StandardArena) ab).setEliteWave(eliteWave);
-		} else if (con.getString(path + arenaPaths.get(14)).equalsIgnoreCase("pvp")) {
+		} else if (con.getString(path + GetPath(pathsEnum.Type, arenaPaths)).equalsIgnoreCase("pvp")) {
 			// TODO
 			Material m = Material.GRASS;
-			if (con.contains(path + arenaPaths.get(15))) {
-				m = Material.getMaterial(con.getString(path + arenaPaths.get(15)));
+			if (con.contains(path + GetPath(pathsEnum.Materials, arenaPaths))) {
+				m = Material.getMaterial(con.getString(path + GetPath(pathsEnum.Materials, arenaPaths)));
 			}
 
 			ab = new PvPArena(spawnAreaStartLocation, spawnAreaEndLocation, ArenaName, radius, this, m, timerPeriod);
@@ -1019,8 +1014,8 @@ public class ArenaManager extends JavaPlugin {
 			ab.setArenaStartLocation(AreaStartLocation);
 			ab.setArenaEndLocation(AreaEndLocation);
 
-			if (con.contains(path + arenaPaths.get(17))) {
-				ab.setEditors(editorsFromString(con.getString(path + arenaPaths.get(17))));
+			if (con.contains(path + GetPath(pathsEnum.Editors, arenaPaths))) {
+				ab.setEditors(editorsFromString(con.getString(path + GetPath(pathsEnum.Editors, arenaPaths))));
 			}
 
 			if (chestLocation != null) {
@@ -1036,6 +1031,10 @@ public class ArenaManager extends JavaPlugin {
 			ab.setMaxRunTimes(maxRunTimes <= 0 ? 1 : maxRunTimes);
 			getLogger().info(ArenaName + " has been created");
 		}
+	}
+
+	private String GetPath(pathsEnum path, List<String> list) {
+		return list.get(path.ordinal());
 	}
 
 	private List<UUID> editorsFromString(String string) {
@@ -1175,35 +1174,35 @@ public class ArenaManager extends JavaPlugin {
 		String path = ArenaPath(ab.getName());
 		getServer().getLogger().info(ab.getName() + " was saved");
 		getConfig().set(path, null);
-		getConfig().set(path + arenaPaths.get(1), ab.getTimerPeriod());
-		getConfig().set(path + arenaPaths.get(2), ab.getMaxRunTimes());
+		getConfig().set(path + GetPath(pathsEnum.Timer_Period, arenaPaths), ab.getTimerPeriod());
+		getConfig().set(path + GetPath(pathsEnum.Max_Run_Times, arenaPaths), ab.getMaxRunTimes());
 
-		getConfig().set(path + arenaPaths.get(4), ab.getSpawnArenaStartLocation().getWorld().getName());
+		getConfig().set(path + GetPath(pathsEnum.World, arenaPaths), ab.getSpawnArenaStartLocation().getWorld().getName());
 
-		getConfig().set(path + arenaPaths.get(5), LocationToString(ab.getBlockToActivate()));
+		getConfig().set(path + GetPath(pathsEnum.Activate_Block, arenaPaths), LocationToString(ab.getBlockToActivate()));
 
-		getConfig().set(path + arenaPaths.get(6), LocationToString(ab.getDeactivateBlock()));
+		getConfig().set(path + GetPath(pathsEnum.Deactivate_Block, arenaPaths), LocationToString(ab.getDeactivateBlock()));
 
-		getConfig().set(path + arenaPaths.get(7), LocationToString(ab.getArenaWarp()));
+		getConfig().set(path + GetPath(pathsEnum.Arena_Warp, arenaPaths), LocationToString(ab.getArenaWarp()));
 
-		getConfig().set(path + arenaPaths.get(8), LocationToString(ab.getSpawnArenaStartLocation()));
+		getConfig().set(path + GetPath(pathsEnum.Spawn_Start_Location, arenaPaths), LocationToString(ab.getSpawnArenaStartLocation()));
 
-		getConfig().set(path + arenaPaths.get(9), LocationToString(ab.getSpawnArenaEndLocation()));
+		getConfig().set(path + GetPath(pathsEnum.Spawn_End_Location, arenaPaths), LocationToString(ab.getSpawnArenaEndLocation()));
 
-		getConfig().set(path + arenaPaths.get(10), ab.getLinkedArenaDelay());
+		getConfig().set(path + GetPath(pathsEnum.Linked_Arena_Delay, arenaPaths), ab.getLinkedArenaDelay());
 
-		getConfig().set(path + arenaPaths.get(12), LocationToString(ab.getArenaStartLocation()));
+		getConfig().set(path + GetPath(pathsEnum.Start_Location, arenaPaths), LocationToString(ab.getArenaStartLocation()));
 
-		getConfig().set(path + arenaPaths.get(13), LocationToString(ab.getArenaEndLocation()));
+		getConfig().set(path + GetPath(pathsEnum.End_Location, arenaPaths), LocationToString(ab.getArenaEndLocation()));
 
-		getConfig().set(path + arenaPaths.get(14), ab.getType().name());
+		getConfig().set(path + GetPath(pathsEnum.Type, arenaPaths), ab.getType().name());
 
 		if (ab.getEditors().size() > 0) {
-			getConfig().set(path + arenaPaths.get(17), arenaEditorsToString(ab));
+			getConfig().set(path + GetPath(pathsEnum.Editors, arenaPaths), arenaEditorsToString(ab));
 		}
 
 		if (ab.getArenaChest() != null) {
-			getConfig().set(path + arenaPaths.get(16), LocationToString(ab.getArenaChest()));
+			getConfig().set(path + GetPath(pathsEnum.Chest, arenaPaths), LocationToString(ab.getArenaChest()));
 		} else {
 			SaveArenaRewards(ab);
 		}
@@ -1213,7 +1212,7 @@ public class ArenaManager extends JavaPlugin {
 		if (ab.getType() != ArenaTypes.PvP) {
 			StandardArena sab = (StandardArena) ab;
 			SaveArenaEliteMobs(sab);
-			getConfig().set(path + arenaPaths.get(11), sab.getEliteWave());
+			getConfig().set(path + GetPath(pathsEnum.Elite_Wave, arenaPaths), sab.getEliteWave());
 			SaveArenaMobs(sab);
 			getConfig().set(path + ".Boss.Type", sab.getBossMob().BossType.toString());
 		}

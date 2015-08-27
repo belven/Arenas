@@ -98,8 +98,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
-		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer())
-				&& plugin.getArena(event.getPlayer()).isActive()) {
+		if (plugin != null && plugin.IsPlayerInArena(event.getPlayer()) && plugin.getArena(event.getPlayer()).isActive()) {
 			event.setCancelled(true);
 		}
 	}
@@ -209,8 +208,7 @@ public class PlayerListener implements Listener {
 			if (playerDeathProtection.contains(damagedPlayer.getName())) {
 				event.setDamage(0.0);
 				damagedPlayer.addPotionEffects(playerEffects.get(damagedPlayer.getName()));
-				damagedPlayer.addPotionEffect(
-						new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Functions.SecondsToTicks(3), 4), true);
+				damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Functions.SecondsToTicks(3), 4), true);
 				playerDeathProtection.remove(damagedPlayer.getName());
 			}
 		}

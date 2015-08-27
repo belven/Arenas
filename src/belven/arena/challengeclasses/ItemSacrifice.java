@@ -17,19 +17,18 @@ public class ItemSacrifice extends Challenge {
 
 	@Override
 	public Scoreboard SetChallengeScoreboard() {
-		
+
 		return null;
 	}
 
 	@Override
 	public void interactedWith(Player p) {
-		
+
 		return;
 	}
 
 	@Override
 	public void EntityKilled(EntityType entityType) {
-		
 
 	}
 

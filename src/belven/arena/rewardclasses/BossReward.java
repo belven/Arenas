@@ -37,12 +37,12 @@ public class BossReward extends Reward {
 		Location SpawnLocation = cb.challengeBlock.getRelative(BlockFace.UP).getLocation();
 
 		LivingEntity le = (LivingEntity) cb.challengeBlock.getWorld().spawnEntity(SpawnLocation, et);
-		// FixedMetadataValue metaData = new FixedMetadataValue(getPlugin(), ab);
+		// FixedMetadataValue metaData = new FixedMetadataValue(getPlugin(),
+		// ab);
 
 		FixedMetadataValue metaData = new FixedMetadataValue(cb.plugin, "");
 		le.setMetadata(MDM.ArenaBoss, metaData);
-		le.setMetadata(MDM.RewardBoss, new FixedMetadataValue(cb.plugin, new ExperienceReward(Reward.getExpRewards()
-				.get(Reward.getExpRewards().size() - 1))));
+		le.setMetadata(MDM.RewardBoss, new FixedMetadataValue(cb.plugin, new ExperienceReward(Reward.getExpRewards().get(Reward.getExpRewards().size() - 1))));
 
 		Bukkit.getPluginManager().callEvent(new EntityMetadataChanged(metaData, le));
 

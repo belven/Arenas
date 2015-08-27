@@ -19,8 +19,7 @@ import belven.arena.timedevents.ArenaTimer;
 public class TempMazeArena extends StandardArena {
 	private List<Block> blocksChanged = new ArrayList<>();
 
-	public TempMazeArena(Location startLocation, Location endLocation, String ArenaName, int Radius,
-			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
+	public TempMazeArena(Location startLocation, Location endLocation, String ArenaName, int Radius, MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, mobToMat, Plugin, TimerPeriod);
 		setType(ArenaTypes.Temp);
 		Activate();
@@ -51,8 +50,7 @@ public class TempMazeArena extends StandardArena {
 			}
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			getPlugin()
-					.writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Active.toString() + " state");
+			getPlugin().writeToLog("Arena " + getName() + " failed to go to " + ArenaState.Active.toString() + " state");
 		}
 	}
 
@@ -67,7 +65,8 @@ public class TempMazeArena extends StandardArena {
 		int startZ = getArenaStartLocation().getBlockZ();
 		int endZ = getArenaEndLocation().getBlockZ();
 
-		// Add 1 to Y becuase it starts at the ground level and we want to make one from above ground
+		// Add 1 to Y becuase it starts at the ground level and we want to make
+		// one from above ground
 		int y = getArenaStartLocation().getBlockY() + 1;
 
 		int largestX = startX > endX ? startX : endX;
@@ -85,31 +84,35 @@ public class TempMazeArena extends StandardArena {
 				Block blockBelow = cb.getRelative(BlockFace.DOWN);
 				Material blockBelowType = blockBelow.getType();
 
-				if (blockBelowType != Material.STATIONARY_WATER && blockBelowType != Material.STATIONARY_LAVA
-						&& blockBelowType != Material.WATER && blockBelowType != Material.LAVA) {
+				if (blockBelowType != Material.STATIONARY_WATER && blockBelowType != Material.STATIONARY_LAVA && blockBelowType != Material.WATER && blockBelowType != Material.LAVA) {
 					// If this is the first row then just do a 50/50
 					if (x == smallestX) {
 						if (fithtyFithty() && !isAir(blockBelow)) {
 							changeBlock(cb, blockBelowType);
 						} else {
-							// Set the block to air as we need to clear the arena of being blocked
+							// Set the block to air as we need to clear the
+							// arena of being blocked
 							changeBlock(cb, Material.AIR);
 						}
 					} else {
-						// If the blocks west, westWest, westNorth and westSouth contain something we might want to put air there
+						// If the blocks west, westWest, westNorth and westSouth
+						// contain something we might want to put air there
 						if (getWestContainsBlock(cb)) {
-							// If the north and northWest blocks are not air then make this air, avoid blocking paths
+							// If the north and northWest blocks are not air
+							// then make this air, avoid blocking paths
 							if (getNorthContainsBlock(cb)) {
 								changeBlock(cb, Material.AIR);
 								// Otherwise Have a chance to put a block their
 							} else if (fithtyFithty() && !isAir(blockBelow)) {
 								changeBlock(cb, blockBelowType);
 							}
-							// There are no blocks to the west so just have a chance to put something there
+							// There are no blocks to the west so just have a
+							// chance to put something there
 						} else if (fithtyFithty() && !isAir(blockBelow)) {
 							changeBlock(cb, blockBelowType);
 						} else {
-							// Set the block to air as we need to clear the arena of being blocked
+							// Set the block to air as we need to clear the
+							// arena of being blocked
 							changeBlock(cb, Material.AIR);
 						}
 					}

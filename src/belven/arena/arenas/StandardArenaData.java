@@ -21,8 +21,7 @@ public abstract class StandardArenaData extends BaseArena {
 	protected EliteMobCollection emc = new EliteMobCollection(this);
 	protected int eliteWave = 0, maxMobCounter = 0;
 
-	public StandardArenaData(Location startLocation, Location endLocation, String ArenaName,
-			MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
+	public StandardArenaData(Location startLocation, Location endLocation, String ArenaName, MobToMaterialCollecton mobToMat, ArenaManager Plugin, int TimerPeriod) {
 		super(startLocation, endLocation, ArenaName, Plugin, TimerPeriod);
 		setMobToMat(mobToMat);
 		setType(ArenaTypes.Standard);
